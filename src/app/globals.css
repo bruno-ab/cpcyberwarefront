@@ -2043,3 +2043,17 @@ body .cybr-btn+.cybr-btn {
 #area #data {
   color: black;
 }
+
+.nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav__link {
+  line-height: 1.4rem;
+}
+
+.nav__link__element+.nav__link__element {
+  margin-left: 0.5rem;
+}
