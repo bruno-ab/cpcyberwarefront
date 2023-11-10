@@ -1,5 +1,5 @@
 import React from 'react';
-
+import styles from './resources.module.css';
 const data = {
   "Backgrounds": [
     { "name": "Allies", "value": 1 },
@@ -47,7 +47,7 @@ const renderBolinhhas = (value) => {
 const CyberPunkResource = () => {
   return (
     <center>
-      <table border="1" width="80%">
+       <table className={styles.resourcestable}>
         <tbody>
           <tr>
             <td valign="top" width="30%">

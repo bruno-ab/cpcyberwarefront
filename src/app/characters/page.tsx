@@ -59,7 +59,7 @@ export function Characters() {
   };
 
   return (
-    <section className="cyberpunk black">
+    <div className="channel-feed">
       <Header />
       <h2 className="cyberpunk">Characters</h2>
       <select className="cyberpunk" onChange={handleCharacterChange} value={selectedCharacter.id}>
@@ -73,7 +73,7 @@ export function Characters() {
       {selectedCharacter && (
         <div>
           <h3>{selectedCharacter.name}</h3>
-          <img src={selectedCharacter.imageUrl} alt={selectedCharacter.name} style={{ maxWidth: '100%' }} />
+          <img src={selectedCharacter.imageUrl} alt={selectedCharacter.name} style={{ maxWidth: '15%' }} />
         </div>
       )}
       {selectedCharacter && (
@@ -82,7 +82,7 @@ export function Characters() {
          <p>{selectedCharacter.cyberwares[0].description}</p>
         </div>
       )}
-    </section>
+    </div>
   );
 }
 

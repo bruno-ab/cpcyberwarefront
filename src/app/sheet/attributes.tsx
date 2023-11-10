@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './attributes.module.css';  
 
 const data = {
   PHYSICAL: [
@@ -18,8 +19,8 @@ const data = {
   ],
 };
 
-const Attributes = ({ data: any }) => {
-  const renderBolinhhas = (value: any) => {
+const Attributes = () => {
+  const renderBolinhhas = (value) => {
     const bolinhas = Array.from({ length: value }, (_, index) => (
       <span key={index} role="img" aria-label="Bolinha preenchida" style={{ color: '#02d7f2', fontSize: '24px' }}>
         ●
@@ -27,7 +28,7 @@ const Attributes = ({ data: any }) => {
     ));
 
     const bolinhasVazias = Array.from({ length: 5 - value }, (_, index) => (
-      <span key={index} role="img" aria-label="Bolinha vazia"  style={{ color: '#00000', fontSize: '24px' }}>
+      <span key={index} role="img" aria-label="Bolinha vazia" style={{ color: '#00000', fontSize: '24px' }}>
         ○
       </span>
     ));
@@ -37,14 +38,16 @@ const Attributes = ({ data: any }) => {
 
   return (
     <center>
-      <table border="1" width="80%">
+      <table className={styles.attributestable}>
         <tbody>
           <tr>
             {Object.keys(data).map((category) => (
               <td key={category} valign="top" width="30%">
-                <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px' ,color: '#ff1111' }}>{category}</p>
-                {data[category].map((attribute: any) => (
-                  <p key={attribute.name} >
+                <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>
+                  {category}
+                </p>
+                {data[category].map((attribute) => (
+                  <p key={attribute.name}>
                     {renderBolinhhas(attribute.value)} {attribute.name}
                   </p>
                 ))}

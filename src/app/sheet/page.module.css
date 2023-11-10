@@ -1,0 +1,6 @@
+.attributesSection {
+    text-align: center;
+    letter-spacing: 0.035em;
+        text-shadow: var(--ui-glow-text--dimmed);
+        text-transform: uppercase;
+}

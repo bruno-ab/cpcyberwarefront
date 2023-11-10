@@ -1,5 +1,5 @@
 import React from 'react';
-
+import styles from './abilities.module.css';  
 const data = {
   "Abilities": {
     "Talents": [
@@ -39,7 +39,7 @@ const renderBolinhhas = (value) => {
 const Abilities = () => {
   return (
     <center>
-      <table border="1" width="80%">
+       <table className={styles.abilitiestable}>
         <tbody>
           <tr>
             <td valign="top" width="30%">

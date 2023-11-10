@@ -1,0 +1,7 @@
+.resourcestable {
+    background-color: var(--colors-bg--300);
+    border: 1px solid var(--colors-tertiary--500);
+    border-radius: 3px;
+    color: var(--colors-tertiary--500);
+    padding: 0.75rem;
+}
