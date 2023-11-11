@@ -77,7 +77,7 @@ export function Characters() {
         </div>
       )}
       {selectedCharacter && (
-         <div class="resolved children1 width2">
+         <div className="resolved children1 width2">
           <h2>{selectedCharacter.role}</h2>
          <p>{selectedCharacter.cyberwares[0].description}</p>
         </div>
