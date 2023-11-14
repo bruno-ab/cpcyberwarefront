@@ -10,10 +10,12 @@ export default function Home() {
       <section className="cyberpunk">
           <Header />
           <section className="cyberpunk black">
+            
           <ul className="cyberpunk">
               <li className="glitched">Cyberpunk is a subgenre of science fiction in a dystopian <a href="#">futuristic setting that</a> tends to
                 focus on a "combination of low-life and high tech"</li>
           </ul>
+          
           <p className="cyberpunk inverse dotted">Cyberpunk is a subgenre of science fiction in a dystopian <a href="#">futuristic
                 setting that</a> tends to focus on a "combination of low-life and high tech"[1] featuring advanced
             technological and scientific achievements, such as artificial intelligence and cybernetics, juxtaposed with a

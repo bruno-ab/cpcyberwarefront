@@ -1,0 +1,19 @@
+.contentContainer {
+    display: flex;
+}
+
+.iframeContainer {
+    flex: 1;
+    margin-right: 10px;
+    /* Reduzi um pouco o espaçamento */
+}
+
+.textContainer {
+    flex: 1;
+}
+
+/* Adicione estilos específicos para o texto */
+.textContainer p {
+    margin: 0;
+    /* Removi todas as margens para garantir um espaçamento mínimo */
+}
