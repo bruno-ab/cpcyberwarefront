@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import Header from '../header/Header';
 import styles from './background.module.css';
 const imgPath = '/characters/placeholder.png';
+import CreateForm from './createCharacterForm'
+
 
 const getPlayerCharacters = async () => {
   try {
@@ -69,6 +71,7 @@ export function Characters() {
         </div>
             ))}
       </div>
+       <CreateForm />
     </div>
   );
 }
