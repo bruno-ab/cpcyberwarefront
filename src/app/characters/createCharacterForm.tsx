@@ -8,7 +8,19 @@ export function CreateCharacterForm() {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [message, setMessage] = useState('');
+  const [diceResult, setDiceResult] = useState(1);
   const router = useRouter()
+
+  const rollDice = () => {
+    // Generate a random number between 1 and 20
+    const result = Math.floor(Math.random() * 20) + 1;
+    setDiceResult(result);
+
+    // Add a delay before resetting the dice result to allow for animation
+    setTimeout(() => {
+      setDiceResult(1);
+    }, 3000); // Adjust the duration of the animation as needed
+  };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -74,7 +86,6 @@ export function CreateCharacterForm() {
           Create New Character
         </button>
       </form>
-      <div>{message}</div>
     </div>
   );
 }

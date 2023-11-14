@@ -2,11 +2,13 @@
 import React, { useState } from 'react';
 import styles from './login.module.css';
 import { useRouter } from 'next/navigation'
-import Link from 'next/link';
 
-export function Login() {
+
+export function Register() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const router = useRouter()
 
@@ -14,12 +16,14 @@ export function Login() {
     e.preventDefault();
 
     const data = {
+      name: name,
       email: email,
+      phone: phone,
       password: password,
     };
 
     try {
-      const response = await fetch('http://localhost:4444/auth/login', {
+      const response = await fetch('http://localhost:4444/players', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,13 +32,7 @@ export function Login() {
       });
 
       if (response.ok) {
-        const data = await response.json(); 
-        const accessToken = data.access_token; 
-        localStorage.setItem('access_token', accessToken);
-        setMessage('Access granted!');
-        
-      
-        router.push("/characters")
+        router.push("/login")
       } else {
         setMessage('Access denied! Verify your credentials and try again.');
       }
@@ -65,8 +63,30 @@ export function Login() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
+        <div> Name</div>
+        <div className="cyberpunk">
+          <input
+            id="name"
+            type="text"
+            className="nav-message"
+            placeholder=" "
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div> Phone</div>
+        <div className="cyberpunk">
+          <input
+            id="name"
+            type="text"
+            className="nav-message"
+            placeholder=" "
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+        </div>
         <div> Password</div>
-       <div className="cyberpunk">
+        <div className="cyberpunk">
           <input
             id="password"
             type="password"
@@ -75,19 +95,14 @@ export function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-      </div>
-      <button type="submit" className="button button--primary button--size-xl">
+        </div>
+        <button type="submit" className="button button--primary button--size-xl">
           Login
-      </button>
-        <Link href="/register" passHref>
-        <button className="button button--primary button--size-xl">
-          Register
         </button>
-      </Link>
       </form>
       <div>{message}</div>
     </div>
   );
 }
 
-export default Login;
+export default Register;
