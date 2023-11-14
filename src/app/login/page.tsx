@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import styles from './login.module.css';
-import { redirect, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 
 export function Login() {
@@ -31,7 +31,6 @@ export function Login() {
         const data = await response.json(); 
         const accessToken = data.access_token; 
         localStorage.setItem('access_token', accessToken);
-        console.log('access_token:', accessToken);
         setMessage('Access granted!');
         
       

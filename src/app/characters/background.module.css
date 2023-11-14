@@ -1,0 +1,201 @@
+
+.body {
+    padding: 0px;
+    background: #222222;
+    text-align: center;
+    margin: 0px;
+}
+
+.titulocover {
+    width: 100%;
+    height: 100px;
+    background-image: url("https://i.pinimg.com/originals/84/69/50/84695046fe3f6a97c1e6868a1a43f641.png");
+    background-size: cover;
+    border-bottom: 1px solid #90108d;
+    margin-bottom: 10px;
+}
+
+.titulo {
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0px 10px;
+    padding-top: 20px;
+}
+
+.titulo>h2 {
+    color: #ffffff;
+    margin: 0px;
+    font-family: 'Audiowide', serif;
+    font-size: 25px;
+    letter-spacing: 4px;
+    transition: 0.3s;
+    text-shadow: -0.1em 0 red, 0.1em 0 cyan;
+}
+
+.titulo>h4 {
+    margin: 0px;
+    color: #ffffff;
+    font-family: 'Raleway', serif;
+    text-transform: uppercase;
+    text-shadow: -0.1em 0 red, 0.1em 0 cyan;
+    margin-top: 5px;
+    letter-spacing: 4px;
+}
+
+.contenedor {
+    margin: auto 0;
+}
+
+.imagen {
+    background-size: cover;
+    margin: 10px;
+    display: inline-block;
+    width: 100%;
+    height: 250px;
+    max-width: 250px;
+    max-height: 250px;
+    border: 4px solid #777777;
+}
+
+.img1 {
+    background-color: #063058;
+    background-image: url("https://coubsecure-s.akamaihd.net/get/b39/p/coub/simple/cw_timeline_pic/110849f3b4d/3a041c09036e554789255/big_1442181104_image.jpg");
+}
+
+.img2 {
+    background-color: #4951a4;
+    background-image: url("https://i.pinimg.com/originals/ba/82/3e/ba823e3fb1850a3734d703cae2e525ab.jpg");
+}
+
+.img3 {
+    background-color: #868ea3;
+    background-image: url("https://www.berlinale.de/media/filmstills/2017_2/retrospektive_12/201703110_1_IMG_FIX_700x700.jpg");
+}
+
+.img4 {
+    background-color: #00586a;
+    background-image: url("http://animeperson.com/images/screen/f81e5e8fa1.jpg");
+}
+
+.img5 {
+    background-color: #7e0103;
+    background-image: url("https://78.media.tumblr.com/9f76528673ddd5ab62b2d6ad100dad97/tumblr_njt7f5yxrj1s4laffo1_500.png");
+}
+
+.img6 {
+    background-color: #435265;
+    background-image: url("https://lh3.googleusercontent.com/-PFB4CMP_Lws/VYw8tMdo0TI/AAAAAAAABUc/4Fu3NDeD73A/w424-h318-n/real-not-happy.jpg");
+}
+
+.captioncontainer {
+    background: rgba(46, 15, 105, 0.4);
+    height: 100%;
+    transition: 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    color: #ffffff;
+}
+
+.captioncontainer:hover {
+    opacity: 1;
+}
+
+.captioncontainer:hover>.caption {
+    opacity: 1;
+}
+
+.caption {
+    opacity: 0;
+    width: 70%;
+    height: 70%;
+    padding: 9px 5px;
+    background: rgba(0, 0, 0, 0.6);
+    overflow: scroll;
+    border: 1px solid #8814ff;
+    text-align: center;
+    overflow: hidden;
+}
+
+.caption>h3 {
+    color: #ffffff;
+    margin: 0px;
+    font-family: 'Audiowide', serif;
+    font-size: 15px;
+    letter-spacing: 2px;
+    transition: 0.3s;
+    text-shadow: -0.1em 0 red, 0.1em 0 cyan;
+}
+
+.caption>p {
+    margin: 0px;
+    margin-top: 5px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 12px;
+    color: #c3c3c3;
+}
+
+.caption>hr {
+    border: 0.5px solid #1fb6ff;
+}
+
+@media (max-width: 278px) {
+    .imagen {
+        width: 90%;
+        height: 250px;
+    }
+
+    .caption>h3 {
+        font-size: 14px;
+    }
+
+    .caption>p {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 400px) {
+    .titulocover {
+        height: 200px;
+    }
+}
+
+.container {
+    display: flex;
+    /* Torna os elementos filhos flexíveis */
+    justify-content: space-between;
+    /* Distribui os elementos igualmente com espaço entre eles */
+    align-items: center;
+    /* Alinha verticalmente os elementos ao centro */
+}
+
+.item {
+    /* Estilos para os elementos individuais */
+    width: 100px;
+    /* Largura desejada para cada elemento */
+    margin: 5px;
+    /* Espaçamento entre os elementos */
+}
+
+.imageContainer {
+    width: 100%;
+    height: 100%;
+    padding-top: 0%;
+    /* This creates a 60% aspect ratio (height/width) */
+    position: relative;
+}
+
+.imageContainer {
+    width: 100%;
+    height: 100%;
+    padding-top: 0%;
+    /* This creates a 60% aspect ratio (height/width) */
+    position: relative;
+}

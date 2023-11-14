@@ -1,87 +1,74 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '../header/Header';
+import styles from './background.module.css';
 const imgPath = '/characters/placeholder.png';
-const data = [
-  {
-    "id": 1,
-    "name": "Jack Wells",
-    "role": "Solo",
-    "imageUrl": '/characters/01.png',
-    "cyberwares": [
-      {
-        "id": 1,
-        "name": "Spring Joints",
-        "description": "The Spring Joints are Cyberware for the Skeleton in Cyberpunk 2077.",
-      }
-    ]
-  },
-  {
-    "id": 2,
-    "name": "Judy Alvarez",
-    "role": "Netrunner",
-    "imageUrl": '/characters/02.png',
-    "cyberwares": [
-      {
-        "id": 2,
-        "name": "Optical Camouflage",
-        "description": "Optical Camouflage renders the user invisible by bending light around them."
-      }
-    ]
-  },
-  {
-    "id": 3,
-    "name": "Bob Anderson",
-    "role": "Solo",
-    "imageUrl": imgPath,
-    "cyberwares": [
-      {
-        "id": 3,
-        "name": "Neural Interface",
-        "description": "The Neural Interface allows direct communication between the user's brain and computer systems."
+
+const getPlayerCharacters = async () => {
+  try {
+    const response = await fetch('http://localhost:4444/characters/player/characters', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
       },
-      {
-        "id": 4,
-        "name": "Enhanced Reflexes",
-        "description": "Enhanced Reflexes cyberware increases the user's reaction time significantly."
-      }
-    ]
+    });
+
+    if (response.ok) {
+      return response.json();
+    } else {
+      console.log("error");
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
   }
-];
+};
 
 export function Characters() {
-  const [selectedCharacter, setSelectedCharacter] = useState(data[0]);
+  const router = useRouter();
+  const accessToken = localStorage.getItem('access_token');
 
-  const handleCharacterChange = (event) => {
-    const selectedId = parseInt(event.target.value);
-    const selectedCharacterData = data.find((character) => character.id === selectedId);
-    setSelectedCharacter(selectedCharacterData);
-  };
+  if (!accessToken) {
+    router.push("/login");
+  }
+
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await getPlayerCharacters();
+      setData(result);
+    };
+    fetchData();
+  }, []);
 
   return (
-    <div className="channel-feed">
+    <div>
       <Header />
-      <h2 className="cyberpunk">Characters</h2>
-      <select className="cyberpunk" onChange={handleCharacterChange} value={selectedCharacter.id}>
-        {data.map((character) => (
-          <option key={character.id} value={character.id}>
-            {character.name}
-          </option>
-        ))}
-      </select>
-      <br />
-      {selectedCharacter && (
-        <div>
-          <h3>{selectedCharacter.name}</h3>
-          <img src={selectedCharacter.imageUrl} alt={selectedCharacter.name} style={{ maxWidth: '15%' }} />
+      <h2 className={styles.titulo}>Characters</h2>
+      <div className={styles.characterGrid}>
+        {data && data.map((character) => (
+        // eslint-disable-next-line react/jsx-key
+        <div className={`${styles.img2} ${styles.imagen}`}>
+          <img src={imgPath} alt={character.name} style={{ width: '100%', height: '100%' }} />
+          <div className={styles.captioncontainer}>
+            <div className={styles.caption}>
+              <h3>{character.name}</h3>
+              <hr />
+              <p>
+                {character.role}
+              </p>
+              <p>
+                An iconic character that wants to be a legend in Nigh City.
+              </p>
+            </div>
+          </div>
         </div>
-      )}
-      {selectedCharacter && (
-         <div className="resolved children1 width2">
-          <h2>{selectedCharacter.role}</h2>
-         <p>{selectedCharacter.cyberwares[0].description}</p>
-        </div>
-      )}
+            ))}
+      </div>
     </div>
   );
 }

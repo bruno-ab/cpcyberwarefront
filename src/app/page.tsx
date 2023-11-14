@@ -8,7 +8,6 @@ export default function Home() {
   return (
       <div className='app-skeleton'>
       <section className="cyberpunk">
-        
           <Header />
           <section className="cyberpunk black">
           <ul className="cyberpunk">
@@ -27,7 +26,6 @@ export default function Home() {
             <Image className="cyberpunk dotted" src={cpProductImage} alt="Cyberpunk2077.exe" />
             <Image className="cyberpunk dotted" src={cpProductImage2} alt="Cyberpunk2077.exe" />
             <Image className="cyberpunk dotted" src={cpProductImage3} alt="Cyberpunk2077.exe" />
-
           </section>
       </section>
       </div>
