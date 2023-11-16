@@ -1,47 +1,26 @@
 'use client';
 import React, { useState } from 'react';
 import styles from './abilities.module.css';
+import { defaultAbilities } from './defaultSheet';
 
-const data = {
-  "Abilities": {
-    "Talents": [
-      { "name": "Alertness", "value": 2 },
-      { "name": "Athletics", "value": 1 },
-      { "name": "Brawl", "value": 3 },
-      { "name": "Sports", "value": 1 }
-    ],
-    "Skills": [
-      { "name": "Animal Ken", "value": 2 },
-      { "name": "Crafts", "value": 1 },
-      { "name": "Drive", "value": 2 }
-    ],
-    "Knowledges": [
-      { "name": "Academics", "value": 2 },
-      { "name": "Computer", "value": 1 },
-      { "name": "Occult", "value": 3 }
-    ]
-  },
-};
+const saveDataToApi = (data,talentValues, skillValues, knowledgeValues) => {
+  const apiUrl = `http://localhost:4444/characters/${data.id}/sheet`;
+  data.talents = talentValues;
+  data.skills = skillValues;
+  data.knowledges = knowledgeValues;
 
-const saveDataToApi = (talentValues, skillValues, knowledgeValues) => {
-  // Substitua a URL da API e o método de envio conforme necessário
-  const apiUrl = 'sua_url_da_api';
-  const requestBody = {
-    talentValues,
-    skillValues,
-    knowledgeValues,
-  };
-
-  console.log(requestBody)
+  console.log('dados para serem enviados',data)
   fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
     },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify(data),
   })
     .then((response) => {
       if (!response.ok) {
+        console.log('Erro ao enviar dados para a API')
         throw new Error('Erro ao enviar dados para a API');
       }
       console.log('Dados enviados com sucesso para a API');
@@ -51,77 +30,75 @@ const saveDataToApi = (talentValues, skillValues, knowledgeValues) => {
     });
 };
 
-const Abilities = () => {
+
+const Abilities = ({ characterData }) => {
+  console.log('characterData:', characterData);
+  const data = characterData.sheet || defaultAbilities;
   const [talentValues, setTalentValues] = useState(
-    data.Abilities.Talents.reduce((acc, attribute) => {
-      acc[attribute.name] = attribute.value;
+    Object.entries(data.talents || {}).reduce((acc, [name, value]) => {
+      acc[name] = value;
       return acc;
     }, {})
   );
 
   const [skillValues, setSkillValues] = useState(
-    data.Abilities.Skills.reduce((acc, attribute) => {
-      acc[attribute.name] = attribute.value;
+    Object.entries(data.skills || {}).reduce((acc, [name, value]) => {
+      acc[name] = value;
       return acc;
     }, {})
   );
 
   const [knowledgeValues, setKnowledgeValues] = useState(
-    data.Abilities.Knowledges.reduce((acc, attribute) => {
-      acc[attribute.name] = attribute.value;
+    Object.entries(data.knowledges || {}).reduce((acc, [name, value]) => {
+      acc[name] = value;
       return acc;
     }, {})
   );
 
   const handleBolinhaClick = (category, attributeName, currentIndex) => {
     if (currentIndex < category[attributeName] - 0) {
-      // Remove a bolinha da direita
       category[attributeName] -= 1;
     } else {
-      // Adiciona uma bolinha à esquerda
       category[attributeName] += 1;
     }
-
-    // Atualiza o estado correspondente
-       switch (category) {
+    switch (category) {
       case talentValues:
         setTalentValues({ ...talentValues, [attributeName]: category[attributeName] });
-        saveDataToApi(talentValues, skillValues, knowledgeValues);
+        saveDataToApi(data, talentValues, skillValues, knowledgeValues);
         break;
       case skillValues:
         setSkillValues({ ...skillValues, [attributeName]: category[attributeName] });
-        saveDataToApi(talentValues, skillValues, knowledgeValues);
+        saveDataToApi(data, talentValues, skillValues, knowledgeValues);
         break;
       case knowledgeValues:
         setKnowledgeValues({ ...knowledgeValues, [attributeName]: category[attributeName] });
-        saveDataToApi(talentValues, skillValues, knowledgeValues);
+        saveDataToApi(data, talentValues, skillValues, knowledgeValues);
         break;
       default:
         break;
     }
-
   };
 
   const renderBolinhhas = (category, attributeName) => {
-  const bolinhas = Array.from({ length: 5 }, (_, index) => (
-    <span
-      key={index}
-      role="img"
-      aria-label={`Bolinha ${index < category[attributeName] ? 'preenchida' : 'vazia'}`}
-      style={{
-        color: index < category[attributeName] ? '#02d7f2' : '',
-        fontSize: '24px',
-        cursor: 'pointer',
-        userSelect: 'none', // Impede a seleção de texto
-      }}
-      onClick={() => handleBolinhaClick(category, attributeName, index)}
-    >
-      ●
-    </span>
-  ));
+    const bolinhas = Array.from({ length: 5 }, (_, index) => (
+      <span
+        key={index}
+        role="img"
+        aria-label={`Bolinha ${index < category[attributeName] ? 'preenchida' : 'vazia'}`}
+        style={{
+          color: index < category[attributeName] ? '#02d7f2' : '',
+          fontSize: '24px',
+          cursor: 'pointer',
+          userSelect: 'none',
+        }}
+        onClick={() => handleBolinhaClick(category, attributeName, index)}
+      >
+        ●
+      </span>
+    ));
 
-  return bolinhas;
-};
+    return bolinhas;
+  };
 
   return (
     <center>
@@ -130,25 +107,25 @@ const Abilities = () => {
           <tr>
             <td valign="top" width="30%">
               <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Talents</p>
-              {data.Abilities.Talents.map((attribute) => (
-                <p key={attribute.name}>
-                  {renderBolinhhas(talentValues, attribute.name)} {attribute.name}
+              {Object.entries(data.talents || {}).map(([name, value]) => (
+                <p key={name}>
+                  {renderBolinhhas(talentValues, name)} {name}
                 </p>
               ))}
             </td>
             <td valign="top" width="30%">
               <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Skills</p>
-              {data.Abilities.Skills.map((attribute) => (
-                <p key={attribute.name}>
-                  {renderBolinhhas(skillValues, attribute.name)} {attribute.name}
+              {Object.entries(data.skills || {}).map(([name, value]) => (
+                <p key={name}>
+                  {renderBolinhhas(skillValues, name)} {name}
                 </p>
               ))}
             </td>
             <td valign="top" width="30%">
               <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Knowledges</p>
-              {data.Abilities.Knowledges.map((attribute) => (
-                <p key={attribute.name}>
-                  {renderBolinhhas(knowledgeValues, attribute.name)} {attribute.name}
+              {Object.entries(data.knowledges || {}).map(([name, value]) => (
+                <p key={name}>
+                  {renderBolinhhas(knowledgeValues, name)} {name}
                 </p>
               ))}
             </td>

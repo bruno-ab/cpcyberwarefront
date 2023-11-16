@@ -5,6 +5,7 @@ import Header from '../header/Header';
 import styles from './background.module.css';
 const imgPath = '/characters/placeholder.png';
 import CreateForm from './createCharacterForm'
+import Link from 'next/link';
 
 
 const getPlayerCharacters = async () => {
@@ -47,31 +48,35 @@ export function Characters() {
     fetchData();
   }, []);
 
+  const handleCharacterClick = (characterId) => {
+    // Redirecionar para a página '/sheet' com o ID do personagem na URL
+    router.push(`/sheet?id=${characterId}`);
+  };
+
   return (
     <div>
       <Header />
       <h2 className={styles.titulo}>Characters</h2>
       <div className={styles.characterGrid}>
         {data && data.map((character) => (
-        // eslint-disable-next-line react/jsx-key
-        <div className={`${styles.img2} ${styles.imagen}`}>
-          <img src={imgPath} alt={character.name} style={{ width: '100%', height: '100%' }} />
-          <div className={styles.captioncontainer}>
-            <div className={styles.caption}>
-              <h3>{character.name}</h3>
-              <hr />
-              <p>
-                {character.role}
-              </p>
-              <p>
-                An iconic character that wants to be a legend in Nigh City.
-              </p>
+          <div
+            key={character.id}
+            className={`${styles.img2} ${styles.imagen}`}
+            onClick={() => handleCharacterClick(character.id)}
+          >
+            <img src={imgPath} alt={character.name} style={{ width: '100%', height: '100%' }} />
+            <div className={styles.captioncontainer}>
+              <div className={styles.caption}>
+                <h3>{character.name}</h3>
+                <hr />
+                <p>{character.role}</p>
+                <p>An iconic character that wants to be a legend in Night City.</p>
+              </div>
             </div>
           </div>
-        </div>
-            ))}
+        ))}
       </div>
-       <CreateForm />
+      <CreateForm />
     </div>
   );
 }

@@ -1,58 +1,134 @@
-import React from 'react';
-import styles from './attributes.module.css';  
+'use client';
+import React, { useState } from 'react';
+import styles from './abilities.module.css';
+import { defaultAttributes } from './defaultSheet';
 
-const data = {
-  PHYSICAL: [
-    { name: 'Strength', value: 3 },
-    { name: 'Dexterity', value: 2 },
-    { name: 'Stamina', value: 1 },
-  ],
-  SOCIAL: [
-    { name: 'Charisma', value: 2 },
-    { name: 'Manipulation', value: 2 },
-    { name: 'Appearance', value: 2 },
-  ],
-  MENTAL: [
-    { name: 'Perception', value: 2 },
-    { name: 'Intelligence', value: 2 },
-    { name: 'Wits', value: 2 },
-  ],
+const saveDataToApi = (data,physicalValues, socialValues, mentalValues) => {
+  const apiUrl = `http://localhost:4444/characters/${data.id}/sheet`;
+  data.physical = physicalValues;
+  data.social = socialValues;
+  data.mental = mentalValues;
+
+  console.log('dados para serem enviados',data)
+  fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        console.log('Erro ao enviar dados para a API')
+        throw new Error('Erro ao enviar dados para a API');
+      }
+      console.log('Dados enviados com sucesso para a API');
+    })
+    .catch((error) => {
+      console.error('Erro:', error.message);
+    });
 };
 
-const Attributes = () => {
-  const renderBolinhhas = (value) => {
-    const bolinhas = Array.from({ length: value }, (_, index) => (
-      <span key={index} role="img" aria-label="Bolinha preenchida" style={{ color: '#02d7f2', fontSize: '24px' }}>
+
+const Abilities = ({ characterData }) => {
+  console.log('characterData:', characterData);
+  const data = characterData.sheet || defaultAttributes;
+  const [physicalValues, setPhysicalValues] = useState(
+    Object.entries(data.physical || defaultAttributes.physical).reduce((acc, [name, value]) => {
+      acc[name] = value;
+      return acc;
+    }, {})
+  );
+
+  const [socialValues, setSocialValues] = useState(
+    Object.entries(data.social || defaultAttributes.social).reduce((acc, [name, value]) => {
+      acc[name] = value;
+      return acc;
+    }, {})
+  );
+
+  const [mentalValues, setMentalValues] = useState(
+    Object.entries(data.mental || defaultAttributes.mental).reduce((acc, [name, value]) => {
+      acc[name] = value;
+      return acc;
+    }, {})
+  );
+
+  const handleBolinhaClick = (category, attributeName, currentIndex) => {
+    if (currentIndex < category[attributeName] - 0) {
+      category[attributeName] -= 1;
+    } else {
+      category[attributeName] += 1;
+    }
+    switch (category) {
+      case physicalValues:
+        setPhysicalValues({ ...physicalValues, [attributeName]: category[attributeName] });
+        saveDataToApi(data, physicalValues, socialValues, mentalValues);
+        break;
+      case socialValues:
+        setSocialValues({ ...socialValues, [attributeName]: category[attributeName] });
+        saveDataToApi(data, physicalValues, socialValues, mentalValues);
+        break;
+      case mentalValues:
+        setMentalValues({ ...mentalValues, [attributeName]: category[attributeName] });
+        saveDataToApi(data, physicalValues, socialValues, mentalValues);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const renderBolinhhas = (category, attributeName) => {
+    const bolinhas = Array.from({ length: 5 }, (_, index) => (
+      <span
+        key={index}
+        role="img"
+        aria-label={`Bolinha ${index < category[attributeName] ? 'preenchida' : 'vazia'}`}
+        style={{
+          color: index < category[attributeName] ? '#02d7f2' : '',
+          fontSize: '24px',
+          cursor: 'pointer',
+          userSelect: 'none',
+        }}
+        onClick={() => handleBolinhaClick(category, attributeName, index)}
+      >
         ●
       </span>
     ));
 
-    const bolinhasVazias = Array.from({ length: 5 - value }, (_, index) => (
-      <span key={index} role="img" aria-label="Bolinha vazia" style={{ color: '#00000', fontSize: '24px' }}>
-        ○
-      </span>
-    ));
-
-    return [...bolinhas, ...bolinhasVazias];
+    return bolinhas;
   };
 
   return (
     <center>
-      <table className={styles.attributestable}>
+      <table className={styles.abilitiestable}>
         <tbody>
           <tr>
-            {Object.keys(data).map((category) => (
-              <td key={category} valign="top" width="30%">
-                <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>
-                  {category}
+            <td valign="top" width="30%">
+              <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Physical</p>
+              {Object.entries(data.physical || {}).map(([name, value]) => (
+                <p key={name}>
+                  {renderBolinhhas(physicalValues, name)} {name}
                 </p>
-                {data[category].map((attribute) => (
-                  <p key={attribute.name}>
-                    {renderBolinhhas(attribute.value)} {attribute.name}
-                  </p>
-                ))}
-              </td>
-            ))}
+              ))}
+            </td>
+            <td valign="top" width="30%">
+              <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Social</p>
+              {Object.entries(data.social || {}).map(([name, value]) => (
+                <p key={name}>
+                  {renderBolinhhas(socialValues, name)} {name}
+                </p>
+              ))}
+            </td>
+            <td valign="top" width="30%">
+              <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Mental</p>
+              {Object.entries(data.mental || {}).map(([name, value]) => (
+                <p key={name}>
+                  {renderBolinhhas(mentalValues, name)} {name}
+                </p>
+              ))}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -60,4 +136,4 @@ const Attributes = () => {
   );
 };
 
-export default Attributes;
+export default Abilities;
