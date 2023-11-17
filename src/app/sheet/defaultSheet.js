@@ -56,7 +56,7 @@ const defaultAbilities = {
 
 const defaultResources = {
     "backgrounds":{
-
+      "contacts": 0,
     },
     "virtues":{
         "conscience": 0,

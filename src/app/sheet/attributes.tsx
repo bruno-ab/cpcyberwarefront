@@ -3,13 +3,13 @@ import React, { useState } from 'react';
 import styles from './abilities.module.css';
 import { defaultAttributes } from './defaultSheet';
 
-const saveDataToApi = (data,physicalValues, socialValues, mentalValues) => {
-  const apiUrl = `http://localhost:4444/characters/${data.id}/sheet`;
+const saveDataToApi = (id,data,physicalValues, socialValues, mentalValues) => {
+  const apiUrl = `http://localhost:4444/characters/${id}/sheet`;
   data.physical = physicalValues;
   data.social = socialValues;
   data.mental = mentalValues;
 
-  console.log('dados para serem enviados',data)
+
   fetch(apiUrl, {
     method: 'POST',
     headers: {
@@ -23,7 +23,6 @@ const saveDataToApi = (data,physicalValues, socialValues, mentalValues) => {
         console.log('Erro ao enviar dados para a API')
         throw new Error('Erro ao enviar dados para a API');
       }
-      console.log('Dados enviados com sucesso para a API');
     })
     .catch((error) => {
       console.error('Erro:', error.message);
@@ -32,7 +31,6 @@ const saveDataToApi = (data,physicalValues, socialValues, mentalValues) => {
 
 
 const Abilities = ({ characterData }) => {
-  console.log('characterData:', characterData);
   const data = characterData.sheet || defaultAttributes;
   const [physicalValues, setPhysicalValues] = useState(
     Object.entries(data.physical || defaultAttributes.physical).reduce((acc, [name, value]) => {
@@ -64,15 +62,15 @@ const Abilities = ({ characterData }) => {
     switch (category) {
       case physicalValues:
         setPhysicalValues({ ...physicalValues, [attributeName]: category[attributeName] });
-        saveDataToApi(data, physicalValues, socialValues, mentalValues);
+        saveDataToApi(characterData.id,data, physicalValues, socialValues, mentalValues);
         break;
       case socialValues:
         setSocialValues({ ...socialValues, [attributeName]: category[attributeName] });
-        saveDataToApi(data, physicalValues, socialValues, mentalValues);
+        saveDataToApi(characterData.id,data, physicalValues, socialValues, mentalValues);
         break;
       case mentalValues:
         setMentalValues({ ...mentalValues, [attributeName]: category[attributeName] });
-        saveDataToApi(data, physicalValues, socialValues, mentalValues);
+       saveDataToApi(characterData.id,data, physicalValues, socialValues, mentalValues);
         break;
       default:
         break;

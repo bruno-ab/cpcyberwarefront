@@ -3,13 +3,12 @@ import React, { useState } from 'react';
 import styles from './abilities.module.css';
 import { defaultAbilities } from './defaultSheet';
 
-const saveDataToApi = (data,talentValues, skillValues, knowledgeValues) => {
-  const apiUrl = `http://localhost:4444/characters/${data.id}/sheet`;
+const saveDataToApi = (id,data,talentValues, skillValues, knowledgeValues) => {
+  const apiUrl = `http://localhost:4444/characters/${id}/sheet`;
   data.talents = talentValues;
   data.skills = skillValues;
   data.knowledges = knowledgeValues;
 
-  console.log('dados para serem enviados',data)
   fetch(apiUrl, {
     method: 'POST',
     headers: {
@@ -23,7 +22,6 @@ const saveDataToApi = (data,talentValues, skillValues, knowledgeValues) => {
         console.log('Erro ao enviar dados para a API')
         throw new Error('Erro ao enviar dados para a API');
       }
-      console.log('Dados enviados com sucesso para a API');
     })
     .catch((error) => {
       console.error('Erro:', error.message);
@@ -32,7 +30,6 @@ const saveDataToApi = (data,talentValues, skillValues, knowledgeValues) => {
 
 
 const Abilities = ({ characterData }) => {
-  console.log('characterData:', characterData);
   const data = characterData.sheet || defaultAbilities;
   const [talentValues, setTalentValues] = useState(
     Object.entries(data.talents || {}).reduce((acc, [name, value]) => {
@@ -64,15 +61,15 @@ const Abilities = ({ characterData }) => {
     switch (category) {
       case talentValues:
         setTalentValues({ ...talentValues, [attributeName]: category[attributeName] });
-        saveDataToApi(data, talentValues, skillValues, knowledgeValues);
+        saveDataToApi(characterData.id,data, talentValues, skillValues, knowledgeValues);
         break;
       case skillValues:
         setSkillValues({ ...skillValues, [attributeName]: category[attributeName] });
-        saveDataToApi(data, talentValues, skillValues, knowledgeValues);
+        saveDataToApi(characterData.id,data, talentValues, skillValues, knowledgeValues);
         break;
       case knowledgeValues:
         setKnowledgeValues({ ...knowledgeValues, [attributeName]: category[attributeName] });
-        saveDataToApi(data, talentValues, skillValues, knowledgeValues);
+        saveDataToApi(characterData.id,data, talentValues, skillValues, knowledgeValues);
         break;
       default:
         break;

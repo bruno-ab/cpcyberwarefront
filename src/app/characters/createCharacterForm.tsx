@@ -41,7 +41,6 @@ export function CreateCharacterForm() {
         },
         body: JSON.stringify(data)
       });
-    //   console.log(response.json())
       if (response.ok) {
         // const data = await response.json(); 
         // console.log(data)
