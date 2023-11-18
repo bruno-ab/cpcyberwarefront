@@ -5,8 +5,6 @@ import Header from '../header/Header';
 import styles from './background.module.css';
 const imgPath = '/characters/placeholder.png';
 import CreateForm from './createCharacterForm'
-import Link from 'next/link';
-
 
 const getPlayerCharacters = async () => {
   try {

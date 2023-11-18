@@ -73,4 +73,13 @@ const defaultResources = {
     "flaws": {},
 }
 
-export  {defaultAttributes, defaultAbilities, defaultResources};
+const defaultHeader ={
+  "name:": "Unit 01",
+  "age": 14,
+  "city": "Tokyo-3",
+  "background": "Third Child",
+  "concept": "Eva Pilot",
+  "filiation": "Nerv",
+}
+
+export  {defaultAttributes, defaultAbilities, defaultResources, defaultHeader};

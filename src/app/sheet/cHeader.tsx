@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './cHeader.module.css';
+import {defaultHeader} from './defaultSheet';
 const data = {
   "name": "Jude Alvarez",
   "role": "Netrunner",
@@ -11,7 +12,9 @@ const data = {
   "filiation": "Mox",
 };
 
-const CyberPunkCharacterSheet = () => {
+const CyberPunkCharacterSheet = ({ characterData }) => {
+  console.log(characterData)
+  const data = characterData.sheet.header || defaultHeader;
   const renderLabelValue = (label, value) => (
     <div style={{ marginBottom: '10px' }}>
       <p>
@@ -22,7 +25,7 @@ const CyberPunkCharacterSheet = () => {
 
   return (
     <div style={{ textAlign: 'center', border: '1px solid black', padding: '10px', borderRadius: '10px' }}>
-      <h2>{data.name}</h2>
+      <h2>{characterData.name}</h2>
       <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
         {Object.entries(data).map(([label, value]) => (
           renderLabelValue(label.charAt(0).toUpperCase() + label.slice(1), value)
