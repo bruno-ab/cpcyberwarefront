@@ -1,11 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import styles from './installation.module.css';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const ProgressBar = () => {
   const [progress, setProgress] = useState(0);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const characterId = searchParams.get('id');
   useEffect(() => {
 
     const interval = setInterval(() => {
@@ -14,7 +16,7 @@ const ProgressBar = () => {
        if (newProgress >= 100) {
         clearInterval(interval);
         // Quando atingir 100%, redirecione para a página de cyberwares
-        router.push("/cyberware");
+        router.push(`/cyberware?id=${characterId}`);
       }
       setProgress(newProgress);
     }, 500);

@@ -94,7 +94,7 @@ function Skeleton({ characterData}) {
         },
         body: JSON.stringify(data),
       });
-      router.reload();
+      router.push(`/installation?id=${characterData.id}`);
     } catch (error) {
       console.log(error)
     }
