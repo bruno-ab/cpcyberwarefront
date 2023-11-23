@@ -40,6 +40,11 @@ const Resources = ({ characterData }) => {
     }, {})
   );
 
+  const [newBackground, setNewBackground] = useState({
+    name: '',
+    value: 0,
+  });
+
   const [virtuesValues, setVirtuesValues] = useState(
     Object.entries(data.virtues || {}).reduce((acc, [name, value]) => {
       acc[name] = value;
@@ -65,6 +70,45 @@ const Resources = ({ characterData }) => {
       return acc;
     }, {})
   );
+    const handleAddBackground = () => {
+  if (newBackground.name.trim() === '') {
+    // Não permite adicionar background sem nome
+    return;
+  }
+
+  // Verifica se o valor está no intervalo de 1 a 5
+  const newValue = Math.max(1, Math.min(5, newBackground.value));
+
+  // Atualiza o estado corretamente, usando o spread operator
+  setBackgroundsValues((prevBackgroundsValues) => ({
+    ...prevBackgroundsValues,
+    [newBackground.name]: newValue,
+  }));
+
+  setNewBackground({ name: '', value: 0 });
+
+  saveDataToApi(
+    characterData.id,
+    data,
+    backgroundsValues,
+    virtuesValues,
+    otherTraitsValues,
+    meritsValues,
+    flawsValues
+  );
+};
+ 
+
+    saveDataToApi(
+      characterData.id,
+      data,
+      backgroundsValues,
+      virtuesValues,
+      otherTraitsValues,
+      meritsValues,
+      flawsValues
+    );
+  
 
   const handleBolinhaClick = (category, attributeName, currentIndex) => {
     if (currentIndex < category[attributeName] - 0) {
@@ -99,6 +143,7 @@ const Resources = ({ characterData }) => {
   };
 
   const renderBolinhhas = (category, attributeName) => {
+    
     const bolinhas = Array.from({ length: 5 }, (_, index) => (
       <span
         key={index}
@@ -131,14 +176,25 @@ const Resources = ({ characterData }) => {
                   {renderBolinhhas(backgroundsValues, name)} {name}
                 </p>
               ))}
-            </td>
-            <td valign="top" width="30%">
-              <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Virtues</p>
-              {Object.entries(data.virtues || {}).map(([name, value]) => (
-                <p key={name}>
-                  {renderBolinhhas(virtuesValues, name)} {name}
-                </p>
-              ))}
+              {/* Novo background para adição */}
+              <p>
+                <input
+                  type="text"
+                  placeholder="Novo Background"
+                  value={newBackground.name}
+                  onChange={(e) => setNewBackground({ ...newBackground, name: e.target.value })}
+                />
+                <input
+                  type="range"
+                  min="1"
+                  max="5"
+                  step="1"
+                  value={newBackground.value}
+                  onChange={(e) => setNewBackground({ ...newBackground, value: parseInt(e.target.value) })}
+                />
+                <span>{newBackground.value} bolinhas</span>
+                <button onClick={handleAddBackground}>Adicionar</button>
+              </p>
             </td>
             <td valign="top" width="30%">
               <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Resources</p>

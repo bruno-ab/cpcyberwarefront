@@ -109,7 +109,7 @@ function Skeleton({ characterData}) {
           <th>Image</th>
           <th>Description</th>
           <th>Benefits</th>
-          <th>Tier</th>
+          <th>Rarity</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -128,7 +128,7 @@ function Skeleton({ characterData}) {
                     </td>
                     <td  className={styles2.centerCell}>{installedCyberware.description}</td>
                     <td  className={styles2.centerCell}>{installedCyberware.benefits}</td>
-                    <td  className={styles2.centerCell} >{installedCyberware.tier}</td>
+                    <td  className={styles2.centerCell} >{installedCyberware.rarity}</td>
                     <td  className={styles2.centerCell}>
                       <button
                         className={`${styles.btn} ${styles['btn--secondary']}`}
