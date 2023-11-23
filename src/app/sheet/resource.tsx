@@ -8,7 +8,7 @@ const saveDataToApi = (id,data,backgroundsValues, virtuesValues, otherTraitsValu
   data.backgrounds = backgroundsValues;
   data.virtues = virtuesValues;
   data.other_traits = otherTraitsValues;
-  data.merirts = meritsValues;
+  data.merits = meritsValues;
   data.flaws = flawsValues;
 
   fetch(apiUrl, {
@@ -33,6 +33,9 @@ const saveDataToApi = (id,data,backgroundsValues, virtuesValues, otherTraitsValu
 
 const Resources = ({ characterData }) => {
   const data = characterData.sheet || defaultResources;
+  const [maxBolinhas] = useState(10);
+  const [newMerits, setNewMerits] = useState('');
+  const [newFlaws, setNewFlaws] = useState('');
   const [backgroundsValues, setBackgroundsValues] = useState(
     Object.entries(data.backgrounds || {}).reduce((acc, [name, value]) => {
       acc[name] = value;
@@ -72,14 +75,14 @@ const Resources = ({ characterData }) => {
   );
     const handleAddBackground = () => {
   if (newBackground.name.trim() === '') {
-    // Não permite adicionar background sem nome
+
     return;
   }
 
-  // Verifica se o valor está no intervalo de 1 a 5
+
   const newValue = Math.max(1, Math.min(5, newBackground.value));
 
-  // Atualiza o estado corretamente, usando o spread operator
+
   setBackgroundsValues((prevBackgroundsValues) => ({
     ...prevBackgroundsValues,
     [newBackground.name]: newValue,
@@ -98,6 +101,51 @@ const Resources = ({ characterData }) => {
   );
 };
  
+  const handleAddMerits = () => {
+    if (newMerits.trim() === '') {
+      return;
+    }
+
+    setMeritsValues((prevMeritsValues) => ({
+      ...prevMeritsValues,
+      [newMerits]: '',
+    }));
+
+    setNewMerits('');
+
+    saveDataToApi(
+      characterData.id,
+      data,
+      backgroundsValues,
+      virtuesValues,
+      otherTraitsValues,
+      meritsValues,
+      flawsValues
+    );
+  };
+
+  const handleAddFlaws = () => {
+    if (newFlaws.trim() === '') {
+      return;
+    }
+
+    setFlawsValues((prevFlawsValues) => ({
+      ...prevFlawsValues,
+      [newFlaws]: '',
+    }));
+
+    setNewFlaws('');
+
+    saveDataToApi(
+      characterData.id,
+      data,
+      backgroundsValues,
+      virtuesValues,
+      otherTraitsValues,
+      meritsValues,
+      flawsValues
+    );
+  };
 
     saveDataToApi(
       characterData.id,
@@ -116,6 +164,8 @@ const Resources = ({ characterData }) => {
     } else {
       category[attributeName] += 1;
     }
+    category[attributeName] = Math.min(maxBolinhas, category[attributeName]);
+
     switch (category) {
       case backgroundsValues:
         setBackgroundsValues({ ...backgroundsValues, [attributeName]: category[attributeName] });
@@ -144,7 +194,7 @@ const Resources = ({ characterData }) => {
 
   const renderBolinhhas = (category, attributeName) => {
     
-    const bolinhas = Array.from({ length: 5 }, (_, index) => (
+    const bolinhas = Array.from({ length: maxBolinhas }, (_, index) => (
       <span
         key={index}
         role="img"
@@ -204,21 +254,53 @@ const Resources = ({ characterData }) => {
                 </p>
               ))}
             </td>
-             <td valign="top" width="30%">
+            <td valign="top" width="30%">
               <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Merits</p>
-              {Object.entries(data.merits || {}).map(([name, value]) => (
+              {Object.entries(data.merits || {}).map(([name]) => (
                 <p key={name}>
-                  {renderBolinhhas(otherTraitsValues, name)} {name}
+                  <input
+                    type="text"
+                    placeholder={name}
+                    value={meritsValues[name]}
+                    onChange={(e) =>
+                      setMeritsValues({ ...meritsValues, [name]: e.target.value })
+                    }
+                  />
                 </p>
               ))}
+              <p>
+                <input
+                  type="text"
+                  placeholder="Novo Merit"
+                  value={newMerits}
+                  onChange={(e) => setNewMerits(e.target.value)}
+                />
+                <button onClick={handleAddMerits}>Adicionar</button>
+              </p>
             </td>
-             <td valign="top" width="30%">
+            <td valign="top" width="30%">
               <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Flaws</p>
-              {Object.entries(data.flaws || {}).map(([name, value]) => (
+              {Object.entries(data.flaws || {}).map(([name]) => (
                 <p key={name}>
-                  {renderBolinhhas(otherTraitsValues, name)} {name}
+                  <input
+                    type="text"
+                    placeholder={name}
+                    value={flawsValues[name]}
+                    onChange={(e) =>
+                      setFlawsValues({ ...flawsValues, [name]: e.target.value })
+                    }
+                  />
                 </p>
               ))}
+              <p>
+                <input
+                  type="text"
+                  placeholder="Novo Flaw"
+                  value={newFlaws}
+                  onChange={(e) => setNewFlaws(e.target.value)}
+                />
+                <button onClick={handleAddFlaws}>Adicionar</button>
+              </p>
             </td>
           </tr>
         </tbody>
