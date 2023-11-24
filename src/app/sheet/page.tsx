@@ -7,7 +7,7 @@ import Abilities from './abilities';
 import CyberPunkResource from './resource';
 import CHeader from './cHeader';
 import styles from './page.module.css';
-
+import VitalityField from './vitality'
 export function Sheet() {
   const [characterData, setCharacterData] = useState(null);
   const searchParams = useSearchParams()
@@ -49,12 +49,15 @@ export function Sheet() {
     <section>
       <Header />
       <CHeader characterData={characterData} />
+      <h3 className={styles.attributesSection}>Vitality</h3>
+      <VitalityField characterData={characterData} />
       <h3 className={styles.attributesSection}>Attributes</h3>
       <Attributes characterData={characterData} />
-      <h3 className={characterData.attributesSection}>Abilities</h3>
+         <h3 className={styles.attributesSection}>Abilities</h3>
       <Abilities characterData={characterData} />
       <h3 className={styles.attributesSection}>Resources</h3>
       <CyberPunkResource characterData={characterData} />
+ 
     </section>
   );
 }

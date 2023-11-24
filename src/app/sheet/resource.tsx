@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import styles from './abilities.module.css';
+import styles2 from  './resources.module.css'
 import { defaultResources } from './defaultSheet';
 
 const saveDataToApi = (id,data,backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues) => {
@@ -230,6 +231,7 @@ const Resources = ({ characterData }) => {
               <p>
                 <input
                   type="text"
+                    className={styles2.input2077}
                   placeholder="Novo Background"
                   value={newBackground.name}
                   onChange={(e) => setNewBackground({ ...newBackground, name: e.target.value })}
@@ -260,6 +262,7 @@ const Resources = ({ characterData }) => {
                 <p key={name}>
                   <input
                     type="text"
+                       className={styles2.input2077}
                     placeholder={name}
                     value={meritsValues[name]}
                     onChange={(e) =>
@@ -271,6 +274,7 @@ const Resources = ({ characterData }) => {
               <p>
                 <input
                   type="text"
+                   className={styles2.input2077}
                   placeholder="Novo Merit"
                   value={newMerits}
                   onChange={(e) => setNewMerits(e.target.value)}
@@ -284,6 +288,7 @@ const Resources = ({ characterData }) => {
                 <p key={name}>
                   <input
                     type="text"
+                    className={styles2.input2077}
                     placeholder={name}
                     value={flawsValues[name]}
                     onChange={(e) =>
@@ -295,6 +300,7 @@ const Resources = ({ characterData }) => {
               <p>
                 <input
                   type="text"
+                    className={styles2.input2077}
                   placeholder="Novo Flaw"
                   value={newFlaws}
                   onChange={(e) => setNewFlaws(e.target.value)}

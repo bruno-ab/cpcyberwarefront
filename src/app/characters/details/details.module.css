@@ -1,0 +1,110 @@
+.container {
+    text-align: center;
+    color: #fed33f;
+    padding: 20px;
+}
+
+.inputField {
+    margin-bottom: 15px;
+}
+
+.inputLabel {
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.inputText,
+.textArea {
+    padding: 8px;
+    font-size: 16px;
+    color: #2be4ea;
+    background-color: #1e181e;
+    border: 1px solid #fed33f;
+    border-radius: 5px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.textArea {
+    resize: none;
+}
+
+.iframe {
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.quoteContainer {
+    margin-top: 20px;
+}
+
+.carousel {
+    display: flex;
+    overflow: hidden;
+}
+
+.quoteCard {
+    min-width: 200px;
+    padding: 10px;
+    margin-right: 10px;
+    background-color: #1e181e;
+    border: 1px solid #fed33f;
+    border-radius: 5px;
+    color: #2be4ea;
+    text-align: center;
+}
+
+.quoteOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.quoteOverlay.active {
+    opacity: 1;
+    z-index: 2;
+    /* Certifique-se de que a citação esteja acima da tela escura */
+    color: #fed33f;
+    /* Adapte a cor conforme necessário para ser visível na tela escura */
+}
+
+#quote {
+    --weight: 10;
+    font-family: 'Marvin Visions Variable';
+    font-size: 2rem;
+    /* Adjust the font size as needed */
+    font-weight: 170;
+    background-size: contain;
+    line-height: 0.8;
+    margin: 0;
+    text-align: left;
+    color: #fed33f;
+}
+
+#quote>* {
+    color: hsl(347, 7%, 29%);
+    font-variation-settings: 'wght' var(--weight);
+}
+
+.characterImage {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin: 0 auto;
+    border-radius: 12px;
+    position: relative;
+    transition: filter 0.3s ease-in-out;
+}
+
+.characterImage:hover {
+    filter: brightness(70%) contrast(150%);
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './cHeader.module.css';
+import styles from './cheader.module.css';
 import {defaultHeader} from './defaultSheet';
 const data = {
   "name": "Jude Alvarez",
@@ -25,7 +25,7 @@ const CyberPunkCharacterSheet = ({ characterData }) => {
 
   return (
     <div style={{ textAlign: 'center', border: '1px solid black', padding: '10px', borderRadius: '10px' }}>
-      <h2>{characterData.name}</h2>
+      <h2 className={styles.glitch}>{characterData.name}</h2>
       <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
         {Object.entries(data).map(([label, value]) => (
           renderLabelValue(label.charAt(0).toUpperCase() + label.slice(1), value)

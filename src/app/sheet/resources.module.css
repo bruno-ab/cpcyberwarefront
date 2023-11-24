@@ -5,3 +5,133 @@
     color: var(--colors-tertiary--500);
     padding: 0.75rem;
 }
+
+.body {
+    background-size: cover;
+    width: 100%;
+    height: 100vh;
+    background-image: linear-gradient(to top, #070b14, #371315);
+    color: #ff716b;
+    font-family: "Rajdhani", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    padding: 3rem;
+}
+
+.cp2077Heading {
+    font-size: 1.75rem;
+    font-weight: 500;
+}
+
+.cp2077Body {
+    font-size: 1.25rem;
+}
+
+.cp2077Line {
+    border: none;
+    border-top: 2px solid #ff716b;
+    margin: 1.25rem 0;
+}
+
+/* Continue a partir do .cp2077Select */
+
+.cp2077SelectLabel {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.cp2077Select {
+    appearance: none;
+    min-width: 300px;
+    background: transparent;
+    border: 1px solid var(--red-500);
+    padding: 1.25rem 1rem 1rem 1rem;
+    color: #ff716b;
+    caret-color: #5bf8ff;
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: 500;
+    border-image-source: url("data:image/svg+xml,%3Csvg viewBox='0 0 216 38' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M215 37.5V1h-42l-3 3.5H1v28l5 5h209z' stroke='%23683134'/%3E%3C/svg%3E");
+    border-image-slice: 10 15 17 8 fill;
+    border-image-width: 0.75rem 1rem 1rem 0.5rem;
+    transition: border-image-source 0.06s ease;
+    will-change: border-image-source, background-image;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 20 19' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M18.357 3L9.5 18.5 1.529 3h16.828z' fill='rgba(104, 49, 52, 0.5)'/%3E%3Cpath d='M.5 1l1.029 2M19.5 1l-1.143 2m0 0L9.5 18.5 1.529 3m16.828 0H1.53' stroke='%23683134' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 1.5rem;
+    background-position: calc(100% - 1.25rem) 50%;
+
+    /* &:hover {
+        border-image-source: url("data:image/svg+xml,%3Csvg viewBox='0 0 216 38' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M215 37.5V1h-42l-3 3.5H1v28l5 5h209z' stroke='%23ff716b'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 20 19' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M18.357 3L9.5 18.5 1.529 3h16.828z' fill='rgba(104, 49, 52, 0.5)'/%3E%3Cpath d='M.5 1l1.029 2M19.5 1l-1.143 2m0 0L9.5 18.5 1.529 3m16.828 0H1.53' stroke='%23ff716b' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    } */
+
+    /* &:focus {
+        outline: none;
+        border-image-source: url("data:image/svg+xml,%3Csvg viewBox='0 0 216 38' fill='rgba(104, 49, 52, 0.67)' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M215 37.5V1h-42l-3 3.5H1v28l5 5h209z' stroke='%23ff716b'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 20 19' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M18.357 3L9.5 18.5 1.529 3h16.828z' fill='rgba(104, 49, 52, 0.5)'/%3E%3Cpath d='M.5 1l1.029 2M19.5 1l-1.143 2m0 0L9.5 18.5 1.529 3m16.828 0H1.53' stroke='%23ff716b' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    } */
+
+    /* option {
+        background-color: black;
+    } */
+}
+
+
+
+.centerContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* Ajuste a altura conforme necessário */
+}
+
+.centerTable {
+    width: 80%;
+    /* Ajuste a largura conforme necessário */
+    border-collapse: collapse;
+    margin: auto;
+}
+
+.centerCell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.backgroundImage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.6;
+    /* Ajuste a opacidade conforme necessário */
+    background-image: url('https: //www.gaming.net/wp-content/uploads/2022/12/Cyberpunk-10-1.jpg');
+    /* Substitua 'sua-url-da-imagem-aqui.jpg' pela URL real da sua imagem */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.input2077 {
+    background: transparent;
+    border: 1px solid var(--red-500);
+    padding: var(--spacing-500) var(--spacing-300) var(--spacing-300) var(--spacing-300);
+    color: var(--red);
+    caret-color: var(--cyan);
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: 500;
+    border-image-source: url("data:image/svg+xml,%3Csvg viewBox='0 0 351 52' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M350.5 39V.5H1v51h337L350.5 39z' stroke='%23683134'/%3E%3C/svg%3E");
+    border-image-slice: 10 15 17 8 fill;
+    border-image-width: 0.75rem 1rem 1rem 0.5rem;
+    transition: border-image-source 0.06s ease;
+    will-change: border-image-source;
+}

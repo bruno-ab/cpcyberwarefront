@@ -69,6 +69,7 @@ const defaultResources = {
         "ram": 0,
         "willpower": 0,
     },
+    "vitality": 7,
     "merits":{},
     "flaws": {},
 }
