@@ -13,11 +13,11 @@ export default function Home() {
             
           <ul className="cyberpunk">
               <li className="glitched">Cyberpunk is a subgenre of science fiction in a dystopian <a href="#">futuristic setting that</a> tends to
-                focus on a "combination of low-life and high tech"</li>
+                focus on a combination of low-life and high tech</li>
           </ul>
           
           <p className="cyberpunk inverse dotted">Cyberpunk is a subgenre of science fiction in a dystopian <a href="#">futuristic
-                setting that</a> tends to focus on a "combination of low-life and high tech"[1] featuring advanced
+                setting that</a> tends to focus on a combination of low-life and high tech[1] featuring advanced
             technological and scientific achievements, such as artificial intelligence and cybernetics, juxtaposed with a
             degree of breakdown or radical change in the social order.[2] Much of cyberpunk is rooted in the New Wave
             science fiction movement of the 1960s and 1970s, when writers like Philip K. Dick, Roger Zelazny, John Brunner,
