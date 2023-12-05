@@ -2,7 +2,7 @@
     "framework": "nextjs",
     "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "*",
       "headers": [
         { "key": "Access-Control-Allow-Credentials", "value": "true" },
         { "key": "Access-Control-Allow-Origin", "value": "https://cyberpunk-api-262d98a845d6.herokuapp.com" },
