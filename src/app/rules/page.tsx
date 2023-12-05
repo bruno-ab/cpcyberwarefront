@@ -1,7 +1,7 @@
 import Header from '../header/Header';
 import styles from './rules.module.css';
 
-export function Rules() {
+function Rules() {
   return (
     <section className={`${styles.cyberpunk} ${styles.black}`}>
       <Header />

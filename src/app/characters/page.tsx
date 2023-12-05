@@ -6,13 +6,21 @@ import styles from './background.module.css';
 const imgPath = '/characters/placeholder.png';
 import CreateForm from './createCharacterForm'
 
+const getLocalStorage = () => {
+    return typeof window !== "undefined" ? window.localStorage.getItem('access_token') : false
+}
+
+const setLocalStorage = (token: string) => {
+    typeof window !== "undefined" ? window.localStorage.setItem('access_token', token) : false
+}
+
 const getPlayerCharacters = async () => {
   try {
     const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/player/characters', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+        'Authorization': 'Bearer ' + getLocalStorage(),
       },
     });
 
@@ -28,9 +36,9 @@ const getPlayerCharacters = async () => {
   }
 };
 
-export function Characters() {
+function Characters() {
   const router = useRouter();
-  const accessToken = localStorage.getItem('access_token');
+  const accessToken = getLocalStorage();
 
   if (!accessToken) {
     router.push("/login");

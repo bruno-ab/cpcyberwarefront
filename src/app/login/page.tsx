@@ -4,7 +4,7 @@ import styles from './login.module.css';
 import { useRouter } from 'next/navigation'
 import Link from 'next/link';
 
-export function Login() {
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');

@@ -8,7 +8,8 @@ import CyberPunkResource from './resource';
 import CHeader from './cHeader';
 import styles from './page.module.css';
 import VitalityField from './vitality'
-export function Sheet() {
+
+function Sheet() {
   const [characterData, setCharacterData] = useState(null);
   const searchParams = useSearchParams()
  

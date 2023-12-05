@@ -1,6 +1,6 @@
 import Header from '../header/Header'
 
-export function Test(){
+function Test(){
     return (
          <nav>
           <ul className="nav">

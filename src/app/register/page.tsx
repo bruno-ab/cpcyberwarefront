@@ -4,7 +4,7 @@ import styles from './login.module.css';
 import { useRouter } from 'next/navigation'
 
 
-export function Register() {
+function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

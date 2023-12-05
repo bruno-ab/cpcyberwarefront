@@ -1,5 +1,7 @@
+'use client';
 import Header from '../header/Header'
-export function Account(){
+
+function Account(){
     return (
     <section className="cyberpunk">
         <Header />

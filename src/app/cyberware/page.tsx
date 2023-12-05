@@ -10,7 +10,7 @@ import { type } from 'os';
 import Link from 'next/link';
 import Skeleton from './components/skeleton/page';
 
-export function CyberWare() {
+function CyberWare() {
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [handSelected, setHandSelected] = useState(false); // New state for hand selection
   const [characterData, setCharacterData] = useState(null);
@@ -54,7 +54,7 @@ export function CyberWare() {
     return null;
   }
 
-  const characterCyberwares = characterData.cyberwares || [];
+  const characterCyberwares = characterDat?.cyberwares || [];
   localStorage.setItem('characterData', characterData);
 
   return (

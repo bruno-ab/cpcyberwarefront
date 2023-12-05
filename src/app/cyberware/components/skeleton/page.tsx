@@ -5,34 +5,12 @@ import { CyberWareTypes, maximumSlots } from '../../cyberwareTypes';
 import styles2 from './skeleton.module.css'
 import { useRouter } from 'next/navigation';
 
-function Skeleton({ characterData}) {
+function Skeleton({ characterData}: any) {
   const router =  useRouter();
   const [cyberwareData, setCyberwareData] = useState(null);
   const [installedCyberwares, setInstalledCyberwares] = useState([]);
   const [selectedCyberwareId, setSelectedCyberwareId] = useState('');
-  const characterCyberwares = characterData.cyberwares || [];
-//   const characterCyberwares = [
-//     {
-//         "id": 1,
-//         "name": "Spring Joints",
-//         "description": "The Spring Joints are Cyberware for the Skeleton in Cyberpunk 2077.",
-//         "type": "skeleton",
-//         "benefits": "+1d10 to Athletics Skill checks",
-//         "slots": 1,
-//         "tier": 2,
-//         "image": "https://www.gamesatlas.com/images/jch-optimize/ng/images_cyberpunk2077_cyberware_frontal-cortex_ex-disk.webp"
-//     },
-//     {
-//         "id": 2,
-//         "name": "Adamantium Skeleton",
-//         "description": "Cool skeleton",
-//         "type": "skeleton",
-//         "benefits": "You can't be knocked down",
-//         "tier": 1,
-//         "slots": 1,
-//         "image": "https://www.gamesatlas.com/images/jch-optimize/ng/images_cyberpunk2077_cyberware_frontal-cortex_ex-disk.webp"
-//     }
-// ]
+  const characterCyberwares = characterData?.cyberwares || [];
   const skeletonMaximumSlots = maximumSlots.skeleton;
 
   useEffect(() => {
@@ -147,6 +125,7 @@ function Skeleton({ characterData}) {
                     <label className={styles2.cp2077SelectLabel} htmlFor={`select-${index}`}>
                       Select Cyberware
                     </label>
+
                     <select
                       id={`select-${index}`}
                       className={styles2.cp2077Select}
