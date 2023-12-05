@@ -13,7 +13,7 @@ const nextConfig = {
       },
        {
                 // matching all API routes
-                source: "*",
+                source: "/",
                 headers: [
                     { key: "Access-Control-Allow-Credentials", value: "true" },
                     { key: "Access-Control-Allow-Origin", value: "https://cyberpunk-api-262d98a845d6.herokuapp.com" }, // replace this your actual origin
