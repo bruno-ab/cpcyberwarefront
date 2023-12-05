@@ -26,8 +26,10 @@ function Sheet() {
             },
           });
 
+      
           if (response.ok) {
             const data = await response.json();
+            console.log(data)
             setCharacterData(data);
           } else {
             console.log('Error fetching character data');
@@ -47,7 +49,7 @@ function Sheet() {
 
   return (
     <section>
-      {/* <Header />
+      <Header />
       <CHeader characterData={characterData} />
       <h3 className={styles.attributesSection}>Vitality</h3>
       <VitalityField characterData={characterData} />
@@ -56,7 +58,7 @@ function Sheet() {
          <h3 className={styles.attributesSection}>Abilities</h3>
       <Abilities characterData={characterData} />
       <h3 className={styles.attributesSection}>Resources</h3>
-      <CyberPunkResource characterData={characterData} /> */}
+      <CyberPunkResource characterData={characterData} />
  
     </section>
   );
