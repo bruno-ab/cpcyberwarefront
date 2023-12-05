@@ -8,7 +8,7 @@ import CreateForm from './createCharacterForm'
 
 const getPlayerCharacters = async () => {
   try {
-    const response = await fetch('http://localhost:4444/characters/player/characters', {
+    const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/player/characters', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -23,7 +23,6 @@ const initialCharacterData = {
 const CharacterDetails = () => {
   const [characterData, setCharacterData] = useState(initialCharacterData);
   const [currentQuote, setCurrentQuote] = useState(0);
-  const [quoteOverlayActive, setQuoteOverlayActive] = useState(false);
 
   const handleInputChange = (key, event) => {
     setCharacterData(prevData => ({

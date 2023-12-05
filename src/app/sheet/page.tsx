@@ -18,7 +18,7 @@ export function Sheet() {
     const fetchCharacterData = async () => {
       try {
         if (id) {
-          const response = await fetch(`http://localhost:4444/characters/${id}`, {
+          const response = await fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/${id}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

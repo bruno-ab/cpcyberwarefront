@@ -4,7 +4,7 @@ import styles from './abilities.module.css';
 import { defaultAbilities } from './defaultSheet';
 
 const saveDataToApi = (id,data,talentValues, skillValues, knowledgeValues) => {
-  const apiUrl = `http://localhost:4444/characters/${id}/sheet`;
+  const apiUrl = `https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/${id}/sheet`;
   data.talents = talentValues;
   data.skills = skillValues;
   data.knowledges = knowledgeValues;

@@ -19,7 +19,7 @@ export function Login() {
     };
 
     try {
-      const response = await fetch('http://localhost:4444/auth/login', {
+      const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

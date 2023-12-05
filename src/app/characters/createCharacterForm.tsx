@@ -33,7 +33,7 @@ export function CreateCharacterForm() {
     };
 
     try {
-      const response = await fetch('http://localhost:4444/characters', {
+      const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/characters', {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json',
