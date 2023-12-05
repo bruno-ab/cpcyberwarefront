@@ -32,8 +32,6 @@ function Login() {
         const accessToken = data.access_token; 
         localStorage.setItem('access_token', accessToken);
         setMessage('Access granted!');
-        
-      
         router.push("/characters")
       } else {
         setMessage('Access denied! Verify your credentials and try again.');
