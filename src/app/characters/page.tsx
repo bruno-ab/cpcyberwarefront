@@ -46,7 +46,7 @@ function Characters() {
     }
   },[accessToken, router])
 
-
+  //
  
   const [data, setData] = useState(null);
 
