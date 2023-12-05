@@ -40,10 +40,14 @@ function Characters() {
   const router = useRouter();
   const accessToken = getLocalStorage();
 
-  if (!accessToken) {
+  useEffect(() => {
+     if (!accessToken) {
     router.push("/login");
-  }
+    }
+  },[accessToken, router])
 
+
+ 
   const [data, setData] = useState(null);
 
   useEffect(() => {

@@ -54,7 +54,7 @@ function CyberWare() {
     return null;
   }
 
-  const characterCyberwares = characterDat?.cyberwares || [];
+  const characterCyberwares = characterData.cyberwares || [];
   localStorage.setItem('characterData', characterData);
 
   return (

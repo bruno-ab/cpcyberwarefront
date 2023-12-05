@@ -46,7 +46,7 @@ export function CreateCharacterForm() {
         // console.log(data)
         // const name = data.name; 
         // setMessage(`Access granted! ${name} created!`);
-        router.push("/characters")
+         router.push("/characters")
       } else {
         setMessage('Access denied! Verify your credentials and try again.');
       }

@@ -12,7 +12,6 @@ import VitalityField from './vitality'
 function Sheet() {
   const [characterData, setCharacterData] = useState(null);
   const searchParams = useSearchParams()
- 
   const id = searchParams.get('id')
 
   useEffect(() => {
@@ -48,7 +47,7 @@ function Sheet() {
 
   return (
     <section>
-      <Header />
+      {/* <Header />
       <CHeader characterData={characterData} />
       <h3 className={styles.attributesSection}>Vitality</h3>
       <VitalityField characterData={characterData} />
@@ -57,7 +56,7 @@ function Sheet() {
          <h3 className={styles.attributesSection}>Abilities</h3>
       <Abilities characterData={characterData} />
       <h3 className={styles.attributesSection}>Resources</h3>
-      <CyberPunkResource characterData={characterData} />
+      <CyberPunkResource characterData={characterData} /> */}
  
     </section>
   );
