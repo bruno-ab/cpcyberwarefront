@@ -5,7 +5,7 @@ import styles2 from  './resources.module.css'
 import { defaultResources } from './defaultSheet';
 
 const saveDataToApi = (id,data,backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues) => {
-  const apiUrl = `https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/${id}/sheet`;
+  const apiUrl = `https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${id}/sheet`;
   data.backgrounds = backgroundsValues;
   data.virtues = virtuesValues;
   data.other_traits = otherTraitsValues;

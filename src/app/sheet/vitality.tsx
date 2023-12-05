@@ -57,7 +57,7 @@ const VitalityField = ({ characterData }) => {
   };
 
   const saveDataToApi = (id, data) => {
-    const apiUrl = `https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/${id}/sheet`;
+    const apiUrl = `https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${id}/sheet`;
     console.log(data);
     fetch(apiUrl, {
       method: 'POST',

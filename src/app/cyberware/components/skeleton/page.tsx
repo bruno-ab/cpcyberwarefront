@@ -16,7 +16,7 @@ function Skeleton({ characterData}: any) {
   useEffect(() => {
     const fetchCyberwareData = async () => {
       try {
-        const response = await fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/cyberware`, {
+        const response = await fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/api/cyberware`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ function Skeleton({ characterData}: any) {
     };
 
     try {
-      fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/${characterData.id}/cyberware`, {
+      fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${characterData.id}/cyberware`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ function Skeleton({ characterData}: any) {
       cyberwareId: id,
     };
     try {
-      fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/${characterData.id}/cyberware`, {
+      fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${characterData.id}/cyberware`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

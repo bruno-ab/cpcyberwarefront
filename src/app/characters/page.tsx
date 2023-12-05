@@ -16,7 +16,7 @@ const setLocalStorage = (token: string) => {
 
 const getPlayerCharacters = async () => {
   try {
-    const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/characters/player/characters', {
+    const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/player/characters', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
