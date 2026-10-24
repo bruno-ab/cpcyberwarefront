@@ -44,7 +44,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 4,
     price: 45000,
-    image: '',
+    image: '/images/cyberware/operating_system.svg',
     source: 'both',
   },
   {
@@ -60,7 +60,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 3,
     price: 28000,
-    image: '',
+    image: '/images/cyberware/operating_system.svg',
     source: 'cp2077',
   },
   {
@@ -76,7 +76,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 16000,
-    image: '',
+    image: '/images/cyberware/operating_system.svg',
     source: 'cp2077',
   },
   {
@@ -92,7 +92,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 3,
     price: 32000,
-    image: '',
+    image: '/images/cyberware/operating_system.svg',
     source: 'edgerunners',
   },
 
@@ -110,7 +110,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 4000,
-    image: '',
+    image: '/images/cyberware/frontal_cortex.svg',
     source: 'cp2077',
   },
   {
@@ -126,7 +126,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 9000,
-    image: '',
+    image: '/images/cyberware/frontal_cortex.svg',
     source: 'cp2077',
   },
   {
@@ -142,7 +142,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 12000,
-    image: '',
+    image: '/images/cyberware/frontal_cortex.svg',
     source: 'cp2077',
   },
   {
@@ -158,7 +158,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 5500,
-    image: '',
+    image: '/images/cyberware/frontal_cortex.svg',
     source: 'cp2077',
   },
 
@@ -176,7 +176,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 18000,
-    image: '',
+    image: '/images/cyberware/face.svg',
     source: 'both',
   },
   {
@@ -192,7 +192,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 10000,
-    image: '',
+    image: '/images/cyberware/face.svg',
     source: 'cp2077',
   },
 
@@ -210,7 +210,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 1,
     humanityCost: 2,
     price: 14000,
-    image: '',
+    image: '/images/cyberware/skeleton.svg',
     source: 'cp2077',
   },
   {
@@ -226,7 +226,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 2,
     humanityCost: 3,
     price: 30000,
-    image: '',
+    image: '/images/cyberware/skeleton.svg',
     source: 'edgerunners',
   },
   {
@@ -242,7 +242,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 6000,
-    image: '',
+    image: '/images/cyberware/skeleton.svg',
     source: 'cp2077',
   },
   {
@@ -258,7 +258,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 1,
     humanityCost: 4,
     price: 42000,
-    image: '',
+    image: '/images/cyberware/skeleton.svg',
     source: 'cp2077',
   },
 
@@ -276,7 +276,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 8000,
-    image: '',
+    image: '/images/cyberware/nervous_system.svg',
     source: 'cp2077',
   },
   {
@@ -292,7 +292,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 15000,
-    image: '',
+    image: '/images/cyberware/nervous_system.svg',
     source: 'cp2077',
   },
   {
@@ -308,7 +308,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 11000,
-    image: '',
+    image: '/images/cyberware/nervous_system.svg',
     source: 'cp2077',
   },
 
@@ -326,7 +326,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 0,
     price: 1000,
-    image: '',
+    image: '/images/cyberware/circulatory_system.svg',
     source: 'cp2077',
   },
   {
@@ -342,7 +342,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 20000,
-    image: '',
+    image: '/images/cyberware/circulatory_system.svg',
     source: 'cp2077',
   },
   {
@@ -358,7 +358,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 1,
     humanityCost: 3,
     price: 50000,
-    image: '',
+    image: '/images/cyberware/circulatory_system.svg',
     source: 'cp2077',
   },
   {
@@ -374,7 +374,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 9500,
-    image: '',
+    image: '/images/cyberware/circulatory_system.svg',
     source: 'cp2077',
   },
 
@@ -392,7 +392,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 13000,
-    image: '',
+    image: '/images/cyberware/integumentary_system.svg',
     source: 'both',
   },
   {
@@ -408,7 +408,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 3,
     price: 35000,
-    image: '',
+    image: '/images/cyberware/integumentary_system.svg',
     source: 'cp2077',
   },
   {
@@ -424,7 +424,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 7000,
-    image: '',
+    image: '/images/cyberware/integumentary_system.svg',
     source: 'cp2077',
   },
 
@@ -442,7 +442,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 11000,
-    image: '',
+    image: '/images/cyberware/hands.svg',
     source: 'cp2077',
   },
   {
@@ -458,7 +458,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 12000,
-    image: '',
+    image: '/images/cyberware/hands.svg',
     source: 'cp2077',
   },
   {
@@ -474,7 +474,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 6500,
-    image: '',
+    image: '/images/cyberware/hands.svg',
     source: 'cp2077',
   },
 
@@ -492,7 +492,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 3,
     price: 28000,
-    image: '',
+    image: '/images/cyberware/arms.svg',
     source: 'both',
   },
   {
@@ -508,7 +508,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 3,
     price: 24000,
-    image: '',
+    image: '/images/cyberware/arms.svg',
     source: 'both',
   },
   {
@@ -524,7 +524,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 26000,
-    image: '',
+    image: '/images/cyberware/arms.svg',
     source: 'cp2077',
   },
   {
@@ -540,7 +540,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 3,
     price: 40000,
-    image: '',
+    image: '/images/cyberware/arms.svg',
     source: 'cp2077',
   },
 
@@ -558,7 +558,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 7000,
-    image: '',
+    image: '/images/cyberware/legs.svg',
     source: 'cp2077',
   },
   {
@@ -574,7 +574,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 2,
     price: 14000,
-    image: '',
+    image: '/images/cyberware/legs.svg',
     source: 'cp2077',
   },
   {
@@ -590,7 +590,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 1,
     price: 12000,
-    image: '',
+    image: '/images/cyberware/legs.svg',
     source: 'cp2077',
   },
   {
@@ -606,7 +606,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     vitality: 0,
     humanityCost: 3,
     price: 22000,
-    image: '',
+    image: '/images/cyberware/legs.svg',
     source: 'edgerunners',
   },
 ];

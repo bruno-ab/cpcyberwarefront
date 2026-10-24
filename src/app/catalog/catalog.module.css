@@ -31,6 +31,16 @@
   gap: 1rem;
 }
 
+.thumb {
+  width: 100%;
+  max-width: 160px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid #1fb6ff;
+  margin-bottom: 0.5rem;
+  background: #111;
+}
+
 .cardMeta {
   display: flex;
   flex-wrap: wrap;

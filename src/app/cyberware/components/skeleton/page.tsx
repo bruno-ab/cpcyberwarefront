@@ -5,6 +5,7 @@ import { CyberWareTypes, maximumSlots } from '../../cyberwareTypes';
 import styles2 from './skeleton.module.css'
 import { useRouter } from 'next/navigation';
 import { apiUrl, authHeaders } from '../../../../lib/api';
+import { cyberwareImageSrc } from '../../../../lib/media';
 
 function Skeleton({ characterData}: any) {
   const router =  useRouter();
@@ -97,7 +98,13 @@ function Skeleton({ characterData}: any) {
                   <tr key={`${index}-${innerIndex}`}>
                     <td  className={styles2.centerCell}>{installedCyberware.name}</td>
                     <td className={styles2.centerCell}>
-                      <img src={installedCyberware.image} alt={installedCyberware.name} />
+                      <img
+                        src={cyberwareImageSrc(installedCyberware)}
+                        alt={installedCyberware.name}
+                        width={64}
+                        height={64}
+                        style={{ objectFit: 'cover', border: '1px solid #1fb6ff' }}
+                      />
                     </td>
                     <td  className={styles2.centerCell}>{installedCyberware.description}</td>
                     <td  className={styles2.centerCell}>{installedCyberware.benefits}</td>

@@ -24,6 +24,53 @@
   background: rgba(25, 26, 30, 0.9);
 }
 
+.portrait {
+  width: 100%;
+  max-width: 140px;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border: 1px solid #1fb6ff;
+  margin-bottom: 0.75rem;
+  background: #111;
+}
+
+.portraitLarge {
+  width: 180px;
+  height: 225px;
+  object-fit: cover;
+  border: 2px solid #fed33f;
+  background: #111;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.chromeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+
+.chromeCard {
+  border: 1px solid #555;
+  padding: 0.4rem;
+  background: rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.chromeCard img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: 1px solid #8814ff;
+}
+
 .cardHeader {
   display: flex;
   justify-content: space-between;

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Header from '../header/Header';
 import { NPC_SHEETS } from '../../data/npcSheets';
 import { computeCyberwareCapacity } from '../../lib/cyberwareCapacity';
+import { npcImageSrc } from '../../lib/media';
 import styles from './npcs.module.css';
 
 const NpcsPage = () => {
@@ -44,6 +45,13 @@ const NpcsPage = () => {
           );
           return (
             <article key={npc.id} className={styles.card}>
+              <img
+                src={npcImageSrc(npc)}
+                alt={npc.name}
+                className={styles.portrait}
+                width={120}
+                height={150}
+              />
               <header className={styles.cardHeader}>
                 <h3>{npc.name}</h3>
                 <span className={styles.badge}>{npc.threat}</span>

@@ -72,7 +72,7 @@ const Sheet = () => {
       <h3 className={styles.attributesSection}>Vitality</h3>
       <VitalityField characterData={characterData} />
 
-      <CyberCapacity characterData={characterData} onRefresh={fetchCharacterData} />
+      <CyberCapacity characterData={characterData} />
 
       <h3 className={styles.attributesSection}>Attributes</h3>
       <Attributes characterData={characterData} />

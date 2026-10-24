@@ -7,6 +7,7 @@ import { RarityBadge } from '../../components/ui/RarityBadge';
 import { CYBERWARE_CATALOG } from '../../data/cyberwareCatalog';
 import { SLOT_LABELS, CyberWareSlot } from '../../data/cyberwareSlots';
 import { apiUrl } from '../../lib/api';
+import { cyberwareImageSrc } from '../../lib/media';
 import { useTranslations } from '../../i18n/useTranslations';
 import styles from './catalog.module.css';
 
@@ -68,6 +69,13 @@ const CatalogPage = () => {
       <div className={styles.cards}>
         {filtered.map((item) => (
           <HudPanel key={item.name} title={item.name}>
+            <img
+              src={cyberwareImageSrc(item)}
+              alt={item.name}
+              className={styles.thumb}
+              width={120}
+              height={120}
+            />
             <div className={styles.cardMeta}>
               <RarityBadge rarity={item.rarity} />
               <span>{SLOT_LABELS[item.type as CyberWareSlot] || item.type}</span>

@@ -10,6 +10,8 @@ export type NpcRecord = {
   threat: 'baixa' | 'média' | 'alta' | 'lendária';
   summary: string;
   storytellerHooks: string[];
+  /** Retrato SVG local em /images/npcs/{id}.svg */
+  image?: string;
   sheet: StorytellerSheet;
 };
 

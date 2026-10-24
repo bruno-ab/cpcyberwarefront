@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import Header from '../header/Header';
 import Skeleton from './components/skeleton/page';
+import { CyberwareShop } from '../../components/cyberware/CyberwareShop';
 import { apiUrl, authHeaders } from '../../lib/api';
 import styles from '../characters/background.module.css';
 
@@ -36,35 +37,35 @@ function CyberWare() {
     loadList();
   }, []);
 
+  const fetchCharacterData = async () => {
+    if (!id) {
+      setCharacterData(null);
+      setStatus('Selecione um personagem para abrir o scanner de cyberware.');
+      return;
+    }
+    setStatus('Carregando personagem…');
+    try {
+      const response = await fetch(apiUrl(`/api/characters/${id}`), {
+        method: 'GET',
+        headers: authHeaders(),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCharacterData(data);
+        setStatus('');
+      } else {
+        setStatus('Erro ao carregar personagem.');
+        setCharacterData(null);
+      }
+    } catch (error) {
+      console.error(error);
+      setStatus('Falha de rede ao carregar personagem.');
+      setCharacterData(null);
+    }
+  };
+
   useEffect(() => {
-    const fetchCharacterData = async () => {
-      if (!id) {
-        setCharacterData(null);
-        setStatus('Selecione um personagem para abrir o scanner de cyberware.');
-        return;
-      }
-      setStatus('Carregando personagem…');
-      try {
-        const response = await fetch(apiUrl(`/api/characters/${id}`), {
-          method: 'GET',
-          headers: authHeaders(),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCharacterData(data);
-          setStatus('');
-        } else {
-          setStatus('Erro ao carregar personagem.');
-          setCharacterData(null);
-        }
-      } catch (error) {
-        console.error(error);
-        setStatus('Falha de rede ao carregar personagem.');
-        setCharacterData(null);
-      }
-    };
-
     fetchCharacterData();
   }, [id]);
 
@@ -118,6 +119,11 @@ function CyberWare() {
           Abrir ficha
         </button>
       </p>
+      <CyberwareShop
+        characterId={characterData.id}
+        sheet={characterData.sheet || {}}
+        onUpdated={fetchCharacterData}
+      />
       <div
         className={`human-body ${handSelected ? 'hand-selected' : ''}`}
         style={{ position: 'fixed', top: 0, left: 0, zIndex: 999 }}
