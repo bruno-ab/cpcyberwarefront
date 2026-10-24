@@ -9,7 +9,7 @@ import styles from './page.module.css';
 
 type CyberCapacityProps = {
   characterData: {
-    id: number;
+    id: string | number;
     cyberwares?: Array<{
       name: string;
       type: string;

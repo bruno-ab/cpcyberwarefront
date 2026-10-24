@@ -42,7 +42,14 @@ const ShopPage = () => {
     const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/shop/buy`), {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ itemId, kind, characterId: kind === 'cyberware' ? 1 : undefined }),
+      body: JSON.stringify({
+        itemId,
+        kind,
+        characterId:
+          kind === 'cyberware'
+            ? '11111111-1111-4111-8111-111111111111'
+            : undefined,
+      }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {

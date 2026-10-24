@@ -10,6 +10,9 @@ import CyberPunkResource from './resource';
 import CHeader from './cHeader';
 import VitalityField from './vitality';
 import CyberCapacity from './CyberCapacity';
+import SheetAmbientGlitches from './SheetAmbientGlitches';
+import SheetPhone from './SheetPhone';
+import SheetRoster from './SheetRoster';
 import styles from './page.module.css';
 import { apiUrl, authHeaders } from '../../lib/api';
 
@@ -34,7 +37,8 @@ const Sheet = () => {
 
   const fetchCharacterData = async () => {
     if (!id) {
-      setError('Informe ?id= na URL da ficha.');
+      setCharacterData(null);
+      setError('');
       return;
     }
     try {
@@ -47,10 +51,12 @@ const Sheet = () => {
         setError('');
       } else {
         setError('Erro ao carregar personagem.');
+        setCharacterData(null);
       }
     } catch (err) {
       console.error(err);
       setError('Falha de rede ao carregar personagem.');
+      setCharacterData(null);
     }
   };
 
@@ -71,11 +77,23 @@ const Sheet = () => {
     );
   }
 
+  if (!id) {
+    return (
+      <section className={styles.sheetPage}>
+        <Header />
+        <SheetRoster />
+      </section>
+    );
+  }
+
   if (error && !characterData) {
     return (
       <section className={styles.sheetPage}>
         <Header />
         <p className={styles.error}>{error}</p>
+        <p className={styles.hint}>
+          <Link href="/sheet">← Voltar ao roster da campanha</Link>
+        </p>
       </section>
     );
   }
@@ -94,7 +112,11 @@ const Sheet = () => {
 
   return (
     <section className={styles.sheetPage}>
+      <SheetAmbientGlitches />
       <Header />
+      <p className={styles.backRow}>
+        <Link href="/sheet">← Campanha / missões</Link>
+      </p>
       <CHeader characterData={characterData} />
 
       <nav className={styles.tabs} aria-label="Seções da ficha">
@@ -194,6 +216,11 @@ const Sheet = () => {
           </div>
         )}
       </div>
+
+      <SheetPhone
+        characterId={String(characterData.id)}
+        characterName={characterData.name || 'Runner'}
+      />
     </section>
   );
 };

@@ -40,7 +40,7 @@ type InstalledItem = {
 };
 
 type Props = {
-  characterId: number;
+  characterId: string | number;
   sheet: Record<string, any>;
   installed?: InstalledItem[];
   selectedPart?: BodyPart | null;

@@ -9,7 +9,7 @@ import { CharacterWizard } from './CharacterWizard';
 import styles from './characters.module.css';
 
 type Character = {
-  id: number;
+  id: string;
   name: string;
   role?: string;
   credits?: number;

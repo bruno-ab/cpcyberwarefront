@@ -8,7 +8,7 @@ type Band = 'ok' | 'bruise' | 'hurt' | 'crit' | 'dead';
 
 type Props = {
   characterData: {
-    id: number;
+    id: string | number;
     sheet?: Record<string, any>;
   };
 };

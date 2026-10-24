@@ -1,0 +1,180 @@
+.layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+}
+
+.glitch {
+  position: absolute;
+  display: block;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.scan {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--cp-cyan) 55%, transparent),
+    transparent
+  );
+  animation: scanPop 0.55s ease-out forwards;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--cp-cyan) 40%, transparent);
+}
+
+.tear {
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 2px,
+    color-mix(in srgb, var(--cp-magenta, #ff2a6d) 70%, transparent) 3px,
+    transparent 5px
+  );
+  animation: tearSlide 0.45s steps(4) forwards;
+  height: 3px !important;
+}
+
+.noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  animation: noiseFlick 0.4s linear forwards;
+  opacity: 0.35;
+}
+
+.chromatic {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #ff0040 50%, transparent),
+    color-mix(in srgb, var(--cp-cyan) 50%, transparent),
+    color-mix(in srgb, var(--cp-yellow) 45%, transparent)
+  );
+  animation: chromaShift 0.5s ease-in-out forwards;
+  mix-blend-mode: color-dodge;
+}
+
+.corrupt {
+  border: 1px solid var(--cp-yellow);
+  background: color-mix(in srgb, var(--cp-bg-0, #0a0a0a) 40%, transparent);
+  box-shadow:
+    2px 0 0 color-mix(in srgb, var(--cp-cyan) 60%, transparent),
+    -2px 0 0 color-mix(in srgb, var(--cp-magenta, #ff2a6d) 60%, transparent);
+  animation: corruptJitter 0.35s steps(3) forwards;
+}
+
+.corrupt::after {
+  content: 'ERR_0x' attr(data-x);
+  content: '▓░▒█░▓';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--cp-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+}
+
+.flash {
+  background: color-mix(in srgb, var(--cp-cyan) 25%, transparent);
+  animation: flashPop 0.25s ease-out forwards;
+  inset: auto;
+}
+
+@keyframes scanPop {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(0.4);
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(14px) scaleY(1.2);
+  }
+}
+
+@keyframes tearSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-20%);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(40%);
+  }
+}
+
+@keyframes noiseFlick {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  40%,
+  70% {
+    opacity: 0.45;
+  }
+  25%,
+  55% {
+    opacity: 0.1;
+  }
+}
+
+@keyframes chromaShift {
+  0% {
+    opacity: 0;
+    filter: hue-rotate(0deg);
+  }
+  40% {
+    opacity: 0.7;
+    filter: hue-rotate(40deg);
+  }
+  100% {
+    opacity: 0;
+    filter: hue-rotate(-20deg);
+  }
+}
+
+@keyframes corruptJitter {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(3px, -2px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-4px, 1px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(2px, 2px);
+  }
+}
+
+@keyframes flashPop {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer {
+    display: none;
+  }
+}

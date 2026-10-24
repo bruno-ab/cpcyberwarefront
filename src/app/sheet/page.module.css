@@ -16,6 +16,23 @@
   text-shadow: var(--cp-glow-yellow);
 }
 
+.backRow {
+  max-width: 1100px;
+  margin: 0.5rem auto 0;
+  padding: 0 1rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.75rem;
+}
+
+.backRow a {
+  color: var(--cp-cyan);
+  text-decoration: none;
+}
+
+.backRow a:hover {
+  text-shadow: var(--cp-glow-cyan);
+}
+
 .loading,
 .error {
   padding: 1.25rem;
