@@ -1,15 +1,13 @@
-'use client'
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../header/Header';
 import styles from './background.module.css';
-const imgPath = '/characters/placeholder.png';
-import CreateForm from './createCharacterForm'
-import { apiUrl, authHeaders } from '../../lib/api'
+import CreateForm from './createCharacterForm';
+import { apiUrl, authHeaders } from '../../lib/api';
 
-const getLocalStorage = () => {
-    return typeof window !== "undefined" ? window.localStorage.getItem('access_token') : null
-}
+const imgPath = '/characters/placeholder.png';
 
 const getPlayerCharacters = async () => {
   try {
@@ -17,12 +15,10 @@ const getPlayerCharacters = async () => {
       method: 'GET',
       headers: authHeaders(),
     });
-
     if (response.ok) {
       const json = await response.json();
       return Array.isArray(json) ? json : [];
     }
-    console.log('characters fetch failed', response.status);
     return [];
   } catch (error) {
     console.error(error);
@@ -32,64 +28,81 @@ const getPlayerCharacters = async () => {
 
 function Characters() {
   const router = useRouter();
-  const accessToken = getLocalStorage();
+  const [mounted, setMounted] = useState(false);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-     if (!accessToken) {
-    router.push("/login");
+    setMounted(true);
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push('/login');
+      return;
     }
-  },[accessToken, router])
-
-  useEffect(() => {
-    if (!accessToken) return;
-    const fetchData = async () => {
+    (async () => {
       setLoading(true);
       const result = await getPlayerCharacters();
       setData(result);
-      setError(result.length === 0 ? 'Nenhum personagem encontrado para esta conta.' : '');
+      setError(
+        result.length === 0
+          ? 'Nenhum runner cadastrado nesta conta ainda.'
+          : '',
+      );
       setLoading(false);
-    };
-    fetchData();
-  }, [accessToken]);
+    })();
+  }, [router]);
 
-  const handleCharacterClick = (characterId) => {
+  const handleCharacterClick = (characterId: number) => {
     router.push(`/sheet?id=${characterId}`);
   };
 
-  const openCyberware = (e, characterId) => {
+  const openCyberware = (e: React.MouseEvent, characterId: number) => {
     e.stopPropagation();
     router.push(`/cyberware?id=${characterId}`);
   };
 
+  // Evita mismatch de hydration: SSR e 1º paint do cliente são iguais
+  if (!mounted) {
+    return (
+      <div className={styles.page}>
+        <Header />
+        <h2 className={styles.titulo}>Personagens</h2>
+        <p className={styles.status}>Carregando personagens…</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
       <Header />
-      <h2 className={styles.titulo}>Characters</h2>
+      <h2 className={styles.titulo}>Personagens</h2>
       {loading && <p className={styles.status}>Carregando personagens…</p>}
-      {!loading && error && <p className={styles.status}>{error}</p>}
+      {!loading && error ? <p className={styles.status}>{error}</p> : null}
       <div className={styles.characterGrid}>
-        {data.map((character) => (
+        {data.map((character: any) => (
           <div
             key={character.id}
             className={`${styles.img2} ${styles.imagen}`}
             onClick={() => handleCharacterClick(character.id)}
           >
-            <img src={imgPath} alt={character.name} style={{ width: '100%', height: '100%' }} />
+            <img
+              src={imgPath}
+              alt={character.name}
+              style={{ width: '100%', height: '100%' }}
+            />
             <div className={styles.captioncontainer}>
               <div className={styles.caption}>
                 <h3>{character.name}</h3>
                 <hr />
                 <p>{character.role}</p>
-                <p>An iconic character that wants to be a legend in Night City.</p>
+                <p>Um runner que ainda quer virar lenda em Night City.</p>
                 <button
                   type="button"
                   className={styles.cwBtn}
                   onClick={(e) => openCyberware(e, character.id)}
                 >
-                  Cyberware
+                  Chrome
                 </button>
               </div>
             </div>

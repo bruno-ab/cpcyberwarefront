@@ -123,7 +123,7 @@ export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
   return (
     <section className={styles.shop}>
       <header className={styles.head}>
-        <h3>Ripperdoc — comprar & instalar</h3>
+        <h3>Ripperdoc — comprar e instalar</h3>
         <div className={styles.edgesRow}>
           <label>
             Edges (E)
@@ -143,7 +143,7 @@ export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
       <input
         className={styles.search}
         type="search"
-        placeholder="Buscar cyberware…"
+        placeholder="Buscar peça de chrome…"
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
       />
@@ -171,7 +171,7 @@ export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
                 disabled={busy || edges < cost}
                 onClick={() => buyAndInstall(item)}
               >
-                Comprar & instalar
+                Comprar e instalar
               </button>
             </article>
           );

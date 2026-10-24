@@ -5,7 +5,7 @@
     "nav": {
       "home": "Home",
       "characters": "Personagens",
-      "cyberware": "CyberWare",
+      "cyberware": "Chrome",
       "catalog": "Catálogo",
       "book": "Regras",
       "lore": "Lore",
@@ -50,10 +50,18 @@
   },
   "sheet": {
     "title": "Ficha",
-    "capacity": "Capacidade",
+    "capacity": "Capacidade de implante",
     "humanity": "Humanidade",
-    "edges": "Edges",
-    "psychosis": "Cyberpsicose"
+    "edges": "Edges (E)",
+    "psychosis": "Cyberpsicose",
+    "tabs": {
+      "resumo": "Resumo",
+      "atributos": "Atributos",
+      "habilidades": "Habilidades",
+      "chrome": "Chrome",
+      "recursos": "Recursos",
+      "inventario": "Inventário"
+    }
   },
   "book": {
     "title": "Livro de Regras",

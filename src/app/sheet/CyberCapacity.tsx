@@ -46,7 +46,7 @@ const CyberCapacity = ({ characterData }: CyberCapacityProps) => {
 
   return (
     <section style={{ margin: '1rem 0', color: '#fed33f' }}>
-      <h3 className={styles.attributesSection}>Cyberware & Edges</h3>
+      <h3 className={styles.attributesSection}>Chrome e Edges</h3>
       <div
         style={{
           display: 'grid',
@@ -56,7 +56,7 @@ const CyberCapacity = ({ characterData }: CyberCapacityProps) => {
         }}
       >
         <div style={{ border: '1px solid #fed33f', padding: '0.75rem' }}>
-          <div>Capacidade livre</div>
+          <div>Capacidade de implante</div>
           <strong style={{ color: capacity.remaining < 0 ? '#e8615a' : '#2be4ea', fontSize: '1.4rem' }}>
             {capacity.remaining}
           </strong>
@@ -68,9 +68,9 @@ const CyberCapacity = ({ characterData }: CyberCapacityProps) => {
           <div>Edges (E)</div>
           <strong style={{ color: '#2be4ea', fontSize: '1.4rem' }}>{edges}</strong>
           <div style={{ fontSize: '0.8rem', marginTop: '0.35rem' }}>
-            Comprar/instalar em{' '}
+            Comprar no{' '}
             <Link href={`/cyberware?id=${characterData.id}`} style={{ color: '#fed33f' }}>
-              Cyberwares →
+              ripperdoc →
             </Link>
           </div>
         </div>
@@ -85,7 +85,7 @@ const CyberCapacity = ({ characterData }: CyberCapacityProps) => {
       </div>
 
       {cyberwares.length === 0 ? (
-        <p style={{ color: '#2be4ea' }}>Nenhum cyberware implantado.</p>
+        <p style={{ color: '#2be4ea' }}>Nenhuma peça de chrome implantada.</p>
       ) : (
         <div
           style={{

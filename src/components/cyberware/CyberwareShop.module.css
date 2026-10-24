@@ -1,9 +1,12 @@
 .shop {
-  margin: 1.25rem 1rem 2rem;
+  margin: 0;
   padding: 1rem;
   border: 1px solid #8814ff;
   background: rgba(0, 0, 0, 0.55);
   color: #c3c3c3;
+  position: relative;
+  z-index: 2;
+  clip-path: none;
 }
 
 .head {

@@ -671,7 +671,7 @@ textarea {}
 .human-body svg.legs {
     margin-left: -46.5px;
     top: 205px;
-    z-index: 9999;
+    z-index: 2;
 }
 
 .human-body svg.hands {
