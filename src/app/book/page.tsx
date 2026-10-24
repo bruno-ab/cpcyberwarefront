@@ -5,7 +5,15 @@ import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import { useTranslations } from '../../i18n/useTranslations';
 import { apiUrl } from '../../lib/api';
+import { BookChapterBody } from './BookChapterBody';
 import styles from './book.module.css';
+
+type LoreInsert = {
+  kind: 'quote' | 'news' | 'testimony' | 'email' | 'scene' | 'shard';
+  title?: string;
+  attribution?: string;
+  body: string;
+};
 
 type Chapter = {
   id: string;
@@ -14,6 +22,7 @@ type Chapter = {
   summary?: string;
   body: string;
   tags?: string[];
+  inserts?: LoreInsert[];
 };
 
 const BookPage = () => {
@@ -36,12 +45,17 @@ const BookPage = () => {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return chapters;
-    return chapters.filter(
-      (c) =>
+    return chapters.filter((c) => {
+      const insertText = (c.inserts || [])
+        .map((i) => `${i.title || ''} ${i.body} ${i.attribution || ''}`)
+        .join(' ');
+      return (
         c.title.toLowerCase().includes(term) ||
         c.body.toLowerCase().includes(term) ||
-        (c.tags || []).some((tag) => tag.includes(term)),
-    );
+        insertText.toLowerCase().includes(term) ||
+        (c.tags || []).some((tag) => tag.includes(term))
+      );
+    });
   }, [chapters, q]);
 
   const current = filtered.find((c) => c.id === active) || filtered[0];
@@ -66,7 +80,8 @@ const BookPage = () => {
                   className={c.id === current?.id ? styles.active : undefined}
                   onClick={() => setActive(c.id)}
                 >
-                  {c.title}
+                  <span>{c.title}</span>
+                  {c.summary && <small>{c.summary}</small>}
                 </button>
               </li>
             ))}
@@ -76,7 +91,13 @@ const BookPage = () => {
           </a>
         </aside>
         <HudPanel className={styles.reader} title={current?.title || '—'}>
-          <pre className={styles.body}>{current?.body || 'Sem capítulos.'}</pre>
+          {current?.summary && (
+            <p className={styles.summary}>{current.summary}</p>
+          )}
+          <BookChapterBody
+            body={current?.body || 'Sem capítulos.'}
+            inserts={current?.inserts}
+          />
         </HudPanel>
       </div>
     </PageFrame>

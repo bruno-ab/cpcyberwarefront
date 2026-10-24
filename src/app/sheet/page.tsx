@@ -10,18 +10,27 @@ import CyberPunkResource from './resource';
 import CHeader from './cHeader';
 import VitalityField from './vitality';
 import CyberCapacity from './CyberCapacity';
+import RoleAbilities from './RoleAbilities';
 import SheetAmbientGlitches from './SheetAmbientGlitches';
 import SheetPhone from './SheetPhone';
 import SheetRoster from './SheetRoster';
 import styles from './page.module.css';
 import { apiUrl, authHeaders } from '../../lib/api';
 
-type TabId = 'resumo' | 'atributos' | 'habilidades' | 'chrome' | 'recursos' | 'inventario';
+type TabId =
+  | 'resumo'
+  | 'atributos'
+  | 'habilidades'
+  | 'role'
+  | 'chrome'
+  | 'recursos'
+  | 'inventario';
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'resumo', label: 'Resumo' },
   { id: 'atributos', label: 'Atributos' },
   { id: 'habilidades', label: 'Habilidades' },
+  { id: 'role', label: 'Role' },
   { id: 'chrome', label: 'Chrome' },
   { id: 'recursos', label: 'Recursos' },
   { id: 'inventario', label: 'Inventário' },
@@ -150,7 +159,18 @@ const Sheet = () => {
                 <span>Chrome</span>
                 <strong>{characterData.cyberwares?.length || 0} peças</strong>
               </div>
+              <div className={styles.summaryCard}>
+                <span>Role</span>
+                <strong>
+                  {characterData.role ||
+                    characterData.sheet?.header?.role ||
+                    '—'}
+                </strong>
+              </div>
             </div>
+
+            <h3 className={styles.attributesSection}>Role Ability</h3>
+            <RoleAbilities characterData={characterData} compact />
 
             <h3 className={styles.attributesSection}>Atributos</h3>
             <Attributes characterData={characterData} />
@@ -176,6 +196,17 @@ const Sheet = () => {
           <>
             <h3 className={styles.attributesSection}>Habilidades</h3>
             <Abilities characterData={characterData} />
+          </>
+        )}
+
+        {tab === 'role' && (
+          <>
+            <h3 className={styles.attributesSection}>Habilidades de Role</h3>
+            <RoleAbilities characterData={characterData} />
+            <p className={styles.hint}>
+              Detalhes de patamares e lore: capítulo{' '}
+              <Link href="/book">Roles e Role Abilities</Link> no Book.
+            </p>
           </>
         )}
 

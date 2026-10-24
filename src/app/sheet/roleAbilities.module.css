@@ -1,0 +1,137 @@
+.wrap {
+  border: 1px solid var(--cp-line, rgba(0, 243, 255, 0.35));
+  background: var(--cp-bg-panel);
+  box-shadow: var(--cp-inset-cyan);
+  padding: 0.85rem 1rem 1rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.wrap[data-compact='true'] {
+  padding: 0.7rem 0.85rem;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--cp-border-strong);
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-cyan);
+}
+
+.head h4 {
+  margin: 0.15rem 0 0;
+  font-family: var(--cp-font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+}
+
+.blurb {
+  margin: 0.35rem 0 0;
+  color: var(--cp-text-dim);
+  font-size: 0.85rem;
+  max-width: 42rem;
+}
+
+.rank {
+  font-family: var(--cp-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-bg-0, #0a0a0a);
+  background: var(--cp-yellow);
+  padding: 0.25rem 0.5rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.card {
+  border: 1px solid var(--cp-border-strong);
+  background: rgba(0, 0, 0, 0.28);
+  padding: 0.65rem 0.75rem;
+}
+
+.cardTop {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-bottom: 0.3rem;
+}
+
+.cardTop strong {
+  font-family: var(--cp-font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-cyan);
+}
+
+.cardTop em {
+  font-style: normal;
+  font-family: var(--cp-font-mono);
+  font-size: 0.65rem;
+  color: var(--cp-text-dim);
+  letter-spacing: 0.06em;
+}
+
+.card p {
+  margin: 0;
+  color: var(--cp-text);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.mech {
+  margin-top: 0.45rem !important;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--cp-border-strong);
+  color: var(--cp-text-dim) !important;
+  font-size: 0.82rem !important;
+}
+
+.mech span {
+  display: block;
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  margin-bottom: 0.2rem;
+}
+
+.mechShort {
+  margin-top: 0.35rem !important;
+  color: var(--cp-text-dim) !important;
+  font-size: 0.8rem !important;
+  line-height: 1.35 !important;
+}
+
+.empty {
+  border: 1px dashed var(--cp-border-strong);
+  padding: 0.85rem;
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
+  margin: 0.5rem 0 1rem;
+}
