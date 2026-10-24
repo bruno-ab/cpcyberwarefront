@@ -2,19 +2,16 @@
 import React, { useState } from 'react';
 import styles from './abilities.module.css';
 import { defaultAbilities } from './defaultSheet';
+import { apiUrl, authHeaders } from '../../lib/api';
 
 const saveDataToApi = (id,data,talentValues, skillValues, knowledgeValues) => {
-  const apiUrl = `https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${id}/sheet`;
   data.talents = talentValues;
   data.skills = skillValues;
   data.knowledges = knowledgeValues;
 
-  fetch(apiUrl, {
+  fetch(apiUrl(`/api/characters/${id}/sheet`), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-    },
+    headers: authHeaders(),
     body: JSON.stringify(data),
   })
     .then((response) => {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiUrl, authHeaders } from '../../lib/api';
 
 const VitalityField = ({ characterData }) => {
   const [vitality, setVitality] = useState(0);
@@ -6,10 +7,12 @@ const VitalityField = ({ characterData }) => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    setVitality(characterData.sheet.vitality);
-    setVitalityMarked(characterData.sheet.vitality_marked);
-    updateMessage(characterData.sheet.vitality_marked, characterData.sheet.vitality);
-  }, [characterData.sheet.vitality, characterData.sheet.vitality_marked]);
+    const max = characterData?.sheet?.vitality ?? 7;
+    const marked = characterData?.sheet?.vitality_marked ?? 0;
+    setVitality(max);
+    setVitalityMarked(marked);
+    updateMessage(marked, max);
+  }, [characterData?.sheet?.vitality, characterData?.sheet?.vitality_marked]);
 
   const handleVitalityChange = (e) => {
     const newVitality = parseInt(e.target.value, 10);
@@ -57,14 +60,9 @@ const VitalityField = ({ characterData }) => {
   };
 
   const saveDataToApi = (id, data) => {
-    const apiUrl = `https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${id}/sheet`;
-    console.log(data);
-    fetch(apiUrl, {
+    fetch(apiUrl(`/api/characters/${id}/sheet`), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-      },
+      headers: authHeaders(),
       body: JSON.stringify(data),
     })
       .then((response) => {

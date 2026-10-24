@@ -13,8 +13,7 @@ const data = {
 };
 
 const CyberPunkCharacterSheet = ({ characterData }) => {
-  console.log(characterData)
-  const data = characterData.sheet.header || defaultHeader;
+  const data = characterData?.sheet?.header || defaultHeader;
   const renderLabelValue = (label, value) => (
     <div style={{ marginBottom: '10px' }}>
       <p>

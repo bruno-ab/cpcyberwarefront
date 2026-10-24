@@ -4,6 +4,7 @@ import styles from '../component.module.css';
 import { CyberWareTypes, maximumSlots } from '../../cyberwareTypes';
 import styles2 from './skeleton.module.css'
 import { useRouter } from 'next/navigation';
+import { apiUrl, authHeaders } from '../../../../lib/api';
 
 function Skeleton({ characterData}: any) {
   const router =  useRouter();
@@ -16,11 +17,9 @@ function Skeleton({ characterData}: any) {
   useEffect(() => {
     const fetchCyberwareData = async () => {
       try {
-        const response = await fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/api/cyberware`, {
+        const response = await fetch(apiUrl('/api/cyberware'), {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: authHeaders(),
         });
 
         if (response.ok) {
@@ -45,11 +44,9 @@ function Skeleton({ characterData}: any) {
     };
 
     try {
-      fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${characterData.id}/cyberware`, {
+      fetch(apiUrl(`/api/characters/${characterData.id}/cyberware`), {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authHeaders(),
         body: JSON.stringify(data),
       });
     } catch (error) {
@@ -65,11 +62,9 @@ function Skeleton({ characterData}: any) {
       cyberwareId: id,
     };
     try {
-      fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${characterData.id}/cyberware`, {
+      fetch(apiUrl(`/api/characters/${characterData.id}/cyberware`), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authHeaders(),
         body: JSON.stringify(data),
       });
       router.push(`/installation?id=${characterData.id}`);

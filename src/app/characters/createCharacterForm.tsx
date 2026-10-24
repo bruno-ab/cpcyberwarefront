@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import styles from './createCharacterForm.module.css';
 import { useRouter } from 'next/navigation'
+import { apiUrl, authHeaders } from '../../lib/api'
 
 
 export function CreateCharacterForm() {
@@ -33,12 +34,9 @@ export function CreateCharacterForm() {
     };
 
     try {
-      const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters', {
+      const response = await fetch(apiUrl('/api/characters'), {
         method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-        },
+        headers: authHeaders(),
         body: JSON.stringify(data)
       });
       if (response.ok) {

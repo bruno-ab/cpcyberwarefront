@@ -1,51 +1,82 @@
 import Header from '../header/Header';
 import styles from './rules.module.css';
+import { CYBERWARE_RULES } from '../../data/cyberwareRules';
+import { SLOT_LABELS } from '../../data/cyberwareSlots';
 
-function Rules() {
+const Rules = () => {
   return (
     <section className={`${styles.cyberpunk} ${styles.black}`}>
       <Header />
-      <h2 className={styles.cyberpunk}>Rules</h2>
+      <h2 className={styles.cyberpunk}>{CYBERWARE_RULES.title}</h2>
+      <p className={`${styles.cyberpunk} ${styles.inverse}`}>{CYBERWARE_RULES.intro}</p>
 
-      <div className={styles.contentContainer}>
-        <div className={styles.iframeContainer}>
-          <iframe
-            className={styles.iframe}
-            src="https://open.spotify.com/embed/track/0UHxkkgI5GfV0XBRA1rqfe?utm_source=generator"
-            width="30%"
-            height="352"
-            frameBorder="0"
-            allowFullScreen=""
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          ></iframe>
-        </div>
+      <article className={styles.ruleBlock}>
+        <h3>{CYBERWARE_RULES.capacity.title}</h3>
+        <ul>
+          {CYBERWARE_RULES.capacity.bullets.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </article>
 
-        <div className={styles.textContainer}>
-          <p className={`${styles.cyberpunk} ${styles.inverse} ${styles.scannedv}`}>
-             Cyberpunk 2077 apresenta um mundo futurista e distópico, mergulhado em uma atmosfera sombria e caótica. No centro desse universo, a tecnologia avançada convive com a decadência social, criando uma paisagem urbana repleta de contrastes. Megacorporações controlam os destinos da sociedade, enquanto áreas urbanas decadentes coexistem com zonas de alta tecnologia.
+      <article className={styles.ruleBlock}>
+        <h3>{CYBERWARE_RULES.edges.title}</h3>
+        <ul>
+          {CYBERWARE_RULES.edges.bullets.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </article>
 
-A paisagem é dominada por arranha-céus imponentes e estruturas futuristas, muitas vezes cobertas pela poluição e pela sujeira das ruas. A vida noturna é vibrante, com néons brilhantes iluminando os becos escuros e as vielas, criando uma estética cyberpunk característica. A desigualdade social é evidente, com a elite desfrutando dos frutos do avanço tecnológico, enquanto as camadas mais baixas da sociedade lutam pela sobrevivência em meio à pobreza e à criminalidade.
+      <article className={styles.ruleBlock}>
+        <h3>{CYBERWARE_RULES.hacking.title}</h3>
+        <ul>
+          {CYBERWARE_RULES.hacking.bullets.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </article>
 
-A tecnologia desempenha um papel fundamental, com implantes cibernéticos, realidade aumentada e inteligência artificial integrando-se à vida cotidiana. No entanto, essa fusão entre humanidade e tecnologia não é isenta de conflitos e dilemas éticos. A busca pelo aprimoramento humano muitas vezes colide com os aspectos mais sombrios da natureza humana.
+      <article className={styles.ruleBlock}>
+        <h3>{CYBERWARE_RULES.cyberpsychosis.title}</h3>
+        <ul>
+          {CYBERWARE_RULES.cyberpsychosis.stages.map((stage) => (
+            <li key={stage.severity}>
+              <strong>Severidade {stage.severity}:</strong> {stage.effect}
+            </li>
+          ))}
+        </ul>
+      </article>
 
-No cenário de Cyberpunk 2077, as escolhas morais são complexas, e a linha entre certo e errado muitas vezes se dissolve em um universo moralmente ambíguo. As facções rivais, conspirações corporativas e a luta pela liberdade individual contribuem para a trama intrincada e envolvente desse mundo cyberpunk, onde cada ação tem consequências duradouras.
-          </p>
-        </div>
-      </div>
+      <article className={styles.ruleBlock}>
+        <h3>{CYBERWARE_RULES.slots.title}</h3>
+        <ul>
+          {Object.values(SLOT_LABELS).map((label) => (
+            <li key={label}>{label}</li>
+          ))}
+        </ul>
+        <ul>
+          {CYBERWARE_RULES.slots.bullets.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </article>
 
-      <iframe
-        className={styles.iframe}
-        src="https://open.spotify.com/embed/track/6UzbCEoThoNe8Upe4sn3Us?utm_source=generator"
-        width="30%"
-        height="352"
-        frameBorder="0"
-        allowFullScreen=""
-        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-        loading="lazy"
-      ></iframe>
+      <article className={styles.ruleBlock}>
+        <h3>{CYBERWARE_RULES.sessionTips.title}</h3>
+        <ul>
+          {CYBERWARE_RULES.sessionTips.bullets.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </article>
+
+      <p className={styles.footerNote}>
+        Catálogo completo de peças: <a href="/catalog">/catalog</a> · NPCs da mesa:{' '}
+        <a href="/npcs">/npcs</a>
+      </p>
     </section>
   );
-}
+};
 
 export default Rules;

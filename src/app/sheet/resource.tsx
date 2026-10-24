@@ -3,21 +3,18 @@ import React, { useState } from 'react';
 import styles from './abilities.module.css';
 import styles2 from  './resources.module.css'
 import { defaultResources } from './defaultSheet';
+import { apiUrl, authHeaders } from '../../lib/api';
 
 const saveDataToApi = (id,data,backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues) => {
-  const apiUrl = `https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${id}/sheet`;
   data.backgrounds = backgroundsValues;
   data.virtues = virtuesValues;
   data.other_traits = otherTraitsValues;
   data.merits = meritsValues;
   data.flaws = flawsValues;
 
-  fetch(apiUrl, {
+  fetch(apiUrl(`/api/characters/${id}/sheet`), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-    },
+    headers: authHeaders(),
     body: JSON.stringify(data),
   })
     .then((response) => {
@@ -140,24 +137,18 @@ const Resources = ({ characterData }) => {
     saveDataToApi(
       characterData.id,
       data,
-      backgroundsValues,
+      {
+        ...backgroundsValues,
+      },
       virtuesValues,
       otherTraitsValues,
       meritsValues,
-      flawsValues
+      {
+        ...flawsValues,
+        [newFlaws]: '',
+      },
     );
   };
-
-    saveDataToApi(
-      characterData.id,
-      data,
-      backgroundsValues,
-      virtuesValues,
-      otherTraitsValues,
-      meritsValues,
-      flawsValues
-    );
-  
 
   const handleBolinhaClick = (category, attributeName, currentIndex) => {
     if (currentIndex < category[attributeName] - 0) {

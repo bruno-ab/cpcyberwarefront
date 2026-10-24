@@ -1,19 +1,49 @@
 .contentContainer {
-    display: flex;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .iframeContainer {
-    flex: 1;
-    margin-right: 10px;
-    /* Reduzi um pouco o espaçamento */
+  flex: 1;
+  margin-right: 10px;
 }
 
 .textContainer {
-    flex: 1;
+  flex: 1;
 }
 
-/* Adicione estilos específicos para o texto */
 .textContainer p {
-    margin: 0;
-    /* Removi todas as margens para garantir um espaçamento mínimo */
+  margin: 0;
+}
+
+.ruleBlock {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  border: 1px solid #fed33f;
+  color: #2be4ea;
+  background: rgba(30, 24, 30, 0.85);
+}
+
+.ruleBlock h3 {
+  color: #fed33f;
+  margin-top: 0;
+}
+
+.ruleBlock ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.ruleBlock li {
+  margin-bottom: 0.4rem;
+}
+
+.footerNote {
+  color: #fed33f;
+  margin: 2rem 0;
+}
+
+.footerNote a {
+  color: #2be4ea;
 }

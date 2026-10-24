@@ -5,10 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import style from './cyberware.module.css';
 import Header from '../header/Header';
-import { CyberWareTypes, maximumSlots } from './cyberwareTypes';
-import { type } from 'os';
-import Link from 'next/link';
 import Skeleton from './components/skeleton/page';
+import { apiUrl, authHeaders } from '../../lib/api';
 
 function CyberWare() {
   const [showSkeleton, setShowSkeleton] = useState(false);
@@ -22,12 +20,9 @@ function CyberWare() {
     const fetchCharacterData = async () => {
       try {
         if (id) {
-          const response = await fetch(`https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/${id}`, {
+          const response = await fetch(apiUrl(`/api/characters/${id}`), {
             method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-            },
+            headers: authHeaders(),
           });
 
           if (response.ok) {
@@ -54,8 +49,11 @@ function CyberWare() {
     return null;
   }
 
-  const characterCyberwares = characterData.cyberwares || [];
-  localStorage.setItem('characterData', characterData);
+  try {
+    localStorage.setItem('characterData', JSON.stringify(characterData));
+  } catch {
+    /* ignore quota / private mode */
+  }
 
   return (
     <section className="cyberpunk">

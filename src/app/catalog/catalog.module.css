@@ -1,0 +1,58 @@
+.page {
+  padding: 0 1rem 2rem;
+  color: #2be4ea;
+}
+
+.page h2 {
+  color: #fed33f;
+}
+
+.intro {
+  max-width: 80ch;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.filters select {
+  background: #1e181e;
+  color: #2be4ea;
+  border: 1px solid #fed33f;
+  margin-left: 0.35rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid #452;
+  padding: 0.55rem 0.4rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+.table th {
+  color: #fed33f;
+  position: sticky;
+  top: 0;
+  background: #191a1e;
+}
+
+.desc {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 0.25rem;
+}
