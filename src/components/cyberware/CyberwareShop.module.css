@@ -26,6 +26,49 @@
   text-shadow: -0.06em 0 red, 0.06em 0 cyan;
 }
 
+.partFilter {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #8b93a7;
+}
+
+.partFilter strong {
+  color: #2be4ea;
+}
+
+.clearBtn {
+  margin-left: 0.65rem;
+  background: transparent;
+  border: 1px solid #8b93a7;
+  color: #8b93a7;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.section {
+  margin-top: 0.85rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.5rem;
+  color: #fed33f;
+  font-family: 'Audiowide', serif;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.empty {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: #8b93a7;
+}
+
+.installed {
+  border-color: #2be4ea;
+}
+
 .edgesRow {
   display: flex;
   gap: 0.5rem;

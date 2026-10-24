@@ -78,12 +78,11 @@
   cursor: pointer;
 }
 
-.slotPanel {
-  border: 1px solid #8814ff;
-  background: rgba(0, 0, 0, 0.55);
-  padding: 0.75rem;
-  overflow: auto;
-  max-height: 70vh;
+.bodyHint {
+  font-size: 0.75rem;
+  color: #2be4ea;
+  text-align: center;
+  min-height: 1.2em;
 }
 
 @media (max-width: 900px) {

@@ -3,20 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '../header/Header';
-import Skeleton from './components/skeleton/page';
 import { BodyFigure } from './BodyFigure';
 import { CyberwareShop } from '../../components/cyberware/CyberwareShop';
+import {
+  BodyPart,
+  BODY_PART_LABELS,
+} from '../../data/bodyPartSlots';
 import { apiUrl, authHeaders } from '../../lib/api';
 import charStyles from '../characters/background.module.css';
 import styles from './cyberware-page.module.css';
 
-function CyberWare() {
-  const [showSkeleton, setShowSkeleton] = useState(false);
-  const [handSelected, setHandSelected] = useState(false);
+const CyberWare = () => {
   const [characterData, setCharacterData] = useState<any>(null);
   const [characters, setCharacters] = useState<any[]>([]);
   const [status, setStatus] = useState('Carregando…');
   const [mounted, setMounted] = useState(false);
+  const [selectedPart, setSelectedPart] = useState<BodyPart | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const id = searchParams.get('id');
@@ -73,9 +75,8 @@ function CyberWare() {
     fetchCharacterData();
   }, [id]);
 
-  const toggleHandSelection = () => {
-    setHandSelected((v) => !v);
-    setShowSkeleton((v) => !v);
+  const handleSelectPart = (part: BodyPart) => {
+    setSelectedPart((prev) => (prev === part ? null : part));
   };
 
   if (!mounted) {
@@ -122,7 +123,7 @@ function CyberWare() {
       <Header />
       <h2 className={styles.title}>Chrome — {characterData.name}</h2>
       <p className={styles.hint}>
-        Clique no corpo para gerenciar slots ·{' '}
+        Clique numa região do corpo para ver o chrome daquela área ·{' '}
         <button
           type="button"
           className={styles.cwBtn}
@@ -135,10 +136,15 @@ function CyberWare() {
       <div className={styles.layout}>
         <aside className={styles.bodyCol}>
           <div className={styles.bodyWrap}>
-            <BodyFigure handSelected={handSelected} onToggle={toggleHandSelection} />
+            <BodyFigure
+              selectedPart={selectedPart}
+              onSelectPart={handleSelectPart}
+            />
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#8b93a7' }}>
-            {showSkeleton ? 'Slots abertos' : 'Toque no corpo'}
+          <span className={styles.bodyHint}>
+            {selectedPart
+              ? BODY_PART_LABELS[selectedPart]
+              : 'Toque numa região'}
           </span>
         </aside>
 
@@ -146,17 +152,15 @@ function CyberWare() {
           <CyberwareShop
             characterId={characterData.id}
             sheet={characterData.sheet || {}}
+            installed={characterData.cyberwares || []}
+            selectedPart={selectedPart}
+            onClearPart={() => setSelectedPart(null)}
             onUpdated={fetchCharacterData}
           />
-          {showSkeleton && (
-            <div className={styles.slotPanel}>
-              <Skeleton characterData={characterData} />
-            </div>
-          )}
         </div>
       </div>
     </section>
   );
-}
+};
 
 export default CyberWare;

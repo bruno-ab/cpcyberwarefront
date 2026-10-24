@@ -637,6 +637,14 @@ textarea {}
     fill: #ff7d16;
 }
 
+.human-body svg.body-part-selected path {
+    fill: #fed33f;
+}
+
+.human-body svg.body-part-selected:hover path {
+    fill: #ffe066;
+}
+
 .human-body svg {
     position: absolute;
     left: 50%;

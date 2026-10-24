@@ -53,7 +53,15 @@
     "capacity": "Capacity",
     "humanity": "Humanity",
     "edges": "Edges",
-    "psychosis": "Cyberpsychosis"
+    "psychosis": "Cyberpsychosis",
+    "tabs": {
+      "resumo": "Overview",
+      "atributos": "Attributes",
+      "habilidades": "Skills",
+      "chrome": "Chrome",
+      "recursos": "Resources",
+      "inventario": "Inventory"
+    }
   },
   "book": {
     "title": "Rulebook",

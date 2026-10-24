@@ -2,6 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { SLOT_LABELS, CyberWareSlot } from '../../data/cyberwareSlots';
+import {
+  BodyPart,
+  BODY_PART_LABELS,
+  BODY_PART_SLOTS,
+} from '../../data/bodyPartSlots';
 import { apiUrl, authHeaders } from '../../lib/api';
 import { cyberwareImageSrc } from '../../lib/media';
 import styles from './CyberwareShop.module.css';
@@ -21,18 +26,43 @@ type CatalogItem = {
   effect?: string;
 };
 
+type InstalledItem = {
+  id: number;
+  name: string;
+  type: string;
+  image?: string;
+  effect?: string;
+  description?: string;
+  rarity?: string;
+  implantCost?: number;
+  edgeCost?: number;
+};
+
 type Props = {
   characterId: number;
   sheet: Record<string, any>;
+  installed?: InstalledItem[];
+  selectedPart?: BodyPart | null;
+  onClearPart?: () => void;
   onUpdated?: () => void;
 };
 
-export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
+export const CyberwareShop = ({
+  characterId,
+  sheet,
+  installed = [],
+  selectedPart = null,
+  onClearPart,
+  onUpdated,
+}: Props) => {
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [filter, setFilter] = useState('');
   const [edges, setEdges] = useState(Number(sheet?.other_traits?.edges ?? 0));
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const slotFilter = selectedPart ? BODY_PART_SLOTS[selectedPart] : null;
+  const partLabel = selectedPart ? BODY_PART_LABELS[selectedPart] : null;
 
   useEffect(() => {
     setEdges(Number(sheet?.other_traits?.edges ?? 0));
@@ -45,16 +75,33 @@ export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
       .catch(() => setCatalog([]));
   }, []);
 
-  const filtered = useMemo(() => {
+  const installedHere = useMemo(() => {
+    if (!slotFilter) return installed;
+    return installed.filter((cw) =>
+      slotFilter.includes(cw.type as CyberWareSlot),
+    );
+  }, [installed, slotFilter]);
+
+  const installedIds = useMemo(
+    () => new Set(installed.map((cw) => cw.id)),
+    [installed],
+  );
+
+  const available = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return catalog;
-    return catalog.filter(
-      (c) =>
+    return catalog.filter((c) => {
+      if (slotFilter && !slotFilter.includes(c.type as CyberWareSlot)) {
+        return false;
+      }
+      if (installedIds.has(c.id)) return false;
+      if (!q) return true;
+      return (
         c.name?.toLowerCase().includes(q) ||
         c.type?.toLowerCase().includes(q) ||
-        c.rarity?.toLowerCase().includes(q),
-    );
-  }, [catalog, filter]);
+        c.rarity?.toLowerCase().includes(q)
+      );
+    });
+  }, [catalog, filter, slotFilter, installedIds]);
 
   const saveSheet = async (nextSheet: Record<string, unknown>) => {
     const res = await fetch(apiUrl(`/api/characters/${characterId}/sheet`), {
@@ -74,7 +121,10 @@ export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
     try {
       await saveSheet({
         ...sheet,
-        other_traits: { ...(sheet.other_traits || {}), edges: Math.max(0, Number(edges) || 0) },
+        other_traits: {
+          ...(sheet.other_traits || {}),
+          edges: Math.max(0, Number(edges) || 0),
+        },
       });
       setMsg('Edges salvos.');
       onUpdated?.();
@@ -100,15 +150,20 @@ export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
         other_traits: { ...(sheet.other_traits || {}), edges: nextEdges },
       };
       await saveSheet(nextSheet);
-      const install = await fetch(apiUrl(`/api/characters/${characterId}/cyberware`), {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ cyberwareId: item.id }),
-      });
+      const install = await fetch(
+        apiUrl(`/api/characters/${characterId}/cyberware`),
+        {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ cyberwareId: item.id }),
+        },
+      );
       if (!install.ok) {
         await saveSheet(sheet);
         const err = await install.json().catch(() => ({}));
-        throw new Error(err.message || 'Não foi possível instalar (capacidade/slot).');
+        throw new Error(
+          err.message || 'Não foi possível instalar (capacidade/slot).',
+        );
       }
       setEdges(nextEdges);
       setMsg(`Instalado: ${item.name} (−${cost} E).`);
@@ -120,10 +175,60 @@ export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
     }
   };
 
+  const uninstall = async (item: InstalledItem) => {
+    setBusy(true);
+    setMsg('');
+    try {
+      const res = await fetch(
+        apiUrl(`/api/characters/${characterId}/cyberware`),
+        {
+          method: 'DELETE',
+          headers: authHeaders(),
+          body: JSON.stringify({ cyberwareId: item.id }),
+        },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Não foi possível remover o chrome.');
+      }
+      setMsg(`Removido: ${item.name}.`);
+      onUpdated?.();
+    } catch (e: any) {
+      setMsg(e.message || 'Falha ao remover');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const slotHint = slotFilter
+    ? slotFilter.map((s) => SLOT_LABELS[s]).join(' · ')
+    : null;
+
   return (
     <section className={styles.shop}>
       <header className={styles.head}>
-        <h3>Ripperdoc — comprar e instalar</h3>
+        <div>
+          <h3>Ripperdoc — comprar e instalar</h3>
+          {partLabel ? (
+            <p className={styles.partFilter}>
+              Região: <strong>{partLabel}</strong>
+              {slotHint ? <span> — {slotHint}</span> : null}
+              {onClearPart && (
+                <button
+                  type="button"
+                  className={styles.clearBtn}
+                  onClick={onClearPart}
+                >
+                  Ver tudo
+                </button>
+              )}
+            </p>
+          ) : (
+            <p className={styles.partFilter}>
+              Clique numa parte do corpo para filtrar o chrome compatível.
+            </p>
+          )}
+        </div>
         <div className={styles.edgesRow}>
           <label>
             Edges (E)
@@ -140,43 +245,108 @@ export const CyberwareShop = ({ characterId, sheet, onUpdated }: Props) => {
         </div>
       </header>
       {msg && <p className={styles.msg}>{msg}</p>}
+
+      <section className={styles.section}>
+        <h4 className={styles.sectionTitle}>
+          {partLabel
+            ? `Chrome instalado — ${partLabel}`
+            : 'Chrome instalado'}
+        </h4>
+        {installedHere.length === 0 ? (
+          <p className={styles.empty}>
+            {partLabel
+              ? 'Nenhuma peça nesta região.'
+              : 'Nenhum chrome implantado ainda.'}
+          </p>
+        ) : (
+          <div className={styles.grid}>
+            {installedHere.map((item) => (
+              <article
+                key={`in-${item.id}`}
+                className={`${styles.card} ${styles.installed}`}
+              >
+                <img
+                  src={cyberwareImageSrc(item)}
+                  alt={item.name}
+                  className={styles.thumb}
+                />
+                <div className={styles.body}>
+                  <strong>{item.name}</strong>
+                  <span>
+                    {SLOT_LABELS[item.type as CyberWareSlot] || item.type}
+                    {item.rarity ? ` · ${item.rarity}` : ''}
+                  </span>
+                  <p>{item.effect || item.description}</p>
+                </div>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => uninstall(item)}
+                >
+                  Remover
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
       <input
         className={styles.search}
         type="search"
-        placeholder="Buscar peça de chrome…"
+        placeholder={
+          partLabel
+            ? `Buscar chrome para ${partLabel.toLowerCase()}…`
+            : 'Buscar peça de chrome…'
+        }
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
       />
-      <div className={styles.grid}>
-        {filtered.map((item) => {
-          const cost = Number(item.edge_cost ?? item.edgeCost ?? 0);
-          return (
-            <article key={item.id} className={styles.card}>
-              <img
-                src={cyberwareImageSrc(item)}
-                alt={item.name}
-                className={styles.thumb}
-              />
-              <div className={styles.body}>
-                <strong>{item.name}</strong>
-                <span>
-                  {SLOT_LABELS[item.type as CyberWareSlot] || item.type} ·{' '}
-                  {item.rarity || '—'} · {cost} E · implante{' '}
-                  {item.implant_cost ?? item.implantCost ?? '—'}
-                </span>
-                <p>{item.effect || item.description}</p>
-              </div>
-              <button
-                type="button"
-                disabled={busy || edges < cost}
-                onClick={() => buyAndInstall(item)}
-              >
-                Comprar e instalar
-              </button>
-            </article>
-          );
-        })}
-      </div>
+
+      <section className={styles.section}>
+        <h4 className={styles.sectionTitle}>
+          {partLabel
+            ? `Disponíveis para ${partLabel}`
+            : 'Catálogo do ripperdoc'}
+        </h4>
+        {available.length === 0 ? (
+          <p className={styles.empty}>
+            Nenhuma peça disponível
+            {partLabel ? ` para ${partLabel.toLowerCase()}` : ''}.
+          </p>
+        ) : (
+          <div className={styles.grid}>
+            {available.map((item) => {
+              const cost = Number(item.edge_cost ?? item.edgeCost ?? 0);
+              return (
+                <article key={item.id} className={styles.card}>
+                  <img
+                    src={cyberwareImageSrc(item)}
+                    alt={item.name}
+                    className={styles.thumb}
+                  />
+                  <div className={styles.body}>
+                    <strong>{item.name}</strong>
+                    <span>
+                      {SLOT_LABELS[item.type as CyberWareSlot] || item.type} ·{' '}
+                      {item.rarity || '—'} · {cost} E · implante{' '}
+                      {item.implant_cost ?? item.implantCost ?? '—'}
+                    </span>
+                    <p>{item.effect || item.description}</p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={busy || edges < cost}
+                    onClick={() => buyAndInstall(item)}
+                  >
+                    Comprar e instalar
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </section>
   );
 };
