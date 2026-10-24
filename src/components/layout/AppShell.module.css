@@ -114,6 +114,70 @@
   font-family: var(--cp-font-mono);
 }
 
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+  margin-left: auto;
+}
+
+.themeRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.75rem;
+}
+
+.themeLabel {
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim);
+}
+
+.themeSelect {
+  appearance: none;
+  background: var(--cp-bg-1);
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-cyan);
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25rem 1.4rem 0.25rem 0.45rem;
+  cursor: pointer;
+  border-radius: 0;
+  max-width: 11rem;
+  background-image: linear-gradient(45deg, transparent 50%, var(--cp-cyan) 50%),
+    linear-gradient(135deg, var(--cp-cyan) 50%, transparent 50%);
+  background-position:
+    calc(100% - 12px) calc(50% - 2px),
+    calc(100% - 7px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.themeSelect:hover,
+.themeSelect:focus-visible {
+  border-color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
+  outline: none;
+}
+
+.swatches {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.swatch {
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1px solid var(--cp-border-strong);
+  box-shadow: 0 0 6px currentColor;
+}
+
 .locale {
   display: flex;
   gap: 0.25rem;

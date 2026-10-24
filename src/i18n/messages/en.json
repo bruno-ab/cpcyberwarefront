@@ -35,7 +35,17 @@
       "Legendary": "Legendary"
     },
     "loading": "Syncing…",
-    "error": "Link failed. Try again."
+    "error": "Link failed. Try again.",
+    "theme": {
+      "label": "Palette",
+      "night": "Night City",
+      "matrix": "Matrix",
+      "hotline": "Hotline",
+      "arasaka": "Arasaka",
+      "netwatch": "NetWatch",
+      "edgerunners": "Edgerunners",
+      "amber": "Amber CRT"
+    }
   },
   "home": {
     "hero": "Chrome, blood and data.",

@@ -32,6 +32,7 @@
   --cp-glow-yellow: 0 0 10px rgba(255, 184, 0, 0.4);
   --cp-glow-alert: 0 0 12px rgba(255, 0, 0, 0.35);
   --cp-inset-cyan: inset 0 0 12px rgba(0, 243, 255, 0.08);
+  --cp-line: color-mix(in srgb, var(--cp-cyan) 40%, transparent);
 
   --cp-notch: 10px;
   --cp-clip: polygon(

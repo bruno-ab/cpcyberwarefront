@@ -35,7 +35,17 @@
       "Legendary": "Lendário"
     },
     "loading": "Sincronizando…",
-    "error": "Falha de link. Tente de novo."
+    "error": "Falha de link. Tente de novo.",
+    "theme": {
+      "label": "Paleta",
+      "night": "Night City",
+      "matrix": "Matrix",
+      "hotline": "Hotline",
+      "arasaka": "Arasaka",
+      "netwatch": "NetWatch",
+      "edgerunners": "Edgerunners",
+      "amber": "Amber CRT"
+    }
   },
   "home": {
     "hero": "Chrome, sangue e dados.",

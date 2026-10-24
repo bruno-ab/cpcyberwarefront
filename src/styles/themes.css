@@ -1,0 +1,195 @@
+/**
+ * Paletas cyberpunk — aplicadas via <html data-theme="...">
+ * Default = night (ciano / amarelo / vermelho)
+ */
+
+/* —— Matrix: preto + verde fosforoso —— */
+html[data-theme='matrix'] {
+  --cp-bg-0: #020805;
+  --cp-bg-1: #041008;
+  --cp-bg-2: #071a0e;
+  --cp-bg-panel: rgba(0, 12, 4, 0.82);
+  --cp-border: #0d3a1a;
+  --cp-border-strong: #1a5c2a;
+
+  --cp-cyan: #33ff66;
+  --cp-cyan-dim: #2aaa4a;
+  --cp-yellow: #9dffb0;
+  --cp-yellow-bright: #c8ffd4;
+  --cp-orange: #66ff99;
+  --cp-magenta: #1aff8c;
+  --cp-alert: #ff3333;
+  --cp-alert-soft: #ff6666;
+  --cp-ok: #66ff99;
+  --cp-violet: #1a8f3a;
+
+  --cp-text: #b8ffc8;
+  --cp-text-dim: #2aaa4a;
+
+  --cp-glow-cyan: 0 0 12px rgba(51, 255, 102, 0.5);
+  --cp-glow-yellow: 0 0 10px rgba(157, 255, 176, 0.4);
+  --cp-glow-alert: 0 0 12px rgba(255, 51, 51, 0.4);
+  --cp-inset-cyan: inset 0 0 14px rgba(51, 255, 102, 0.1);
+
+  --cp-rarity-rare: #33ff66;
+  --cp-rarity-legendary: #9dffb0;
+}
+
+/* —— Hotline: amarelo + ciano + vermelho (HUD clássico reforçado) —— */
+html[data-theme='hotline'] {
+  --cp-bg-0: #0a0a0a;
+  --cp-bg-1: #120a0c;
+  --cp-bg-2: #1a1014;
+  --cp-bg-panel: rgba(8, 0, 4, 0.78);
+  --cp-border: #3a2030;
+  --cp-border-strong: #5a3040;
+
+  --cp-cyan: #00f3ff;
+  --cp-cyan-dim: #2be4ea;
+  --cp-yellow: #ffb800;
+  --cp-yellow-bright: #ffe066;
+  --cp-orange: #ff4d00;
+  --cp-magenta: #ff2a6d;
+  --cp-alert: #ff003c;
+  --cp-alert-soft: #ff4d6d;
+  --cp-ok: #2bfea0;
+  --cp-violet: #ff2bd6;
+
+  --cp-text: #f2e8ee;
+  --cp-text-dim: #a89098;
+
+  --cp-glow-cyan: 0 0 12px rgba(0, 243, 255, 0.5);
+  --cp-glow-yellow: 0 0 12px rgba(255, 184, 0, 0.5);
+  --cp-glow-alert: 0 0 14px rgba(255, 0, 60, 0.45);
+  --cp-inset-cyan: inset 0 0 14px rgba(255, 0, 60, 0.08);
+
+  --cp-rarity-legendary: #ffb800;
+}
+
+/* —— Arasaka: preto + vermelho corporativo —— */
+html[data-theme='arasaka'] {
+  --cp-bg-0: #0a0202;
+  --cp-bg-1: #120606;
+  --cp-bg-2: #1a0a0a;
+  --cp-bg-panel: rgba(20, 0, 0, 0.8);
+  --cp-border: #4a1010;
+  --cp-border-strong: #6a1818;
+
+  --cp-cyan: #ff4d6d;
+  --cp-cyan-dim: #c03040;
+  --cp-yellow: #f0e6d8;
+  --cp-yellow-bright: #ffffff;
+  --cp-orange: #ff6a00;
+  --cp-magenta: #ff003c;
+  --cp-alert: #ff0000;
+  --cp-alert-soft: #ff6677;
+  --cp-ok: #e8dcc8;
+  --cp-violet: #8b0000;
+
+  --cp-text: #f5ebe0;
+  --cp-text-dim: #9a7068;
+
+  --cp-glow-cyan: 0 0 12px rgba(255, 77, 109, 0.45);
+  --cp-glow-yellow: 0 0 10px rgba(240, 230, 216, 0.35);
+  --cp-glow-alert: 0 0 14px rgba(255, 0, 0, 0.5);
+  --cp-inset-cyan: inset 0 0 14px rgba(255, 0, 60, 0.12);
+
+  --cp-rarity-rare: #ff4d6d;
+  --cp-rarity-legendary: #f0e6d8;
+}
+
+/* —— NetWatch: azul gelo + ciano —— */
+html[data-theme='netwatch'] {
+  --cp-bg-0: #050810;
+  --cp-bg-1: #0a1020;
+  --cp-bg-2: #101828;
+  --cp-bg-panel: rgba(4, 10, 24, 0.82);
+  --cp-border: #1a3058;
+  --cp-border-strong: #2a4880;
+
+  --cp-cyan: #4db8ff;
+  --cp-cyan-dim: #2a80c8;
+  --cp-yellow: #a8d4ff;
+  --cp-yellow-bright: #e0f0ff;
+  --cp-orange: #6080ff;
+  --cp-magenta: #7a5cff;
+  --cp-alert: #ff4466;
+  --cp-alert-soft: #ff8899;
+  --cp-ok: #40e0d0;
+  --cp-violet: #4060ff;
+
+  --cp-text: #d8e8f8;
+  --cp-text-dim: #6a88a8;
+
+  --cp-glow-cyan: 0 0 12px rgba(77, 184, 255, 0.5);
+  --cp-glow-yellow: 0 0 10px rgba(168, 212, 255, 0.4);
+  --cp-glow-alert: 0 0 12px rgba(255, 68, 102, 0.4);
+  --cp-inset-cyan: inset 0 0 14px rgba(77, 184, 255, 0.1);
+
+  --cp-rarity-rare: #4db8ff;
+  --cp-rarity-legendary: #a8d4ff;
+}
+
+/* —— Edgerunners: magenta + amarelo —— */
+html[data-theme='edgerunners'] {
+  --cp-bg-0: #0c0610;
+  --cp-bg-1: #140a1a;
+  --cp-bg-2: #1c1024;
+  --cp-bg-panel: rgba(16, 4, 24, 0.82);
+  --cp-border: #4a2060;
+  --cp-border-strong: #6a3088;
+
+  --cp-cyan: #ff2bd6;
+  --cp-cyan-dim: #c020a0;
+  --cp-yellow: #fed33f;
+  --cp-yellow-bright: #ffe066;
+  --cp-orange: #ff7d16;
+  --cp-magenta: #b14cff;
+  --cp-alert: #ff003c;
+  --cp-alert-soft: #ff6aad;
+  --cp-ok: #2be4ea;
+  --cp-violet: #8814ff;
+
+  --cp-text: #f8e8ff;
+  --cp-text-dim: #a888b8;
+
+  --cp-glow-cyan: 0 0 12px rgba(255, 43, 214, 0.5);
+  --cp-glow-yellow: 0 0 12px rgba(254, 211, 63, 0.45);
+  --cp-glow-alert: 0 0 12px rgba(255, 0, 60, 0.4);
+  --cp-inset-cyan: inset 0 0 14px rgba(255, 43, 214, 0.1);
+
+  --cp-rarity-rare: #ff2bd6;
+  --cp-rarity-legendary: #fed33f;
+}
+
+/* —— Amber CRT: âmbar clássico —— */
+html[data-theme='amber'] {
+  --cp-bg-0: #0a0804;
+  --cp-bg-1: #12100a;
+  --cp-bg-2: #1a160c;
+  --cp-bg-panel: rgba(12, 8, 0, 0.82);
+  --cp-border: #4a3810;
+  --cp-border-strong: #6a5020;
+
+  --cp-cyan: #ffb000;
+  --cp-cyan-dim: #c08000;
+  --cp-yellow: #ffd24a;
+  --cp-yellow-bright: #ffe9a0;
+  --cp-orange: #ff7a00;
+  --cp-magenta: #ff8800;
+  --cp-alert: #ff4400;
+  --cp-alert-soft: #ff8866;
+  --cp-ok: #ffcc66;
+  --cp-violet: #a06000;
+
+  --cp-text: #ffe8b0;
+  --cp-text-dim: #a08040;
+
+  --cp-glow-cyan: 0 0 12px rgba(255, 176, 0, 0.45);
+  --cp-glow-yellow: 0 0 12px rgba(255, 210, 74, 0.4);
+  --cp-glow-alert: 0 0 12px rgba(255, 68, 0, 0.4);
+  --cp-inset-cyan: inset 0 0 14px rgba(255, 176, 0, 0.1);
+
+  --cp-rarity-rare: #ffb000;
+  --cp-rarity-legendary: #ffd24a;
+}

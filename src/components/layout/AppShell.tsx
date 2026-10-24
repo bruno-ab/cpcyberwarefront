@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ReactNode } from 'react';
 import { useTranslations } from '../../i18n/useTranslations';
+import { ThemeSwitcher } from './ThemeSwitcher';
 import styles from './AppShell.module.css';
 
 const NAV = [
@@ -45,23 +46,26 @@ export const AppNav = () => {
           </Link>
         ))}
       </nav>
-      <div className={styles.locale}>
-        <button
-          type="button"
-          className={locale === 'pt-BR' ? styles.localeActive : undefined}
-          onClick={() => changeLocale('pt-BR')}
-          aria-label="Português"
-        >
-          PT
-        </button>
-        <button
-          type="button"
-          className={locale === 'en' ? styles.localeActive : undefined}
-          onClick={() => changeLocale('en')}
-          aria-label="English"
-        >
-          EN
-        </button>
+      <div className={styles.controls}>
+        <ThemeSwitcher />
+        <div className={styles.locale}>
+          <button
+            type="button"
+            className={locale === 'pt-BR' ? styles.localeActive : undefined}
+            onClick={() => changeLocale('pt-BR')}
+            aria-label="Português"
+          >
+            PT
+          </button>
+          <button
+            type="button"
+            className={locale === 'en' ? styles.localeActive : undefined}
+            onClick={() => changeLocale('en')}
+            aria-label="English"
+          >
+            EN
+          </button>
+        </div>
       </div>
     </header>
   );
