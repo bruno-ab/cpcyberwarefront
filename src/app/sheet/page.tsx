@@ -147,19 +147,23 @@ const Sheet = () => {
             <h3 className={styles.attributesSection}>Vitalidade</h3>
             <VitalityField characterData={characterData} />
             <div className={styles.summaryCards}>
-              <div className={styles.summaryCard}>
+              <div className={styles.summaryCard} data-band="bruise">
+                <span className={styles.cardScan} aria-hidden />
                 <span>Edges (E)</span>
                 <strong>{edges}</strong>
               </div>
-              <div className={styles.summaryCard}>
+              <div className={styles.summaryCard} data-band="ok">
+                <span className={styles.cardScan} aria-hidden />
                 <span>Eddies</span>
                 <strong>{Number(credits) || 0}</strong>
               </div>
-              <div className={styles.summaryCard}>
+              <div className={styles.summaryCard} data-band="hurt">
+                <span className={styles.cardScan} aria-hidden />
                 <span>Chrome</span>
                 <strong>{characterData.cyberwares?.length || 0} peças</strong>
               </div>
-              <div className={styles.summaryCard}>
+              <div className={styles.summaryCard} data-band="crit">
+                <span className={styles.cardScan} aria-hidden />
                 <span>Role</span>
                 <strong>
                   {characterData.role ||
@@ -231,11 +235,13 @@ const Sheet = () => {
         {tab === 'inventario' && (
           <div className={styles.inventory}>
             <h3 className={styles.attributesSection}>Inventário</h3>
-            <div className={styles.inventoryRow}>
+            <div className={styles.inventoryRow} data-band="ok">
+              <span className={styles.cardScan} aria-hidden />
               <span>Eddies na conta</span>
               <strong>{Number(credits) || 0}</strong>
             </div>
-            <div className={styles.inventoryRow}>
+            <div className={styles.inventoryRow} data-band="bruise">
+              <span className={styles.cardScan} aria-hidden />
               <span>Edges (moeda de chrome)</span>
               <strong>{Number(edges) || 0} E</strong>
             </div>

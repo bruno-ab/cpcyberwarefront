@@ -100,29 +100,208 @@
   margin: 1rem 0;
 }
 
+/* Shared with inventory — Vitalidade palette + glitch */
+.cardScan {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.28;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(255, 255, 255, 0.045) 3px
+  );
+  z-index: 1;
+  animation: sheetScanMove 4.5s linear infinite;
+}
+
 .summaryCard {
-  border: 1px solid rgba(0, 243, 255, 0.35);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #2be4ea88;
   background: var(--cp-bg-panel);
   padding: 0.85rem;
   text-align: center;
-  box-shadow: var(--cp-inset-cyan);
+  box-shadow: inset 0 0 18px rgba(43, 228, 234, 0.12);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 92% 100%, 0 100%);
+  animation: sheetSoftGlitch 3.6s steps(2, end) infinite;
 }
 
-.summaryCard span {
+.summaryCard:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.summaryCard:nth-child(3) {
+  animation-delay: 0.9s;
+  animation-duration: 2.8s;
+}
+
+.summaryCard:nth-child(4) {
+  animation-delay: 1.3s;
+  animation-duration: 2.2s;
+}
+
+.summaryCard[data-band='ok'] {
+  border-color: #2be4ea88;
+  box-shadow: inset 0 0 20px #2be4ea22;
+}
+
+.summaryCard[data-band='bruise'] {
+  border-color: #fed33f88;
+  box-shadow: inset 0 0 22px #fed33f22;
+}
+
+.summaryCard[data-band='hurt'] {
+  border-color: #ff7d16;
+  box-shadow: inset 0 0 24px #ff7d1628;
+  animation-name: sheetMidGlitch;
+}
+
+.summaryCard[data-band='crit'] {
+  border-color: #ff4d6d;
+  box-shadow: inset 0 0 26px #ff4d6d33;
+  animation-name: sheetHardGlitch;
+  animation-duration: 1.8s;
+}
+
+.summaryCard[data-band='dead'] {
+  border-color: #ff003c;
+  background: #120008;
+  box-shadow: inset 0 0 32px #ff003c44;
+  animation-name: sheetDeadGlitch;
+  animation-duration: 0.55s;
+}
+
+.summaryCard > span:not(.cardScan) {
+  position: relative;
+  z-index: 2;
   display: block;
-  color: var(--cp-text-dim);
+  color: #8b93a7;
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 0.35rem;
-  font-family: var(--cp-font-mono);
+  font-family: var(--cp-font-mono), 'Share Tech Mono', monospace;
 }
 
 .summaryCard strong {
-  color: var(--cp-cyan);
+  position: relative;
+  z-index: 2;
+  color: #2be4ea;
   font-size: 1.35rem;
-  font-family: var(--cp-font-display);
-  text-shadow: var(--cp-glow-cyan);
+  font-family: var(--cp-font-display), Audiowide, sans-serif;
+  text-shadow: 0 0 10px #2be4ea66;
+}
+
+.summaryCard[data-band='bruise'] strong {
+  color: #fed33f;
+  text-shadow: 0 0 10px #fed33f66;
+}
+
+.summaryCard[data-band='hurt'] strong {
+  color: #ff7d16;
+  text-shadow: 0 0 10px #ff7d1666;
+}
+
+.summaryCard[data-band='crit'] strong {
+  color: #ff4d6d;
+  text-shadow: -0.04em 0 #2be4ea, 0.04em 0 #ff4d6d;
+}
+
+.summaryCard[data-band='dead'] strong {
+  color: #ff003c;
+  text-shadow: -0.06em 0 #2be4ea, 0.06em 0 #ff003c;
+}
+
+@keyframes sheetScanMove {
+  from {
+    transform: translateY(-6%);
+  }
+  to {
+    transform: translateY(6%);
+  }
+}
+
+@keyframes sheetSoftGlitch {
+  0%,
+  92%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  94% {
+    transform: translate(-1px, 0);
+    filter: hue-rotate(12deg);
+  }
+  96% {
+    transform: translate(1px, 0);
+  }
+}
+
+@keyframes sheetMidGlitch {
+  0%,
+  86%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  88% {
+    transform: translate(-2px, 1px) skewX(0.4deg);
+    filter: contrast(1.15) hue-rotate(-12deg);
+  }
+  92% {
+    transform: translate(2px, -1px);
+  }
+}
+
+@keyframes sheetHardGlitch {
+  0%,
+  78%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  80% {
+    transform: translate(-2px, 1px) skewX(0.5deg);
+    filter: contrast(1.2) hue-rotate(-20deg);
+  }
+  85% {
+    transform: translate(2px, -1px);
+  }
+  90% {
+    transform: translate(-1px, 0);
+    filter: saturate(1.35);
+  }
+}
+
+@keyframes sheetDeadGlitch {
+  0% {
+    transform: none;
+    filter: none;
+  }
+  25% {
+    transform: translate(-3px, 1px) skewX(1deg);
+    filter: hue-rotate(40deg) contrast(1.3);
+  }
+  50% {
+    transform: translate(3px, -1px);
+    filter: saturate(0.45);
+  }
+  75% {
+    transform: translate(-2px, 0) skewX(-1deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summaryCard,
+  .inventoryRow,
+  .cardScan {
+    animation: none !important;
+  }
 }
 
 .hint {
@@ -144,25 +323,71 @@
 }
 
 .inventoryRow {
+  position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
   padding: 0.85rem 1rem;
-  border: 1px solid rgba(0, 243, 255, 0.3);
+  border: 1px solid #2be4ea88;
   background: var(--cp-bg-panel);
+  box-shadow: inset 0 0 18px rgba(43, 228, 234, 0.12);
+  clip-path: polygon(0 0, 100% 0, 100% 72%, 94% 100%, 0 100%);
+  animation: sheetSoftGlitch 3.8s steps(2, end) infinite;
 }
 
-.inventoryRow span {
-  color: var(--cp-text-dim);
+.inventoryRow[data-band='ok'] {
+  border-color: #2be4ea88;
+}
+
+.inventoryRow[data-band='bruise'] {
+  border-color: #fed33f88;
+  box-shadow: inset 0 0 22px #fed33f22;
+  animation-delay: 0.6s;
+}
+
+.inventoryRow[data-band='hurt'] {
+  border-color: #ff7d16;
+  box-shadow: inset 0 0 24px #ff7d1628;
+  animation-name: sheetMidGlitch;
+}
+
+.inventoryRow[data-band='crit'] {
+  border-color: #ff4d6d;
+  box-shadow: inset 0 0 26px #ff4d6d33;
+  animation-name: sheetHardGlitch;
+}
+
+.inventoryRow > span:not(.cardScan) {
+  position: relative;
+  z-index: 2;
+  color: #8b93a7;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-family: var(--cp-font-mono);
+  font-family: var(--cp-font-mono), 'Share Tech Mono', monospace;
 }
 
 .inventoryRow strong {
-  color: var(--cp-cyan);
-  font-family: var(--cp-font-display);
+  position: relative;
+  z-index: 2;
+  color: #2be4ea;
+  font-family: var(--cp-font-display), Audiowide, sans-serif;
   font-size: 1.15rem;
+  text-shadow: 0 0 10px #2be4ea55;
+}
+
+.inventoryRow[data-band='bruise'] strong {
+  color: #fed33f;
+  text-shadow: 0 0 10px #fed33f55;
+}
+
+.inventoryRow[data-band='hurt'] strong {
+  color: #ff7d16;
+}
+
+.inventoryRow[data-band='crit'] strong {
+  color: #ff4d6d;
+  text-shadow: -0.04em 0 #2be4ea, 0.04em 0 #ff4d6d;
 }

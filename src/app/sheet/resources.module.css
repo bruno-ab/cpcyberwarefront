@@ -1,9 +1,61 @@
 .resourcestable {
-    background-color: var(--colors-bg--300);
-    border: 1px solid var(--colors-tertiary--500);
-    border-radius: 3px;
-    color: var(--colors-tertiary--500);
-    padding: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  background: var(--cp-bg-panel);
+  border: 1px solid #ff7d1688;
+  color: #ff7d16;
+  padding: 0.85rem 1rem;
+  box-shadow: inset 0 0 22px #ff7d1620;
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 97% 100%, 0 100%);
+  animation: resSoftGlitch 3.2s steps(2, end) infinite;
+  animation-delay: 0.55s;
+}
+
+.resourcestable::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.28;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(255, 255, 255, 0.04) 3px
+  );
+  animation: resScan 4.6s linear infinite;
+}
+
+@keyframes resSoftGlitch {
+  0%,
+  88%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  90% {
+    transform: translate(-1px, 0);
+    filter: hue-rotate(-14deg) contrast(1.1);
+  }
+  94% {
+    transform: translate(1px, 0);
+  }
+}
+
+@keyframes resScan {
+  from {
+    transform: translateY(-5%);
+  }
+  to {
+    transform: translateY(5%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resourcestable,
+  .resourcestable::before {
+    animation: none !important;
+  }
 }
 
 .body {
