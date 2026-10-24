@@ -1,0 +1,119 @@
+.page {
+  max-width: 1100px;
+}
+
+.intro {
+  color: #8b93a7;
+  margin: 0 0 1rem;
+  max-width: 52rem;
+  line-height: 1.45;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid #555;
+  color: #8b93a7;
+  font-family: 'Audiowide', 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+}
+
+.tab[data-active='true'] {
+  border-color: #2be4ea;
+  color: #2be4ea;
+  box-shadow: inset 0 0 10px #2be4ea22;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.card {
+  text-align: left;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #444;
+  color: inherit;
+  padding: 0.75rem 0.85rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.card:hover {
+  border-color: #2be4ea;
+}
+
+.card[data-active='true'] {
+  border-color: #fed33f;
+  box-shadow: inset 0 0 12px #fed33f22;
+}
+
+.card strong {
+  color: #fff;
+  font-family: 'Audiowide', serif;
+  letter-spacing: 1px;
+  font-size: 0.95rem;
+}
+
+.meta {
+  font-size: 0.78rem;
+  color: #8b93a7;
+}
+
+.blurb {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #c3c3c3;
+}
+
+.reward {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #fed33f;
+}
+
+.play {
+  position: sticky;
+  top: 5rem;
+}
+
+.empty {
+  border: 1px dashed #555;
+  padding: 1.5rem;
+  color: #8b93a7;
+  text-align: center;
+}
+
+.statusMsg {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: #2be4ea;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .play {
+    position: static;
+  }
+}
