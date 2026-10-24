@@ -1,50 +1,78 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import Header from '../header/Header';
-import { NPCS } from '../../data/npcs';
+import { NPC_SHEETS } from '../../data/npcSheets';
+import { computeCyberwareCapacity } from '../../lib/cyberwareCapacity';
 import styles from './npcs.module.css';
 
 const NpcsPage = () => {
+  const [sourceFilter, setSourceFilter] = useState<string>('cp2077');
+
+  const items = useMemo(() => {
+    if (sourceFilter === 'all') return NPC_SHEETS;
+    return NPC_SHEETS.filter((npc) => npc.source === sourceFilter);
+  }, [sourceFilter]);
+
   return (
     <section className={styles.page}>
       <Header />
-      <h2>NPCs — Night City & Edgerunners</h2>
+      <h2>NPCs — Fichas Storyteller</h2>
       <p className={styles.intro}>
-        Perfis prontos para sessão Storyteller. Use as paradas sugeridas como ponto de
-        partida; ajuste ameaça conforme a mesa.
+        Personagens icônicos de Cyberpunk 2077 (e Phantom Liberty) com ficha completa:
+        atributos, habilidades, Edges, chrome e ganchos de sessão. Abra a ficha para
+        detalhes.
       </p>
 
+      <div className={styles.filters}>
+        <label>
+          Fonte{' '}
+          <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)}>
+            <option value="cp2077">CP2077</option>
+            <option value="phantom-liberty">Phantom Liberty</option>
+            <option value="edgerunners">Edgerunners</option>
+            <option value="all">Todas</option>
+          </select>
+        </label>
+      </div>
+
       <div className={styles.grid}>
-        {NPCS.map((npc) => (
-          <article key={npc.id} className={styles.card}>
-            <header className={styles.cardHeader}>
-              <h3>{npc.name}</h3>
-              <span className={styles.badge}>{npc.threat}</span>
-            </header>
-            <p className={styles.meta}>
-              {npc.role} · {npc.affiliation} · {npc.source}
-            </p>
-            <p>{npc.summary}</p>
-            <p>
-              <strong>Conceito:</strong> {npc.concept}
-            </p>
-            <p>
-              <strong>Chrome:</strong> {npc.notableCyberware.join(', ')}
-            </p>
-            <p>
-              <strong>Combate:</strong> {npc.suggestedDice.combat}
-            </p>
-            <p>
-              <strong>Social:</strong> {npc.suggestedDice.social}
-            </p>
-            <p>
-              <strong>Tech:</strong> {npc.suggestedDice.tech}
-            </p>
-            <ul>
-              {npc.storytellerHooks.map((hook) => (
-                <li key={hook}>{hook}</li>
-              ))}
-            </ul>
-          </article>
-        ))}
+        {items.map((npc) => {
+          const capacity = computeCyberwareCapacity(
+            npc.sheet.cyberwareLoad.map((cw) => ({ implantCost: cw.implantCost })),
+          );
+          return (
+            <article key={npc.id} className={styles.card}>
+              <header className={styles.cardHeader}>
+                <h3>{npc.name}</h3>
+                <span className={styles.badge}>{npc.threat}</span>
+              </header>
+              <p className={styles.meta}>
+                {npc.role} · {npc.affiliation} · {npc.source}
+              </p>
+              <p>{npc.summary}</p>
+              <p>
+                <strong>Conceito:</strong> {npc.concept}
+              </p>
+              <p>
+                <strong>Vitalidade:</strong> {npc.sheet.vitality} ·{' '}
+                <strong>Willpower:</strong> {npc.sheet.other_traits.willpower} ·{' '}
+                <strong>E:</strong> {npc.sheet.other_traits.edges}
+              </p>
+              <p>
+                <strong>Capacidade chrome:</strong>{' '}
+                <span style={{ color: capacity.remaining < 0 ? '#e8615a' : '#2bfea0' }}>
+                  {capacity.remaining}
+                </span>{' '}
+                livres ({capacity.used} usados)
+              </p>
+              <Link className={styles.link} href={`/npcs/${npc.id}`}>
+                Abrir ficha completa →
+              </Link>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

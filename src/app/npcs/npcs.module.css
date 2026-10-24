@@ -53,3 +53,48 @@
   padding-left: 1.1rem;
   margin: 0.5rem 0 0;
 }
+
+.filters {
+  margin: 1rem 0;
+}
+
+.filters select {
+  background: #1e181e;
+  color: #2be4ea;
+  border: 1px solid #fed33f;
+  margin-left: 0.35rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.link {
+  color: #fed33f;
+  text-decoration: underline;
+}
+
+.sheetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.dots {
+  letter-spacing: 0.05em;
+  color: #02d7f2;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid #452;
+  text-align: left;
+  padding: 0.35rem;
+}
+
+.table th {
+  color: #fed33f;
+}
