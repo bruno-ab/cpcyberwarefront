@@ -55,10 +55,11 @@
 }
 
 .skyline {
-  border: 1px solid var(--cp-cyan);
+  border: 1px solid var(--cp-line, var(--cp-cyan));
   clip-path: var(--cp-clip);
   box-shadow: var(--cp-glow-cyan);
   overflow: hidden;
+  background: var(--cp-bg-panel);
 }
 
 .skySvg {

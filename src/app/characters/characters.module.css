@@ -1,0 +1,168 @@
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--cp-line, rgba(0, 243, 255, 0.35));
+}
+
+.hero h1 {
+  margin: 0 0 0.35rem;
+  font-family: var(--cp-font-display);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+}
+
+.hero p {
+  margin: 0;
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.85rem;
+  max-width: 40rem;
+  line-height: 1.4;
+}
+
+.status {
+  color: var(--cp-cyan);
+  font-family: var(--cp-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  margin: 0 0 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  text-align: left;
+  background: var(--cp-bg-panel);
+  border: 1px solid var(--cp-line, rgba(0, 243, 255, 0.35));
+  color: var(--cp-text);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  box-shadow: var(--cp-inset-cyan);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  border-color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
+}
+
+.cardArt {
+  height: 110px;
+  background:
+    linear-gradient(135deg, transparent 40%, color-mix(in srgb, var(--cp-cyan) 18%, transparent)),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 6px,
+      color-mix(in srgb, var(--cp-cyan) 8%, transparent) 7px
+    ),
+    var(--cp-bg-1);
+  border-bottom: 1px solid var(--cp-line, rgba(0, 243, 255, 0.25));
+  display: grid;
+  place-items: center;
+  font-family: var(--cp-font-display);
+  font-size: 2.4rem;
+  color: var(--cp-cyan);
+  text-shadow: var(--cp-glow-cyan);
+  letter-spacing: 0.08em;
+}
+
+.cardBody {
+  padding: 0.85rem 0.9rem 1rem;
+  display: grid;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.cardBody h3 {
+  margin: 0;
+  font-family: var(--cp-font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+}
+
+.role {
+  margin: 0;
+  font-family: var(--cp-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-cyan);
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cp-text-dim);
+  line-height: 1.35;
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.cardActions button {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+}
+
+.cardActions button:hover {
+  border-color: var(--cp-yellow);
+  color: var(--cp-yellow);
+}
+
+.empty {
+  border: 1px dashed var(--cp-border-strong);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--cp-text-dim);
+  background: var(--cp-bg-panel);
+  margin-bottom: 1.25rem;
+}
+
+.empty strong {
+  display: block;
+  color: var(--cp-cyan);
+  font-family: var(--cp-font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.wizardSlot {
+  margin-bottom: 1.5rem;
+}

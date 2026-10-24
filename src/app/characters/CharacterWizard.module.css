@@ -1,0 +1,190 @@
+.wrap {
+  border: 1px solid var(--cp-line, rgba(0, 243, 255, 0.35));
+  background: var(--cp-bg-panel);
+  box-shadow: var(--cp-inset-cyan);
+  padding: 1rem 1.1rem 1.25rem;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: baseline;
+  margin-bottom: 0.85rem;
+  border-bottom: 1px solid var(--cp-border-strong);
+  padding-bottom: 0.65rem;
+}
+
+.head h2 {
+  margin: 0;
+  font-family: var(--cp-font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.step {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+}
+
+.step[data-active='true'] {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
+}
+
+.step[data-done='true'] {
+  border-color: var(--cp-ok);
+  color: var(--cp-ok);
+}
+
+.body {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.field label {
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-cyan);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.field textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.roleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.5rem;
+}
+
+.roleCard {
+  appearance: none;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text);
+  padding: 0.65rem 0.7rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.25rem;
+  font: inherit;
+}
+
+.roleCard strong {
+  font-family: var(--cp-font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+}
+
+.roleCard span {
+  font-size: 0.75rem;
+  color: var(--cp-text-dim);
+  line-height: 1.3;
+}
+
+.roleCard[data-active='true'] {
+  border-color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.review {
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
+  color: var(--cp-text-dim);
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.review strong {
+  color: var(--cp-cyan);
+  font-weight: 500;
+}
+
+.msg {
+  margin: 0;
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
+  color: var(--cp-alert-soft);
+}
+
+.msg[data-ok='true'] {
+  color: var(--cp-ok);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.nav button {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+}
+
+.nav button[data-primary='true'] {
+  border-color: var(--cp-yellow);
+  color: var(--cp-yellow);
+}
+
+.nav button[data-primary='true']:hover {
+  box-shadow: var(--cp-glow-yellow);
+}
+
+.nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

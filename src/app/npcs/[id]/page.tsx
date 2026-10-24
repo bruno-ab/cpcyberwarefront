@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import Header from '../../header/Header';
+import { PageFrame } from '../../../components/layout/PageFrame';
 import { getNpcById } from '../../../data/npcSheets';
 import { computeCyberwareCapacity } from '../../../lib/cyberwareCapacity';
 import { SLOT_LABELS, CyberWareSlot } from '../../../data/cyberwareSlots';
@@ -19,11 +19,14 @@ const NpcSheetPage = () => {
 
   if (!npc) {
     return (
-      <section className={styles.page}>
-        <Header />
-        <p>NPC não encontrado.</p>
-        <Link href="/npcs">← Voltar</Link>
-      </section>
+      <PageFrame>
+        <div className={styles.page}>
+          <p>NPC não encontrado.</p>
+          <Link className={styles.link} href="/npcs">
+            ← Voltar
+          </Link>
+        </div>
+      </PageFrame>
     );
   }
 
@@ -33,10 +36,12 @@ const NpcSheetPage = () => {
   );
 
   return (
-    <section className={styles.page}>
-      <Header />
+    <PageFrame>
+      <div className={styles.page}>
       <p>
-        <Link href="/npcs">← NPCs</Link>
+        <Link className={styles.link} href="/npcs">
+          ← NPCs
+        </Link>
       </p>
       <div className={styles.hero}>
         <img
@@ -163,7 +168,8 @@ const NpcSheetPage = () => {
         </ul>
         {sheet.notes ? <p>{sheet.notes}</p> : null}
       </article>
-    </section>
+      </div>
+    </PageFrame>
   );
 };
 

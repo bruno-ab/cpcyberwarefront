@@ -1,0 +1,82 @@
+.page {
+  min-height: calc(100vh - 6rem);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.panel {
+  width: min(420px, 100%);
+  background: var(--cp-bg-panel);
+  border: 1px solid var(--cp-line, rgba(0, 243, 255, 0.35));
+  box-shadow: var(--cp-inset-cyan);
+  padding: 1.25rem 1.35rem 1.5rem;
+}
+
+.brand {
+  margin: 0 0 0.35rem;
+  font-family: var(--cp-font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+  font-size: 1.1rem;
+}
+
+.sub {
+  margin: 0 0 1.1rem;
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.field label {
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-cyan);
+}
+
+.field input {
+  width: 100%;
+}
+
+.msg {
+  margin: 0;
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
+  color: var(--cp-alert-soft);
+}
+
+.msg[data-ok='true'] {
+  color: var(--cp-ok);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.foot {
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--cp-text-dim);
+}
+
+.foot a {
+  color: var(--cp-yellow);
+}

@@ -1,109 +1,110 @@
 'use client';
-import React, { useState } from 'react';
-import styles from './login.module.css';
-import { useRouter } from 'next/navigation'
+
+import { FormEvent, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { PageFrame } from '../../components/layout/PageFrame';
+import { HudButton } from '../../components/ui/HudButton';
 import { apiUrl } from '../../lib/api';
+import styles from '../login/auth.module.css';
 
-
-function Register() {
+const RegisterPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
-  const router = useRouter()
+  const [ok, setOk] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const router = useRouter();
 
-  const handleFormSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    const data = {
-      name: name,
-      email: email,
-      phone: phone,
-      password: password,
-    };
-
+    setBusy(true);
+    setMessage('');
+    setOk(false);
     try {
       const response = await fetch(apiUrl('/api/players'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, password }),
       });
-
-      if (response.ok) {
-        router.push("/login")
-      } else {
-        setMessage('Access denied! Verify your credentials and try again.');
+      if (!response.ok) {
+        setMessage('Registro recusado. Tente outro email.');
+        return;
       }
-    } catch (error) {
-      console.log(error)
-      setMessage('Access denied due to server error! Damn Arasaka!');
+      setOk(true);
+      setMessage('Conta criada. Vá para o jack-in.');
+      setTimeout(() => router.push('/login'), 700);
+    } catch {
+      setMessage('Falha de rede. Damn Arasaka.');
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
-    <div className={styles.loginContainer}>
-      <div className={styles.glitchFrame}>
-        <div className={styles.glitchH1}>
-          <img src='/cp2077logo.png' alt='logo' className={styles.logo} />
-        </div>
-        <img src="https://images.unsplash.com/photo-1570100031390-fcc3a048eacb?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1267&q=80" className={styles.glitchOverlay}></img>
-        <img src="https://images.unsplash.com/photo-1570100031390-fcc3a048eacb?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1267&q=80" className={styles.glitchBase}></img>
+    <PageFrame>
+      <div className={styles.page}>
+        <section className={styles.panel}>
+          <h1 className={styles.brand}>Novo link</h1>
+          <p className={styles.sub}>Registrar player · Night City</p>
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <div className={styles.field}>
+              <label htmlFor="name">Nome</label>
+              <input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="phone">Phone (opcional)</label>
+              <input
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="password">Senha</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {message && (
+              <p className={styles.msg} data-ok={ok}>
+                {message}
+              </p>
+            )}
+            <div className={styles.actions}>
+              <HudButton type="submit" disabled={busy}>
+                {busy ? 'Gravando…' : 'Registrar'}
+              </HudButton>
+            </div>
+          </form>
+          <p className={styles.foot}>
+            Já tem link? <Link href="/login">Fazer login</Link>
+          </p>
+        </section>
       </div>
-      <form className={`${styles.cyberpunk} ${styles.loginForm}`} onSubmit={handleFormSubmit}>
-        <div> Email</div>
-        <div className="cyberpunk">
-          <input
-            id="email"
-            type="text"
-            className="nav-message"
-            placeholder=" "
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div> Name</div>
-        <div className="cyberpunk">
-          <input
-            id="name"
-            type="text"
-            className="nav-message"
-            placeholder=" "
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div> Phone</div>
-        <div className="cyberpunk">
-          <input
-            id="name"
-            type="text"
-            className="nav-message"
-            placeholder=" "
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-        </div>
-        <div> Password</div>
-        <div className="cyberpunk">
-          <input
-            id="password"
-            type="password"
-            className="nav-message"
-            placeholder=" "
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="submit" className="button button--primary button--size-xl">
-          Login
-        </button>
-      </form>
-      <div>{message}</div>
-    </div>
+    </PageFrame>
   );
-}
+};
 
-export default Register;
+export default RegisterPage;

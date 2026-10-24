@@ -1,37 +1,50 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '../header/Header';
-import styles from './background.module.css';
-import CreateForm from './createCharacterForm';
+import { PageFrame } from '../../components/layout/PageFrame';
+import { HudButton } from '../../components/ui/HudButton';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { CharacterWizard } from './CharacterWizard';
+import styles from './characters.module.css';
 
-const imgPath = '/characters/placeholder.png';
+type Character = {
+  id: number;
+  name: string;
+  role?: string;
+  credits?: number;
+  sheet?: {
+    header?: Record<string, string>;
+    other_traits?: { edges?: number };
+  };
+};
 
-const getPlayerCharacters = async () => {
+const loadCharacters = async (): Promise<Character[]> => {
   try {
     const response = await fetch(apiUrl('/api/characters/player/characters'), {
       method: 'GET',
       headers: authHeaders(),
     });
-    if (response.ok) {
-      const json = await response.json();
-      return Array.isArray(json) ? json : [];
-    }
-    return [];
-  } catch (error) {
-    console.error(error);
+    if (!response.ok) return [];
+    const json = await response.json();
+    return Array.isArray(json) ? json : [];
+  } catch {
     return [];
   }
 };
 
-function Characters() {
+const CharactersPage = () => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [showWizard, setShowWizard] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setData(await loadCharacters());
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -40,78 +53,107 @@ function Characters() {
       router.push('/login');
       return;
     }
-    (async () => {
-      setLoading(true);
-      const result = await getPlayerCharacters();
-      setData(result);
-      setError(
-        result.length === 0
-          ? 'Nenhum runner cadastrado nesta conta ainda.'
-          : '',
-      );
-      setLoading(false);
-    })();
-  }, [router]);
+    if (new URLSearchParams(window.location.search).get('wizard') === '1') {
+      setShowWizard(true);
+    }
+    refresh();
+  }, [router, refresh]);
 
-  const handleCharacterClick = (characterId: number) => {
-    router.push(`/sheet?id=${characterId}`);
-  };
-
-  const openCyberware = (e: React.MouseEvent, characterId: number) => {
-    e.stopPropagation();
-    router.push(`/cyberware?id=${characterId}`);
-  };
-
-  // Evita mismatch de hydration: SSR e 1º paint do cliente são iguais
   if (!mounted) {
     return (
-      <div className={styles.page}>
-        <Header />
-        <h2 className={styles.titulo}>Personagens</h2>
-        <p className={styles.status}>Carregando personagens…</p>
-      </div>
+      <PageFrame>
+        <div className={styles.page}>
+          <p className={styles.status}>Sincronizando crew…</p>
+        </div>
+      </PageFrame>
     );
   }
 
   return (
-    <div className={styles.page}>
-      <Header />
-      <h2 className={styles.titulo}>Personagens</h2>
-      {loading && <p className={styles.status}>Carregando personagens…</p>}
-      {!loading && error ? <p className={styles.status}>{error}</p> : null}
-      <div className={styles.characterGrid}>
-        {data.map((character: any) => (
-          <div
-            key={character.id}
-            className={`${styles.img2} ${styles.imagen}`}
-            onClick={() => handleCharacterClick(character.id)}
-          >
-            <img
-              src={imgPath}
-              alt={character.name}
-              style={{ width: '100%', height: '100%' }}
-            />
-            <div className={styles.captioncontainer}>
-              <div className={styles.caption}>
-                <h3>{character.name}</h3>
-                <hr />
-                <p>{character.role}</p>
-                <p>Um runner que ainda quer virar lenda em Night City.</p>
-                <button
-                  type="button"
-                  className={styles.cwBtn}
-                  onClick={(e) => openCyberware(e, character.id)}
-                >
-                  Chrome
-                </button>
-              </div>
-            </div>
+    <PageFrame>
+      <div className={styles.page}>
+        <header className={styles.hero}>
+          <div>
+            <h1>Personagens</h1>
+            <p>
+              Sua crew em Night City. Abra a ficha, o ripperdoc ou registre um
+              novo runner no wizard.
+            </p>
           </div>
-        ))}
-      </div>
-      <CreateForm />
-    </div>
-  );
-}
+          <HudButton
+            type="button"
+            onClick={() => setShowWizard((v) => !v)}
+          >
+            {showWizard ? 'Fechar wizard' : 'Novo personagem'}
+          </HudButton>
+        </header>
 
-export default Characters;
+        {showWizard && (
+          <div className={styles.wizardSlot}>
+            <CharacterWizard
+              onCreated={() => {
+                refresh();
+                setShowWizard(false);
+              }}
+            />
+          </div>
+        )}
+
+        {loading && <p className={styles.status}>Carregando personagens…</p>}
+
+        {!loading && data.length === 0 && (
+          <div className={styles.empty}>
+            <strong>Nenhum runner nesta conta</strong>
+            Abra o wizard e jacke o primeiro personagem.
+          </div>
+        )}
+
+        <div className={styles.grid}>
+          {data.map((character) => {
+            const header = character.sheet?.header || {};
+            const edges = character.sheet?.other_traits?.edges ?? '—';
+            const initial = (character.name || '?').slice(0, 1).toUpperCase();
+            return (
+              <div key={character.id} className={styles.card}>
+                <div className={styles.cardArt} aria-hidden>
+                  {initial}
+                </div>
+                <div className={styles.cardBody}>
+                  <h3>{character.name}</h3>
+                  <p className={styles.role}>{character.role || 'Edgerunner'}</p>
+                  <p className={styles.meta}>
+                    {header.city || 'Night City'}
+                    {header.origin ? ` · ${header.origin}` : ''}
+                    {' · '}
+                    {edges} E · {character.credits ?? 0} eddies
+                  </p>
+                  {header.concept && (
+                    <p className={styles.meta}>{header.concept}</p>
+                  )}
+                  <div className={styles.cardActions}>
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/sheet?id=${character.id}`)}
+                    >
+                      Ficha
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        router.push(`/cyberware?id=${character.id}`)
+                      }
+                    >
+                      Chrome
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </PageFrame>
+  );
+};
+
+export default CharactersPage;

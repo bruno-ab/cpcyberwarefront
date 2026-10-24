@@ -1,12 +1,18 @@
 .title {
+  margin: 0 0 0.5rem;
+  font-family: var(--cp-font-display);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--cp-yellow);
   text-shadow: var(--cp-glow-yellow);
-  margin: 0 0 0.5rem;
 }
 
 .intro {
   color: var(--cp-text-dim);
   max-width: 70ch;
+  font-family: var(--cp-font-mono);
+  font-size: 0.85rem;
 }
 
 .filters {
@@ -36,11 +42,10 @@
   max-width: 160px;
   aspect-ratio: 1;
   object-fit: cover;
-  border: 1px solid #1fb6ff;
+  border: 1px solid var(--cp-border-strong);
   margin-bottom: 0.5rem;
-  background: #111;
+  background: var(--cp-bg-1);
 }
-
 .cardMeta {
   display: flex;
   flex-wrap: wrap;
