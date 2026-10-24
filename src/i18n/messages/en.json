@@ -1,0 +1,62 @@
+{
+  "common": {
+    "appName": "Cyberpunk Storyteller",
+    "tagline": "Night City · Storyteller Table",
+    "nav": {
+      "home": "Home",
+      "characters": "Characters",
+      "cyberware": "CyberWare",
+      "catalog": "Catalog",
+      "book": "Rules",
+      "lore": "Lore",
+      "map": "Night City",
+      "npcs": "NPCs",
+      "sheet": "Sheet",
+      "table": "Table",
+      "tableSoon": "soon",
+      "narrator": "Narrator",
+      "account": "Account",
+      "gigs": "Gigs",
+      "shop": "Ripperdoc",
+      "wiki": "Wiki"
+    },
+    "cta": {
+      "enter": "Jack in",
+      "catalog": "Open catalog",
+      "create": "Create character",
+      "book": "Open rulebook"
+    },
+    "rarity": {
+      "Common": "Common",
+      "Uncommon": "Uncommon",
+      "Rare": "Rare",
+      "Epic": "Epic",
+      "Legendary": "Legendary"
+    },
+    "loading": "Syncing…",
+    "error": "Link failed. Try again."
+  },
+  "home": {
+    "hero": "Chrome, blood and data.",
+    "sub": "Storyteller sheets, cyberware, Night City lore and a virtual table — one jack.",
+    "soonTable": "Open VTT table"
+  },
+  "catalog": {
+    "title": "Cyberware Catalog",
+    "intro": "Pieces with Edges (E) cost, Hack difficulty and Implant load.",
+    "slot": "Slot",
+    "source": "Source",
+    "all": "All"
+  },
+  "sheet": {
+    "title": "Sheet",
+    "capacity": "Capacity",
+    "humanity": "Humanity",
+    "edges": "Edges",
+    "psychosis": "Cyberpsychosis"
+  },
+  "book": {
+    "title": "Rulebook",
+    "search": "Search the book…"
+  }
+}

@@ -1,0 +1,54 @@
+.card {
+  width: min(640px, 100%);
+  background: linear-gradient(135deg, #12141a, #1a1030);
+  border: 2px solid var(--cp-yellow);
+  padding: 0;
+  overflow: hidden;
+}
+
+.stripe {
+  background: var(--cp-yellow);
+  color: #0a0a0c;
+  font-family: var(--font-share-mono), monospace;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 0.4rem 0.75rem;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.photo {
+  width: 120px;
+  height: 140px;
+  background: repeating-linear-gradient(
+    0deg,
+    #2be4ea22,
+    #2be4ea22 2px,
+    transparent 2px,
+    transparent 6px
+  );
+  border: 1px solid var(--cp-cyan);
+}
+
+.mono {
+  font-family: var(--font-share-mono), monospace;
+  color: var(--cp-cyan);
+}
+
+.card footer {
+  border-top: 1px solid var(--cp-border);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--cp-text-muted);
+}
+
+@media print {
+  .card {
+    break-inside: avoid;
+  }
+}

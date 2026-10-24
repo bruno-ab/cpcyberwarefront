@@ -1,0 +1,111 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 320px);
+  gap: 1rem;
+}
+
+.stage {
+  min-height: 560px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.canvasWrap {
+  position: relative;
+  overflow: auto;
+  border: 1px solid var(--cp-border);
+  background: #050608;
+  max-height: 520px;
+}
+
+.canvas {
+  display: block;
+  touch-action: none;
+}
+
+.cell {
+  fill: #0c0e12;
+  stroke: #1a2030;
+  stroke-width: 1;
+}
+
+.fog {
+  fill: rgba(43, 228, 234, 0.12);
+  pointer-events: none;
+}
+
+.wall {
+  stroke: #ff2a6d;
+  stroke-width: 3;
+}
+
+.ruler {
+  stroke: #fcee0a;
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+
+.tokenLabel {
+  fill: #0a0a0c;
+  font-size: 8px;
+  font-family: var(--font-share-mono), monospace;
+}
+
+.hudOverlay {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  font-size: 0.75rem;
+  color: var(--cp-cyan);
+  font-family: var(--font-share-mono), monospace;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.chat {
+  max-height: 180px;
+  overflow: auto;
+  font-size: 0.85rem;
+}
+
+.chat p[data-kind='dice'] {
+  color: var(--cp-yellow);
+}
+
+.chatRow {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.chatRow input {
+  flex: 1;
+  background: #12141a;
+  border: 1px solid var(--cp-border);
+  color: var(--cp-text);
+  padding: 0.35rem;
+}
+
+.replay {
+  max-height: 160px;
+  overflow: auto;
+  font-size: 0.75rem;
+  font-family: var(--font-share-mono), monospace;
+}
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

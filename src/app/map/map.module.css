@@ -1,0 +1,56 @@
+.wrap {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 1rem;
+}
+
+.mapPanel {
+  min-height: 420px;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+}
+
+.district {
+  fill: #12141a;
+  stroke: #2be4ea;
+  stroke-width: 2;
+  cursor: pointer;
+  transition: fill 0.2s ease;
+}
+
+.district:hover,
+.district[data-selected='true'] {
+  fill: #1a2a30;
+  stroke: #fcee0a;
+}
+
+.district[data-danger='4'],
+.district[data-danger='5'] {
+  stroke: #ff2a6d;
+}
+
+.pin {
+  fill: #fcee0a;
+  stroke: #0a0a0c;
+}
+
+.side p {
+  margin: 0.4rem 0;
+  color: var(--cp-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+@media (max-width: 900px) {
+  .wrap {
+    grid-template-columns: 1fr;
+  }
+}

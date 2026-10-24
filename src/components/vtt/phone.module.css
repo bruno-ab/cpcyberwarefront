@@ -1,0 +1,90 @@
+.phone {
+  position: relative;
+  width: 280px;
+  max-width: 90vw;
+  height: 480px;
+  background: linear-gradient(160deg, #1a1c22, #0a0a0c);
+  border: 2px solid var(--cp-cyan);
+  border-radius: 24px;
+  padding: 1rem 0.75rem 0.75rem;
+  box-shadow: 0 0 24px rgba(43, 228, 234, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 10px;
+  background: #000;
+  border-radius: 8px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  color: var(--cp-yellow);
+  font-family: var(--font-share-mono), monospace;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+
+.tabs button {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--cp-border);
+  color: var(--cp-text-muted);
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  padding: 0.35rem;
+  cursor: pointer;
+}
+
+.tabActive {
+  border-color: var(--cp-magenta) !important;
+  color: var(--cp-magenta) !important;
+}
+
+.list {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card {
+  border: 1px solid var(--cp-border);
+  padding: 0.5rem;
+  background: #12141a;
+}
+
+.card p {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.empty {
+  color: var(--cp-text-muted);
+  font-size: 0.85rem;
+}
+
+.badge {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: var(--cp-alert);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+}

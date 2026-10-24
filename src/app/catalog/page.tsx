@@ -1,38 +1,52 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import Header from '../header/Header';
+import React, { useEffect, useMemo, useState } from 'react';
+import { PageFrame } from '../../components/layout/PageFrame';
+import { HudPanel } from '../../components/ui/HudPanel';
+import { RarityBadge } from '../../components/ui/RarityBadge';
 import { CYBERWARE_CATALOG } from '../../data/cyberwareCatalog';
 import { SLOT_LABELS, CyberWareSlot } from '../../data/cyberwareSlots';
+import { apiUrl } from '../../lib/api';
+import { useTranslations } from '../../i18n/useTranslations';
 import styles from './catalog.module.css';
 
-const CatalogPage = () => {
-  const [slotFilter, setSlotFilter] = useState<string>('all');
-  const [sourceFilter, setSourceFilter] = useState<string>('all');
+type CatalogItem = (typeof CYBERWARE_CATALOG)[number];
 
-  const items = useMemo(() => {
-    return CYBERWARE_CATALOG.filter((item) => {
-      const slotOk = slotFilter === 'all' || item.type === slotFilter;
-      const sourceOk = sourceFilter === 'all' || item.source === sourceFilter;
-      return slotOk && sourceOk;
-    });
-  }, [slotFilter, sourceFilter]);
+const CatalogPage = () => {
+  const { t } = useTranslations('catalog');
+  const [slotFilter, setSlotFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
+  const [items, setItems] = useState<CatalogItem[]>(CYBERWARE_CATALOG);
+
+  useEffect(() => {
+    fetch(apiUrl('/api/cyberware/catalog'))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.items?.length) setItems(data.items);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  const filtered = useMemo(
+    () =>
+      items.filter((item) => {
+        const slotOk = slotFilter === 'all' || item.type === slotFilter;
+        const sourceOk = sourceFilter === 'all' || item.source === sourceFilter;
+        return slotOk && sourceOk;
+      }),
+    [items, slotFilter, sourceFilter],
+  );
 
   return (
-    <section className={styles.page}>
-      <Header />
-      <h2>Catálogo de Cyberware</h2>
-      <p className={styles.intro}>
-        Peças baseadas em Cyberpunk 2077 e Edgerunners para mesa Storyteller. Colunas:{' '}
-        <strong>E</strong> (Edges), <strong>Hack</strong> (dificuldade),{' '}
-        <strong>Implante</strong> (carga na capacidade 10) e <strong>Slot</strong>.
-      </p>
+    <PageFrame>
+      <h1 className={styles.title}>{t('title')}</h1>
+      <p className={styles.intro}>{t('intro')}</p>
 
       <div className={styles.filters}>
         <label>
-          Slot{' '}
+          {t('slot')}{' '}
           <select value={slotFilter} onChange={(e) => setSlotFilter(e.target.value)}>
-            <option value="all">Todos</option>
+            <option value="all">{t('all')}</option>
             {Object.entries(SLOT_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
@@ -41,9 +55,9 @@ const CatalogPage = () => {
           </select>
         </label>
         <label>
-          Fonte{' '}
+          {t('source')}{' '}
           <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)}>
-            <option value="all">Todas</option>
+            <option value="all">{t('all')}</option>
             <option value="cp2077">CP2077</option>
             <option value="edgerunners">Edgerunners</option>
             <option value="both">Ambos</option>
@@ -51,40 +65,30 @@ const CatalogPage = () => {
         </label>
       </div>
 
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Slot</th>
-              <th>E</th>
-              <th>Hack</th>
-              <th>Implante</th>
-              <th>Raridade</th>
-              <th>Fonte</th>
-              <th>Efeito</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.name}>
-                <td>
-                  <strong>{item.name}</strong>
-                  <div className={styles.desc}>{item.description}</div>
-                </td>
-                <td>{SLOT_LABELS[item.type as CyberWareSlot]}</td>
-                <td>{item.edgeCost}</td>
-                <td>{item.hackDifficulty}</td>
-                <td>{item.implantCost}</td>
-                <td>{item.rarity}</td>
-                <td>{item.source}</td>
-                <td>{item.effect}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className={styles.cards}>
+        {filtered.map((item) => (
+          <HudPanel key={item.name} title={item.name}>
+            <div className={styles.cardMeta}>
+              <RarityBadge rarity={item.rarity} />
+              <span>{SLOT_LABELS[item.type as CyberWareSlot] || item.type}</span>
+            </div>
+            <p className={styles.desc}>{item.description}</p>
+            <ul className={styles.stats}>
+              <li>
+                <strong>E</strong> {item.edgeCost}
+              </li>
+              <li>
+                <strong>Hack</strong> {item.hackDifficulty}
+              </li>
+              <li>
+                <strong>Implante</strong> {item.implantCost}
+              </li>
+            </ul>
+            <p className={styles.effect}>{item.effect}</p>
+          </HudPanel>
+        ))}
       </div>
-    </section>
+    </PageFrame>
   );
 };
 

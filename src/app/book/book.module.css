@@ -1,0 +1,77 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) 1fr;
+  gap: 1.25rem;
+  min-height: 70vh;
+}
+
+.toc h1 {
+  font-family: var(--font-share-mono), monospace;
+  color: var(--cp-yellow);
+  font-size: 1.1rem;
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.search {
+  width: 100%;
+  background: var(--cp-bg-elevated);
+  border: 1px solid var(--cp-border);
+  color: var(--cp-text);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-share-mono), monospace;
+}
+
+.toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.toc button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--cp-text-muted);
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  font-family: var(--font-rajdhani), sans-serif;
+}
+
+.toc button:hover,
+.active {
+  border-color: var(--cp-cyan) !important;
+  color: var(--cp-cyan) !important;
+}
+
+.reader {
+  min-height: 60vh;
+}
+
+.body {
+  white-space: pre-wrap;
+  font-family: var(--font-rajdhani), sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  margin: 0;
+  color: var(--cp-text);
+}
+
+.export {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--cp-magenta);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

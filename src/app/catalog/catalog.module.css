@@ -1,58 +1,65 @@
-.page {
-  padding: 0 1rem 2rem;
-  color: #2be4ea;
-}
-
-.page h2 {
-  color: #fed33f;
+.title {
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+  margin: 0 0 0.5rem;
 }
 
 .intro {
-  max-width: 80ch;
+  color: var(--cp-text-dim);
+  max-width: 70ch;
 }
 
 .filters {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin: 1rem 0;
+  margin: 1rem 0 1.25rem;
 }
 
 .filters select {
-  background: #1e181e;
-  color: #2be4ea;
-  border: 1px solid #fed33f;
+  background: var(--cp-bg-1);
+  color: var(--cp-cyan);
+  border: 1px solid var(--cp-yellow);
   margin-left: 0.35rem;
   padding: 0.25rem 0.5rem;
+  font-family: var(--cp-font-mono);
 }
 
-.tableWrap {
-  overflow-x: auto;
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.92rem;
-}
-
-.table th,
-.table td {
-  border-bottom: 1px solid #452;
-  padding: 0.55rem 0.4rem;
-  vertical-align: top;
-  text-align: left;
-}
-
-.table th {
-  color: #fed33f;
-  position: sticky;
-  top: 0;
-  background: #191a1e;
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
+  color: var(--cp-cyan);
 }
 
 .desc {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-top: 0.25rem;
+  color: var(--cp-text-dim);
+  font-size: 0.9rem;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0;
+  font-family: var(--cp-font-mono);
+  color: var(--cp-yellow);
+}
+
+.effect {
+  font-size: 0.85rem;
+  border-top: 1px solid var(--cp-border);
+  padding-top: 0.5rem;
+  color: var(--cp-text);
 }

@@ -1,0 +1,48 @@
+.wrap {
+  background: #0a1214;
+  border: 1px solid var(--cp-cyan);
+  padding: 1rem;
+  max-width: 420px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--cp-cyan);
+  font-family: var(--font-share-mono), monospace;
+}
+
+.grid {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.75rem 0;
+}
+
+.cell {
+  aspect-ratio: 1;
+  background: #12141a;
+  border: 1px solid #2be4ea55;
+  color: var(--cp-yellow);
+  font-family: var(--font-share-mono), monospace;
+  cursor: pointer;
+}
+
+.cell:hover:not(:disabled) {
+  border-color: var(--cp-yellow);
+}
+
+.seq {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.seq li[data-done='true'] {
+  color: var(--cp-cyan);
+}
+
+.daemons {
+  color: var(--cp-magenta);
+}

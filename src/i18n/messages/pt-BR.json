@@ -1,0 +1,62 @@
+{
+  "common": {
+    "appName": "Cyberpunk Storyteller",
+    "tagline": "Night City · Mesa Storyteller",
+    "nav": {
+      "home": "Home",
+      "characters": "Personagens",
+      "cyberware": "CyberWare",
+      "catalog": "Catálogo",
+      "book": "Regras",
+      "lore": "Lore",
+      "map": "Night City",
+      "npcs": "NPCs",
+      "sheet": "Ficha",
+      "table": "Mesa",
+      "tableSoon": "em breve",
+      "narrator": "Narrador",
+      "account": "Conta",
+      "gigs": "Gigs",
+      "shop": "Ripperdoc",
+      "wiki": "Wiki"
+    },
+    "cta": {
+      "enter": "Entrar na rede",
+      "catalog": "Ver catálogo",
+      "create": "Criar personagem",
+      "book": "Abrir livro de regras"
+    },
+    "rarity": {
+      "Common": "Comum",
+      "Uncommon": "Incomum",
+      "Rare": "Raro",
+      "Epic": "Épico",
+      "Legendary": "Lendário"
+    },
+    "loading": "Sincronizando…",
+    "error": "Falha de link. Tente de novo."
+  },
+  "home": {
+    "hero": "Chrome, sangue e dados.",
+    "sub": "Fichas Storyteller, cyberware, lore de Night City e mesa virtual — tudo no mesmo jack.",
+    "soonTable": "Abrir mesa VTT"
+  },
+  "catalog": {
+    "title": "Catálogo de Cyberware",
+    "intro": "Peças com custo em Edges (E), dificuldade de Hack e carga de Implante.",
+    "slot": "Slot",
+    "source": "Fonte",
+    "all": "Todos"
+  },
+  "sheet": {
+    "title": "Ficha",
+    "capacity": "Capacidade",
+    "humanity": "Humanidade",
+    "edges": "Edges",
+    "psychosis": "Cyberpsicose"
+  },
+  "book": {
+    "title": "Livro de Regras",
+    "search": "Buscar no livro…"
+  }
+}
