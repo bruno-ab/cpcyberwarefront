@@ -1,0 +1,37 @@
+/**
+ * User toggle: html[data-motion='off'] kills decorative animations.
+ * Boot script in layout sets the attribute before paint when possible.
+ */
+
+html[data-motion='off'] *,
+html[data-motion='off'] *::before,
+html[data-motion='off'] *::after {
+  animation: none !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-motion='off'] body::before {
+  animation: none !important;
+  opacity: 0.55;
+  filter: none !important;
+  transform: none !important;
+}
+
+html[data-motion='off'] body::after {
+  animation: none !important;
+  opacity: 0.03;
+  filter: none !important;
+}
+
+html[data-motion='off'] .cp-bg-glitch__noise,
+html[data-motion='off'] .cp-bg-glitch__tear,
+html[data-motion='off'] .cp-bg-glitch__block {
+  display: none !important;
+}
+
+html[data-motion='off'] .cp-bg-glitch__vignette {
+  opacity: 0.7;
+}

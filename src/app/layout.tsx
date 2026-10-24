@@ -4,6 +4,7 @@ import '../styles/tokens.css';
 import '../styles/themes.css';
 import '../styles/hud-base.css';
 import '../styles/bg-glitch.css';
+import '../styles/motion.css';
 import './globals.css';
 import { BgGlitch } from '../components/layout/BgGlitch';
 
@@ -39,7 +40,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
     >
       <script
         dangerouslySetInnerHTML={{
-          __html: `(function(){try{var t=localStorage.getItem('cp-theme');var ok=['matrix','hotline','arasaka','netwatch','edgerunners','amber'];if(t&&ok.indexOf(t)>=0)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+          __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('cp-theme');var ok=['matrix','hotline','arasaka','netwatch','edgerunners','amber'];if(t&&ok.indexOf(t)>=0)d.setAttribute('data-theme',t);var m=localStorage.getItem('cp-motion');if(m==='on'||m==='off'){d.setAttribute('data-motion',m);}else if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.setAttribute('data-motion','off');}else{d.setAttribute('data-motion','on');}}catch(e){}})();`,
         }}
       />
       <BgGlitch />

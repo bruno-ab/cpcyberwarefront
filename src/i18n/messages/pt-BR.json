@@ -45,6 +45,12 @@
       "netwatch": "NetWatch",
       "edgerunners": "Edgerunners",
       "amber": "Amber CRT"
+    },
+    "motion": {
+      "on": "FX on",
+      "off": "FX off",
+      "disable": "Desativar animações",
+      "enable": "Ativar animações"
     }
   },
   "home": {

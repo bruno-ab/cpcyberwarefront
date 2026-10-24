@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ReactNode } from 'react';
 import { useTranslations } from '../../i18n/useTranslations';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { MotionToggle } from './MotionToggle';
 import styles from './AppShell.module.css';
 
 const NAV = [
@@ -48,6 +49,7 @@ export const AppNav = () => {
       </nav>
       <div className={styles.controls}>
         <ThemeSwitcher />
+        <MotionToggle />
         <div className={styles.locale}>
           <button
             type="button"

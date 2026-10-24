@@ -283,6 +283,55 @@
   box-shadow: 0 0 6px currentColor;
 }
 
+.motionSlot {
+  min-width: 5.5rem;
+  min-height: 1.75rem;
+}
+
+.motionToggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  border-radius: 0;
+  white-space: nowrap;
+}
+
+.motionToggle:hover {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+}
+
+.motionToggle[data-active='true'] {
+  border-color: var(--cp-yellow);
+  color: var(--cp-yellow);
+  box-shadow: var(--cp-glow-yellow);
+}
+
+.motionToggle[data-active='false'] {
+  border-color: var(--cp-text-dim);
+  color: var(--cp-text-dim);
+  opacity: 0.85;
+}
+
+.motionIcon {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.motionLabel {
+  line-height: 1;
+}
+
 .locale {
   display: flex;
   gap: 0.25rem;
