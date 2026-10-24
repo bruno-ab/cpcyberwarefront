@@ -3,7 +3,8 @@
 ## Visual (Eixo B)
 - Paleta: amarelo `#FCEE0A`, ciano `#2BE4EA`, magenta `#FF2A6D`, alerta `#FF003C`, fundos `#0A0A0C` / `#12141A`
 - Fontes: Rajdhani (UI), Share Tech Mono (dados/HUD)
-- Arte: SVG/CSS originais — sem assets oficiais ripados
+- Arte UI: SVG/CSS próprios — sem assets oficiais ripados no repo
+- Mapa `/map`: embed de mapas interativos de terceiros (Piggyback oficial, MapGenie, NightCity.io, cyberpunkmap.app) com atribuição; overlay de campanha (distritos/gigs) é nosso
 
 ## Regras Storyteller
 - Reserva: atributo + habilidade em d10; dificuldade padrão 6

@@ -1,38 +1,69 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PageFrame } from '../../components/layout/PageFrame';
-import { HudPanel } from '../../components/ui/HudPanel';
+import Header from '../header/Header';
 import { HudButton } from '../../components/ui/HudButton';
 import { apiUrl, authHeaders } from '../../lib/api';
+import charStyles from '../characters/background.module.css';
 import styles from './map.module.css';
 
 type District = { id: string; name: string; danger: number; vibes: string };
 type Gig = { id: string; name: string; districtId: string; risk: number; pay: number };
 type Control = { districtId: string; controller: string };
 
-const DISTRICT_PATHS: Record<string, string> = {
-  watson: 'M40 80 L180 60 L200 160 L60 180 Z',
-  westbrook: 'M190 50 L340 40 L350 140 L210 155 Z',
-  heywood: 'M60 190 L200 170 L220 280 L80 300 Z',
-  santo: 'M210 165 L350 150 L360 260 L230 280 Z',
-  pacifica: 'M80 310 L230 290 L250 380 L100 400 Z',
-  center: 'M360 80 L480 70 L490 180 L370 190 Z',
-  badlands: 'M500 100 L620 90 L640 320 L520 340 Z',
+type MapSource = {
+  id: string;
+  label: string;
+  url: string;
+  note: string;
 };
+
+/** Mapas interativos públicos de Night City (terceiros; créditos no rodapé). */
+const MAP_SOURCES: MapSource[] = [
+  {
+    id: 'piggyback',
+    label: 'Oficial (Piggyback)',
+    url: 'https://maps.piggyback.com/cyberpunk-2077/maps/night-city',
+    note: 'Mapa oficial Ultra HD · colaborativo com CDPR',
+  },
+  {
+    id: 'mapgenie',
+    label: 'MapGenie',
+    url: 'https://mapgenie.io/cyberpunk-2077/maps/night-city',
+    note: 'Gigs, NCPD, veículos, shards e Phantom Liberty',
+  },
+  {
+    id: 'nightcity-io',
+    label: 'NightCity.io',
+    url: 'https://www.nightcity.io/2077',
+    note: 'POIs, megabuildings, gangues e apartamentos',
+  },
+  {
+    id: 'cyberpunkmap',
+    label: 'cyberpunkmap.app',
+    url: 'https://cyberpunkmap.app/',
+    note: 'Mapa interativo com Phantom Liberty',
+  },
+];
 
 const MapPage = () => {
   const [districts, setDistricts] = useState<District[]>([]);
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [control, setControl] = useState<Control[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [sourceId, setSourceId] = useState(MAP_SOURCES[0].id);
+  const [iframeBlocked, setIframeBlocked] = useState(false);
   const campaignId = 1;
+
+  const source = MAP_SOURCES.find((s) => s.id === sourceId) || MAP_SOURCES[0];
 
   useEffect(() => {
     Promise.all([
       fetch(apiUrl('/api/districts')).then((r) => r.json()),
       fetch(apiUrl('/api/gigs')).then((r) => r.json()),
-      fetch(apiUrl(`/api/campaigns/${campaignId}`)).then((r) => r.json()).catch(() => null),
+      fetch(apiUrl(`/api/campaigns/${campaignId}`))
+        .then((r) => r.json())
+        .catch(() => null),
     ]).then(([d, g, camp]) => {
       setDistricts(Array.isArray(d) ? d : []);
       setGigs(Array.isArray(g) ? g : []);
@@ -40,8 +71,11 @@ const MapPage = () => {
     });
   }, []);
 
+  useEffect(() => {
+    setIframeBlocked(false);
+  }, [sourceId]);
+
   const selectedDistrict = districts.find((d) => d.id === selected);
-  const pins = gigs.filter((g) => !selected || g.districtId === selected);
 
   const claim = async (districtId: string, controller: string) => {
     const next = control.map((c) =>
@@ -59,81 +93,136 @@ const MapPage = () => {
   };
 
   return (
-    <PageFrame>
-      <div className={styles.wrap}>
-        <HudPanel title="Night City — mapa de distritos" className={styles.mapPanel}>
-          <svg viewBox="0 0 680 420" className={styles.svg} role="img" aria-label="Mapa Night City">
-            <rect width="680" height="420" fill="#0a0a0c" />
-            {districts.map((d) => {
-              const ctrl = control.find((c) => c.districtId === d.id)?.controller;
-              return (
-                <g key={d.id}>
-                  <path
-                    d={DISTRICT_PATHS[d.id] || 'M0 0'}
-                    className={styles.district}
-                    data-selected={selected === d.id}
-                    data-danger={d.danger}
-                    onClick={() => setSelected(d.id)}
-                  />
-                  <text
-                    x={40}
-                    y={20}
-                    className={styles.label}
-                    style={{ display: 'none' }}
-                  >
-                    {d.name}
-                  </text>
-                  <title>{`${d.name} — ${ctrl || 'contested'}`}</title>
-                </g>
-              );
-            })}
-            {pins.map((g, i) => {
-              const path = DISTRICT_PATHS[g.districtId];
-              if (!path) return null;
-              const x = 80 + (i % 5) * 90;
-              const y = 100 + Math.floor(i / 5) * 40;
-              return (
-                <circle key={g.id} cx={x} cy={y} r={6} className={styles.pin}>
-                  <title>{g.name}</title>
-                </circle>
-              );
-            })}
-          </svg>
-        </HudPanel>
-        <HudPanel title={selectedDistrict?.name || 'Distrito'} className={styles.side}>
-          {selectedDistrict ? (
-            <>
-              <p>{selectedDistrict.vibes}</p>
-              <p>Perigo: {selectedDistrict.danger}/5</p>
-              <p>
-                Controle:{' '}
-                {control.find((c) => c.districtId === selected)?.controller || 'contested'}
-              </p>
-              <div className={styles.actions}>
-                <HudButton onClick={() => claim(selectedDistrict.id, 'crew')}>
-                  Marcar território (crew)
-                </HudButton>
-                <HudButton variant="ghost" onClick={() => claim(selectedDistrict.id, 'contested')}>
-                  Contestado
-                </HudButton>
-              </div>
-              <h3>Gigs / pins</h3>
-              <ul>
-                {gigs
-                  .filter((g) => g.districtId === selected)
-                  .map((g) => (
-                    <li key={g.id}>
-                      {g.name} — risco {g.risk} — ¤{g.pay}
-                    </li>
-                  ))}
-              </ul>
-            </>
-          ) : (
-            <p>Selecione um distrito no mapa.</p>
-          )}
-        </HudPanel>
+    <div className={charStyles.page}>
+      <Header />
+      <h2 className={charStyles.titulo}>Night City Map</h2>
+      <p className={styles.intro}>
+        Mapa interativo fiel ao jogo · escolha a fonte abaixo. Distritos da campanha ficam no painel.
+      </p>
+
+      <div className={styles.sourceRow}>
+        {MAP_SOURCES.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={sourceId === s.id ? styles.sourceActive : styles.sourceBtn}
+            onClick={() => setSourceId(s.id)}
+          >
+            {s.label}
+          </button>
+        ))}
+        <a
+          className={styles.openExt}
+          href={source.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Abrir em nova aba ↗
+        </a>
       </div>
-    </PageFrame>
+      <p className={styles.sourceNote}>{source.note}</p>
+
+      <div className={styles.wrap}>
+        <div className={styles.mapFrame}>
+          {!iframeBlocked ? (
+            <iframe
+              key={source.url}
+              title={`Night City — ${source.label}`}
+              src={source.url}
+              className={styles.iframe}
+              allow="fullscreen; geolocation"
+              referrerPolicy="no-referrer-when-downgrade"
+              onError={() => setIframeBlocked(true)}
+            />
+          ) : (
+            <div className={styles.fallback}>
+              <p>Este site bloqueou o embed no iframe.</p>
+              <a href={source.url} target="_blank" rel="noopener noreferrer">
+                Abrir {source.label}
+              </a>
+            </div>
+          )}
+          <button
+            type="button"
+            className={styles.blockedHint}
+            onClick={() => setIframeBlocked(true)}
+          >
+            Mapa em branco? Use “Abrir em nova aba”
+          </button>
+        </div>
+
+        <aside className={styles.side}>
+          <h3 className={styles.sideTitle}>Distritos (campanha)</h3>
+          <div className={styles.districtList}>
+            {districts.map((d) => {
+              const ctrl =
+                control.find((c) => c.districtId === d.id)?.controller || 'contested';
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  className={
+                    selected === d.id ? styles.districtActive : styles.districtBtn
+                  }
+                  onClick={() => setSelected(d.id)}
+                >
+                  <strong>{d.name}</strong>
+                  <span>
+                    perigo {d.danger}/5 · {ctrl}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className={styles.detail}>
+            {selectedDistrict ? (
+              <>
+                <h4>{selectedDistrict.name}</h4>
+                <p>{selectedDistrict.vibes}</p>
+                <p>
+                  Controle:{' '}
+                  {control.find((c) => c.districtId === selected)?.controller ||
+                    'contested'}
+                </p>
+                <div className={styles.actions}>
+                  <HudButton onClick={() => claim(selectedDistrict.id, 'crew')}>
+                    Território crew
+                  </HudButton>
+                  <HudButton
+                    variant="ghost"
+                    onClick={() => claim(selectedDistrict.id, 'contested')}
+                  >
+                    Contestado
+                  </HudButton>
+                </div>
+                <h4>Gigs</h4>
+                <ul>
+                  {gigs
+                    .filter((g) => g.districtId === selected)
+                    .map((g) => (
+                      <li key={g.id}>
+                        {g.name} — risco {g.risk} — ¤{g.pay}
+                      </li>
+                    ))}
+                  {gigs.filter((g) => g.districtId === selected).length === 0 && (
+                    <li>Nenhum gig neste distrito</li>
+                  )}
+                </ul>
+              </>
+            ) : (
+              <p>Selecione um distrito na lista.</p>
+            )}
+          </div>
+
+          <p className={styles.credits}>
+            Mapas: Piggyback / CDPR · MapGenie · NightCity.io · cyberpunkmap.app — uso
+            embutido para referência de mesa; conteúdo permanece dos respectivos
+            autores.
+          </p>
+        </aside>
+      </div>
+    </div>
   );
 };
 
