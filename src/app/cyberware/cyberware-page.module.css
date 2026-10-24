@@ -87,9 +87,12 @@
 
 .bodyHint {
   font-size: 0.75rem;
-  color: #2be4ea;
+  color: var(--cp-cyan);
   text-align: center;
   min-height: 1.2em;
+  font-family: var(--cp-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 @media (max-width: 900px) {
