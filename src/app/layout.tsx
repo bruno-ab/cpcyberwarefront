@@ -3,7 +3,9 @@ import { Audiowide, Rajdhani, Share_Tech_Mono } from 'next/font/google';
 import '../styles/tokens.css';
 import '../styles/themes.css';
 import '../styles/hud-base.css';
+import '../styles/bg-glitch.css';
 import './globals.css';
+import { BgGlitch } from '../components/layout/BgGlitch';
 
 const rajdhani = Rajdhani({
   subsets: ['latin'],
@@ -40,6 +42,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
           __html: `(function(){try{var t=localStorage.getItem('cp-theme');var ok=['matrix','hotline','arasaka','netwatch','edgerunners','amber'];if(t&&ok.indexOf(t)>=0)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
         }}
       />
+      <BgGlitch />
       {children}
       <script
         dangerouslySetInnerHTML={{

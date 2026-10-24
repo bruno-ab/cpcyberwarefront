@@ -11,18 +11,123 @@
   position: fixed;
   inset: 0;
   z-index: 50;
-  opacity: 0.04;
+  opacity: 0.035;
   background: repeating-linear-gradient(
     to bottom,
     transparent 0,
     transparent 2px,
     rgba(255, 255, 255, 0.35) 3px
   );
+  animation: shellScanPulse 6.5s steps(2, end) infinite;
+}
+
+.chromePulse {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 35% 25% at 10% 80%,
+      color-mix(in srgb, var(--cp-cyan) 10%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 30% 22% at 92% 70%,
+      color-mix(in srgb, var(--cp-yellow) 8%, transparent),
+      transparent 70%
+    );
+  animation: shellChromePulse 12s ease-in-out infinite alternate;
+  opacity: 0.7;
+}
+
+.horizon {
+  pointer-events: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28vh;
+  z-index: 0;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--cp-cyan) 8%, transparent),
+    transparent 70%
+  );
+  opacity: 0.55;
+  mask-image: repeating-linear-gradient(
+    to right,
+    #000 0,
+    #000 2px,
+    transparent 3px,
+    transparent 14px
+  );
+  animation: shellHorizonFlicker 9s steps(2, end) infinite;
+}
+
+@keyframes shellScanPulse {
+  0%,
+  88%,
+  100% {
+    opacity: 0.035;
+  }
+  90% {
+    opacity: 0.08;
+  }
+  93% {
+    opacity: 0.03;
+  }
+  96% {
+    opacity: 0.1;
+    filter: hue-rotate(25deg);
+  }
+}
+
+@keyframes shellChromePulse {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 0.55;
+  }
+  to {
+    transform: translateY(-2%) scale(1.04);
+    opacity: 0.85;
+  }
+}
+
+@keyframes shellHorizonFlicker {
+  0%,
+  85%,
+  100% {
+    opacity: 0.5;
+    transform: none;
+  }
+  87% {
+    opacity: 0.75;
+    transform: translateX(-2px);
+  }
+  90% {
+    opacity: 0.35;
+    transform: translateX(2px);
+  }
+  93% {
+    opacity: 0.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scanlines,
+  .chromePulse,
+  .horizon {
+    animation: none !important;
+  }
+
   .scanlines {
-    display: none;
+    opacity: 0.03;
+  }
+
+  .chromePulse,
+  .horizon {
+    opacity: 0.35;
   }
 }
 

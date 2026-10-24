@@ -1,0 +1,281 @@
+/**
+ * Ambient cyberpunk background glitches — site-wide (body layers).
+ * Respects prefers-reduced-motion.
+ */
+
+html {
+  background-color: var(--cp-bg-0);
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+}
+
+/* Soft drifting neon fog */
+body::before {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  inset: -10%;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse 50% 40% at 15% 20%, color-mix(in srgb, var(--cp-cyan) 14%, transparent), transparent 55%),
+    radial-gradient(ellipse 45% 35% at 85% 15%, color-mix(in srgb, var(--cp-magenta, #8814ff) 12%, transparent), transparent 50%),
+    radial-gradient(ellipse 60% 45% at 50% 110%, color-mix(in srgb, var(--cp-alert-soft, #ff003c) 10%, transparent), transparent 55%),
+    radial-gradient(ellipse 40% 30% at 70% 60%, color-mix(in srgb, var(--cp-yellow) 6%, transparent), transparent 50%);
+  animation: cpFogDrift 18s ease-in-out infinite alternate;
+  opacity: 0.9;
+}
+
+/* CRT scanlines + occasional chroma tear */
+body::after {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: 0.045;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2px,
+      rgba(255, 255, 255, 0.28) 3px
+    );
+  mix-blend-mode: soft-light;
+  animation: cpScanFlicker 7s steps(2, end) infinite;
+}
+
+/* Extra fixed layers via dedicated class (mounted in layout) */
+.cp-bg-glitch {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.cp-bg-glitch__noise {
+  position: absolute;
+  inset: -20%;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  animation: cpNoiseShift 0.35s steps(2) infinite;
+  mix-blend-mode: overlay;
+}
+
+.cp-bg-glitch__tear {
+  position: absolute;
+  left: -5%;
+  width: 110%;
+  height: 2px;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--cp-cyan) 70%, transparent),
+    color-mix(in srgb, var(--cp-magenta, #ff2a6d) 70%, transparent),
+    color-mix(in srgb, var(--cp-yellow) 50%, transparent),
+    transparent
+  );
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--cp-cyan) 40%, transparent),
+    0 1px 0 color-mix(in srgb, var(--cp-magenta, #ff2a6d) 35%, transparent);
+  animation: cpTearFlash 5.5s steps(1, end) infinite;
+}
+
+.cp-bg-glitch__tear:nth-child(3) {
+  animation-delay: 1.8s;
+  animation-duration: 7.2s;
+  height: 3px;
+}
+
+.cp-bg-glitch__tear:nth-child(4) {
+  animation-delay: 3.4s;
+  animation-duration: 6.1s;
+  height: 1px;
+  opacity: 0;
+}
+
+.cp-bg-glitch__block {
+  position: absolute;
+  width: 18%;
+  height: 8%;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cp-cyan) 25%, transparent),
+    color-mix(in srgb, var(--cp-yellow) 15%, transparent),
+    color-mix(in srgb, var(--cp-magenta, #ff2a6d) 20%, transparent)
+  );
+  mix-blend-mode: screen;
+  animation: cpBlockGlitch 8s steps(2, end) infinite;
+}
+
+.cp-bg-glitch__block:nth-child(5) {
+  top: 22%;
+  left: 8%;
+  animation-delay: 0.6s;
+}
+
+.cp-bg-glitch__block:nth-child(6) {
+  top: 58%;
+  left: 62%;
+  width: 28%;
+  height: 4%;
+  animation-delay: 2.4s;
+  animation-duration: 9.5s;
+}
+
+.cp-bg-glitch__block:nth-child(7) {
+  top: 78%;
+  left: 20%;
+  width: 12%;
+  height: 12%;
+  animation-delay: 4.1s;
+  animation-duration: 11s;
+}
+
+.cp-bg-glitch__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 45%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  opacity: 0.85;
+}
+
+@keyframes cpFogDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    transform: translate(-2%, 1.5%) scale(1.05);
+    filter: hue-rotate(12deg);
+  }
+  100% {
+    transform: translate(2%, -1%) scale(1.02);
+    filter: hue-rotate(-8deg);
+  }
+}
+
+@keyframes cpScanFlicker {
+  0%,
+  90%,
+  100% {
+    opacity: 0.04;
+    transform: none;
+  }
+  92% {
+    opacity: 0.09;
+    transform: translateX(-1px);
+  }
+  94% {
+    opacity: 0.03;
+    transform: translateX(1px);
+  }
+  96% {
+    opacity: 0.11;
+    filter: hue-rotate(20deg);
+  }
+}
+
+@keyframes cpNoiseShift {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-1%, 1%);
+  }
+  50% {
+    transform: translate(1%, -1%);
+  }
+  75% {
+    transform: translate(-0.5%, -0.5%);
+  }
+  100% {
+    transform: translate(0.5%, 0.5%);
+  }
+}
+
+@keyframes cpTearFlash {
+  0%,
+  86%,
+  100% {
+    opacity: 0;
+    top: 40%;
+    transform: translateX(0) skewX(0deg);
+  }
+  87% {
+    opacity: 0.85;
+    top: 18%;
+    transform: translateX(-2%) skewX(12deg);
+  }
+  88% {
+    opacity: 0.6;
+    top: 47%;
+    transform: translateX(3%) skewX(-8deg);
+  }
+  89% {
+    opacity: 0.9;
+    top: 72%;
+    transform: translateX(-1%) skewX(4deg);
+  }
+  91% {
+    opacity: 0;
+  }
+}
+
+@keyframes cpBlockGlitch {
+  0%,
+  82%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scaleX(1);
+    filter: none;
+  }
+  83% {
+    opacity: 0.55;
+    transform: translate(-6px, 0) scaleX(1.05);
+    filter: hue-rotate(40deg);
+  }
+  85% {
+    opacity: 0.35;
+    transform: translate(8px, 2px) scaleX(0.96);
+  }
+  87% {
+    opacity: 0.7;
+    transform: translate(-3px, -1px) skewX(2deg);
+    filter: contrast(1.3);
+  }
+  89% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  .cp-bg-glitch,
+  .cp-bg-glitch__noise,
+  .cp-bg-glitch__tear,
+  .cp-bg-glitch__block {
+    animation: none !important;
+  }
+
+  .cp-bg-glitch__noise,
+  .cp-bg-glitch__tear,
+  .cp-bg-glitch__block {
+    display: none;
+  }
+
+  body::after {
+    opacity: 0.03;
+  }
+}

@@ -74,6 +74,8 @@ export const AppNav = () => {
 export const AppShell = ({ children }: { children: ReactNode }) => (
   <div className={styles.shell}>
     <div className={styles.scanlines} aria-hidden />
+    <div className={styles.chromePulse} aria-hidden />
+    <div className={styles.horizon} aria-hidden />
     <AppNav />
     <main className={styles.main}>{children}</main>
   </div>

@@ -4,10 +4,8 @@
 
 body {
   background-color: var(--cp-bg-0) !important;
-  background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(0, 243, 255, 0.06) 0%, transparent 45%),
-    radial-gradient(ellipse at 80% 10%, rgba(136, 20, 255, 0.08) 0%, transparent 40%),
-    radial-gradient(ellipse at 50% 100%, rgba(255, 0, 60, 0.05) 0%, transparent 50%) !important;
+  /* Neon fog lives in bg-glitch.css (::before) so it can animate. */
+  background-image: none !important;
   color: var(--cp-text);
   font-family: var(--cp-font-ui);
 }
