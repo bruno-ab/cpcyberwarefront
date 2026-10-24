@@ -1,12 +1,15 @@
 {
   "name": "Cyberpunk Storyteller",
   "short_name": "CP Storyteller",
-  "description": "Fichas, livro e mesa Night City",
+  "description": "Fichas, livro, wiki e mesa Night City — installable PWA",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0A0A0C",
   "theme_color": "#FCEE0A",
   "lang": "pt-BR",
+  "categories": ["games", "entertainment"],
   "icons": [
     {
       "src": "/icons/icon.svg",
@@ -14,5 +17,10 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    { "name": "Ficha", "url": "/sheet", "description": "Abrir hub de fichas" },
+    { "name": "Regras", "url": "/book", "description": "Livro Storyteller" },
+    { "name": "Aventura", "url": "/adventure", "description": "Dívida Neon + timeline" }
   ]
 }

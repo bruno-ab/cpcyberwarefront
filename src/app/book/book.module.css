@@ -212,11 +212,53 @@
   font-size: 0.85rem;
 }
 
+.exportRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
 .export {
   display: inline-block;
-  margin-top: 1rem;
   color: var(--cp-magenta);
   font-size: 0.85rem;
+  font-family: var(--cp-font-mono);
+}
+
+.exportBtn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.exportBtn:hover {
+  border-color: var(--cp-yellow);
+  color: var(--cp-yellow);
+}
+
+@media print {
+  .toc,
+  .exportRow {
+    display: none !important;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .reader {
+    box-shadow: none !important;
+    border: none !important;
+  }
 }
 
 @media (max-width: 800px) {

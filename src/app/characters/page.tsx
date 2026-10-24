@@ -145,6 +145,14 @@ const CharactersPage = () => {
                     >
                       Chrome
                     </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        router.push(`/id-card?id=${character.id}`)
+                      }
+                    >
+                      ID
+                    </button>
                   </div>
                 </div>
               </div>

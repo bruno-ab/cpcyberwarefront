@@ -1,0 +1,139 @@
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.hero h1 {
+  margin: 0 0 0.35rem;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.85rem;
+}
+
+.roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.note {
+  margin: 0;
+  color: var(--cp-cyan);
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 720px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.toc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+}
+
+.toc button {
+  width: 100%;
+  text-align: left;
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+}
+
+.toc button[data-active='true'],
+.toc button:hover {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+}
+
+.article {
+  border: 1px solid var(--cp-line, rgba(0, 243, 255, 0.35));
+  background: var(--cp-bg-panel);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--cp-inset-cyan);
+  min-height: 240px;
+}
+
+.article h2 {
+  margin: 0 0 0.25rem;
+}
+
+.slug {
+  margin: 0 0 0.85rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.7rem;
+  color: var(--cp-text-dim);
+}
+
+.body {
+  white-space: pre-wrap;
+  line-height: 1.55;
+  color: var(--cp-text);
+}
+
+.wikilink {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--cp-cyan);
+  color: var(--cp-cyan);
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.wikilink[data-missing='true'] {
+  border-bottom-color: var(--cp-magenta, #ff2a6d);
+  color: var(--cp-magenta, #ff2a6d);
+}
+
+.wikilink:hover {
+  text-shadow: var(--cp-glow-cyan);
+}
+
+.form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.form label {
+  display: grid;
+  gap: 0.3rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-cyan);
+}
+
+.msg {
+  margin: 0;
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
+  color: var(--cp-ok);
+}

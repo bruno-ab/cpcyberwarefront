@@ -18,8 +18,11 @@
       "narrator": "Narrator",
       "account": "Account",
       "gigs": "Gigs",
+      "adventure": "Adventure",
       "shop": "Ripperdoc",
-      "wiki": "Wiki"
+      "wiki": "Wiki",
+      "achievements": "Achievements",
+      "idCard": "ID Card"
     },
     "cta": {
       "enter": "Jack in",

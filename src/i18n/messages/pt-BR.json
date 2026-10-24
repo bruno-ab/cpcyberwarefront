@@ -18,8 +18,11 @@
       "narrator": "Narrador",
       "account": "Conta",
       "gigs": "Gigs",
+      "adventure": "Aventura",
       "shop": "Ripperdoc",
-      "wiki": "Wiki"
+      "wiki": "Wiki",
+      "achievements": "Conquistas",
+      "idCard": "ID Card"
     },
     "cta": {
       "enter": "Entrar na rede",

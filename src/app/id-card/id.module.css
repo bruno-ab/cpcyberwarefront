@@ -1,18 +1,32 @@
+.picker {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-cyan);
+  max-width: 20rem;
+}
+
 .card {
   width: min(640px, 100%);
   background: linear-gradient(135deg, #12141a, #1a1030);
   border: 2px solid var(--cp-yellow);
   padding: 0;
   overflow: hidden;
+  box-shadow: var(--cp-glow-yellow);
 }
 
 .stripe {
   background: var(--cp-yellow);
   color: #0a0a0c;
-  font-family: var(--font-share-mono), monospace;
+  font-family: var(--cp-font-mono), monospace;
   font-weight: 700;
   letter-spacing: 0.12em;
-  padding: 0.4rem 0.75rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
 }
 
 .body {
@@ -33,22 +47,59 @@
     transparent 6px
   );
   border: 1px solid var(--cp-cyan);
+  display: grid;
+  place-items: center;
+  font-family: var(--cp-font-display);
+  font-size: 2.4rem;
+  color: var(--cp-cyan);
+  text-shadow: var(--cp-glow-cyan);
+}
+
+.body h2 {
+  margin: 0 0 0.35rem;
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+}
+
+.body p {
+  margin: 0.2rem 0;
+  color: var(--cp-text);
 }
 
 .mono {
-  font-family: var(--font-share-mono), monospace;
-  color: var(--cp-cyan);
+  font-family: var(--cp-font-mono), monospace;
+  color: var(--cp-cyan) !important;
+  margin-top: 0.65rem !important;
 }
 
 .card footer {
-  border-top: 1px solid var(--cp-border);
+  border-top: 1px solid var(--cp-border-strong);
   padding: 0.4rem 0.75rem;
   font-size: 0.75rem;
-  color: var(--cp-text-muted);
+  color: var(--cp-text-dim);
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 @media print {
+  .printHide :global(button),
+  .picker,
+  .actions {
+    display: none !important;
+  }
+
   .card {
     break-inside: avoid;
+    box-shadow: none;
+    width: 100%;
+  }
+
+  body {
+    background: #fff !important;
   }
 }

@@ -86,11 +86,28 @@ const BookPage = () => {
               </li>
             ))}
           </ul>
-          <a className={styles.export} href={apiUrl('/api/book/export.md')}>
-            Exportar Markdown
-          </a>
+          <div className={styles.exportRow}>
+            <a className={styles.export} href={apiUrl('/api/book/export.md')}>
+              Exportar Markdown
+            </a>
+            <a
+              className={styles.export}
+              href={apiUrl('/api/book/export.html')}
+              target="_blank"
+              rel="noreferrer"
+            >
+              HTML / PDF
+            </a>
+            <button
+              type="button"
+              className={styles.exportBtn}
+              onClick={() => window.print()}
+            >
+              Imprimir página
+            </button>
+          </div>
         </aside>
-        <HudPanel className={styles.reader} title={current?.title || '—'}>
+        <HudPanel className={`${styles.reader} book-print-area`} title={current?.title || '—'}>
           {current?.summary && (
             <p className={styles.summary}>{current.summary}</p>
           )}
