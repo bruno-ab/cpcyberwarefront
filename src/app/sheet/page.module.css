@@ -1,19 +1,19 @@
 .sheetPage {
   min-height: 100vh;
   padding-bottom: 2.5rem;
-  color: #e8eef2;
-  font-family: 'Raleway', 'Segoe UI', sans-serif;
+  color: var(--cp-text);
+  font-family: var(--cp-font-ui);
 }
 
 .attributesSection {
-  margin: 0.5rem 0 1rem;
+  margin: 0.75rem 0 1rem;
   text-align: left;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #fed33f;
-  font-family: 'Audiowide', sans-serif;
-  font-size: 1rem;
-  text-shadow: -0.04em 0 #ff003c55, 0.04em 0 #2be4ea55;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-display);
+  font-size: 0.95rem;
+  text-shadow: var(--cp-glow-yellow);
 }
 
 .loading,
@@ -21,15 +21,15 @@
   padding: 1.25rem;
   max-width: 1100px;
   margin: 0 auto;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cp-font-mono);
 }
 
 .loading {
-  color: #2be4ea;
+  color: var(--cp-cyan);
 }
 
 .error {
-  color: #e8615a;
+  color: var(--cp-alert-soft);
 }
 
 .tabs {
@@ -39,20 +39,20 @@
   padding: 0.85rem 1rem;
   max-width: 1100px;
   margin: 0.75rem auto 0;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid rgba(0, 243, 255, 0.25);
 }
 
 .tab,
 .tabActive {
   appearance: none;
   -webkit-appearance: none;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid #555;
-  color: #9aa3b5;
-  font-family: 'Audiowide', sans-serif;
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
   font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  padding: 0.5rem 0.85rem;
+  letter-spacing: 0.1em;
+  padding: 0.45rem 0.75rem;
   cursor: pointer;
   text-transform: uppercase;
   border-radius: 0;
@@ -60,15 +60,14 @@
 }
 
 .tab:hover {
-  border-color: #2be4ea88;
-  color: #2be4ea;
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
 }
 
 .tabActive {
-  border-color: #fed33f;
-  color: #fed33f;
-  background: rgba(254, 211, 63, 0.08);
-  box-shadow: inset 0 0 12px rgba(254, 211, 63, 0.12);
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
 }
 
 .tabBody {
@@ -85,43 +84,46 @@
 }
 
 .summaryCard {
-  border: 1px solid #8814ff;
-  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: var(--cp-bg-panel);
   padding: 0.85rem;
   text-align: center;
+  box-shadow: var(--cp-inset-cyan);
 }
 
 .summaryCard span {
   display: block;
-  color: #8b93a7;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  color: var(--cp-text-dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 0.35rem;
+  font-family: var(--cp-font-mono);
 }
 
 .summaryCard strong {
-  color: #2be4ea;
+  color: var(--cp-cyan);
   font-size: 1.35rem;
-  font-family: 'Audiowide', sans-serif;
+  font-family: var(--cp-font-display);
+  text-shadow: var(--cp-glow-cyan);
 }
 
 .hint {
-  color: #9aa3b5;
+  color: var(--cp-text-dim);
   font-size: 0.9rem;
   line-height: 1.45;
   margin: 0.75rem 0 0;
 }
 
 .hint a {
-  color: #fed33f;
+  color: var(--cp-yellow);
   text-decoration: underline;
 }
 
 .inventory {
   display: grid;
   gap: 0.75rem;
-  color: #c3c3c3;
+  color: var(--cp-text-dim);
 }
 
 .inventoryRow {
@@ -130,19 +132,20 @@
   align-items: center;
   gap: 1rem;
   padding: 0.85rem 1rem;
-  border: 1px solid #555;
-  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  background: var(--cp-bg-panel);
 }
 
 .inventoryRow span {
-  color: #8b93a7;
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
+  color: var(--cp-text-dim);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  font-family: var(--cp-font-mono);
 }
 
 .inventoryRow strong {
-  color: #2be4ea;
-  font-family: 'Audiowide', sans-serif;
+  color: var(--cp-cyan);
+  font-family: var(--cp-font-display);
   font-size: 1.15rem;
 }

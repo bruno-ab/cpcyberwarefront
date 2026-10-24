@@ -7,9 +7,10 @@
 }
 
 .status {
-    color: #2be4ea;
-    font-family: 'Raleway', sans-serif;
-    letter-spacing: 2px;
+    color: var(--cp-cyan);
+    font-family: var(--cp-font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .characterGrid {
@@ -23,18 +24,23 @@
 .cwBtn {
     margin-top: 0.5rem;
     background: transparent;
-    border: 1px solid #1fb6ff;
-    color: #fed33f;
-    font-family: 'Audiowide', serif;
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--cp-cyan);
+    color: var(--cp-yellow);
+    font-family: var(--cp-font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.55rem;
     cursor: pointer;
+}
+
+.cwBtn:hover {
+    box-shadow: var(--cp-glow-yellow);
 }
 
 .body {
     padding: 0px;
-    background: #222222;
+    background: transparent;
     text-align: center;
     margin: 0px;
 }
@@ -57,13 +63,14 @@
 }
 
 .titulo>h2 {
-    color: #ffffff;
+    color: var(--cp-yellow);
     margin: 0px;
-    font-family: 'Audiowide', serif;
+    font-family: var(--cp-font-display);
     font-size: 25px;
-    letter-spacing: 4px;
+    letter-spacing: 0.14em;
     transition: 0.3s;
-    text-shadow: -0.1em 0 red, 0.1em 0 cyan;
+    text-transform: uppercase;
+    text-shadow: var(--cp-glow-yellow);
 }
 
 .titulo>h4 {

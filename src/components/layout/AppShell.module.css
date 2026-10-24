@@ -1,13 +1,23 @@
 .shell {
   min-height: 100vh;
-  background: transparent; /* herda #222 do body, igual /characters */
+  background: transparent;
   color: var(--cp-text);
   font-family: var(--cp-font-ui);
   position: relative;
 }
 
 .scanlines {
-  display: none;
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  opacity: 0.04;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(255, 255, 255, 0.35) 3px
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -21,12 +31,13 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1.25rem;
-  padding: 0.85rem 1.25rem;
-  border-bottom: 1px solid var(--cp-yellow);
-  background: linear-gradient(180deg, var(--cp-bg-2), transparent);
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid rgba(0, 243, 255, 0.35);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(10, 10, 10, 0.75));
   position: sticky;
   top: 0;
   z-index: 40;
+  backdrop-filter: blur(6px);
 }
 
 .brand {
@@ -39,15 +50,20 @@
 
 .brand strong {
   display: block;
-  font-size: 1.05rem;
-  letter-spacing: 0.04em;
+  font-family: var(--cp-font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: var(--cp-glow-yellow);
 }
 
 .brand small {
   display: block;
   color: var(--cp-cyan);
   font-family: var(--cp-font-mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .brandMark {
@@ -55,42 +71,46 @@
   height: 2.2rem;
   display: grid;
   place-items: center;
-  border: 1px solid var(--cp-yellow);
+  border: 1px solid var(--cp-cyan);
   clip-path: var(--cp-clip);
   font-family: var(--cp-font-mono);
   font-weight: 700;
-  box-shadow: var(--cp-glow-yellow);
+  color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
+  background: rgba(0, 243, 255, 0.06);
 }
 
 .nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 0.75rem;
+  gap: 0.3rem 0.55rem;
   flex: 1;
 }
 
 .navLink {
   color: var(--cp-cyan);
   text-decoration: none;
-  font-weight: 600;
+  font-family: var(--cp-font-mono);
+  font-weight: 500;
   text-transform: uppercase;
-  font-size: 0.78rem;
-  letter-spacing: 0.05em;
-  padding: 0.2rem 0.15rem;
-  border-bottom: 1px solid transparent;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid transparent;
 }
 
 .navLink:hover,
 .navLink:focus-visible {
   color: var(--cp-yellow);
-  border-bottom-color: var(--cp-yellow);
+  border-color: var(--cp-yellow);
+  box-shadow: var(--cp-glow-yellow);
   outline: none;
 }
 
 .soon {
   margin-left: 0.25rem;
-  font-size: 0.65rem;
-  color: var(--cp-magenta);
+  font-size: 0.6rem;
+  color: var(--cp-alert-soft);
   font-family: var(--cp-font-mono);
 }
 
@@ -101,16 +121,24 @@
 
 .locale button {
   background: transparent;
-  border: 1px solid var(--cp-border);
+  border: 1px solid var(--cp-border-strong);
   color: var(--cp-text-dim);
   font-family: var(--cp-font-mono);
   cursor: pointer;
   padding: 0.2rem 0.45rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+
+.locale button:hover {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
 }
 
 .localeActive {
-  border-color: var(--cp-yellow) !important;
-  color: var(--cp-yellow) !important;
+  border-color: var(--cp-cyan) !important;
+  color: var(--cp-cyan) !important;
+  box-shadow: var(--cp-glow-cyan);
 }
 
 .main {

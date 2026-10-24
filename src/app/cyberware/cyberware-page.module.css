@@ -1,23 +1,25 @@
 .page {
   min-height: 100vh;
   background: transparent;
-  color: #e8eef2;
+  color: var(--cp-text);
   padding-bottom: 2rem;
 }
 
 .title {
   margin: 0.5rem 1rem;
-  color: #fff;
-  font-family: 'Audiowide', serif;
-  letter-spacing: 3px;
-  text-shadow: -0.08em 0 red, 0.08em 0 cyan;
-  font-size: 1.4rem;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: var(--cp-glow-yellow);
+  font-size: 1.25rem;
 }
 
 .hint {
   margin: 0 1rem 1rem;
-  color: #2be4ea;
+  color: var(--cp-cyan);
   font-size: 0.95rem;
+  font-family: var(--cp-font-mono);
 }
 
 .layout {
@@ -69,13 +71,18 @@
 
 .cwBtn {
   background: transparent;
-  border: 1px solid #fed33f;
-  color: #fed33f;
-  font-family: 'Audiowide', serif;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
+  border: 1px solid var(--cp-yellow);
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   padding: 0.4rem 0.65rem;
   cursor: pointer;
+}
+
+.cwBtn:hover {
+  box-shadow: var(--cp-glow-yellow);
 }
 
 .bodyHint {

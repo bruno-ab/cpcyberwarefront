@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
-import { Rajdhani, Share_Tech_Mono } from 'next/font/google';
+import { Audiowide, Rajdhani, Share_Tech_Mono } from 'next/font/google';
 import '../styles/tokens.css';
+import '../styles/hud-base.css';
 import './globals.css';
 
 const rajdhani = Rajdhani({
@@ -15,16 +16,24 @@ const shareMono = Share_Tech_Mono({
   variable: '--font-share-mono',
 });
 
+const audiowide = Audiowide({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-audiowide',
+});
+
 export const metadata: Metadata = {
   title: 'Cyberpunk Storyteller',
   description: 'Mesa digital Night City × Storyteller',
   manifest: '/manifest.json',
-  themeColor: '#FCEE0A',
+  themeColor: '#0a0a0a',
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
   <html lang="pt-BR">
-    <body className={`${rajdhani.variable} ${shareMono.variable}`}>
+    <body
+      className={`${rajdhani.variable} ${shareMono.variable} ${audiowide.variable}`}
+    >
       {children}
       <script
         dangerouslySetInnerHTML={{

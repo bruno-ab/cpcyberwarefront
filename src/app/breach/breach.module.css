@@ -3,7 +3,7 @@
 }
 
 .intro {
-  color: #8b93a7;
+  color: var(--cp-text-dim);
   margin: 0 0 1rem;
   max-width: 52rem;
   line-height: 1.45;
@@ -17,21 +17,28 @@
 }
 
 .tab {
+  appearance: none;
   background: transparent;
-  border: 1px solid #555;
-  color: #8b93a7;
-  font-family: 'Audiowide', 'Share Tech Mono', monospace;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 0.45rem 0.7rem;
   cursor: pointer;
+  border-radius: 0;
+}
+
+.tab:hover {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
 }
 
 .tab[data-active='true'] {
-  border-color: #2be4ea;
-  color: #2be4ea;
-  box-shadow: inset 0 0 10px #2be4ea22;
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
 }
 
 .layout {
@@ -48,46 +55,51 @@
 
 .card {
   text-align: left;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid #444;
+  background: var(--cp-bg-panel);
+  border: 1px solid rgba(0, 243, 255, 0.28);
   color: inherit;
   padding: 0.75rem 0.85rem;
   cursor: pointer;
   display: grid;
   gap: 0.35rem;
+  font-family: var(--cp-font-ui);
 }
 
 .card:hover {
-  border-color: #2be4ea;
+  border-color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
 }
 
 .card[data-active='true'] {
-  border-color: #fed33f;
-  box-shadow: inset 0 0 12px #fed33f22;
+  border-color: var(--cp-yellow);
+  box-shadow: var(--cp-glow-yellow);
 }
 
 .card strong {
-  color: #fff;
-  font-family: 'Audiowide', serif;
-  letter-spacing: 1px;
-  font-size: 0.95rem;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-display);
+  letter-spacing: 0.08em;
+  font-size: 0.9rem;
+  text-transform: uppercase;
 }
 
 .meta {
-  font-size: 0.78rem;
-  color: #8b93a7;
+  font-size: 0.75rem;
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
 }
 
 .blurb {
   margin: 0;
   font-size: 0.88rem;
-  color: #c3c3c3;
+  color: var(--cp-text);
 }
 
 .reward {
   margin: 0;
   font-size: 0.8rem;
-  color: #fed33f;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-mono);
 }
 
 .play {
@@ -96,16 +108,18 @@
 }
 
 .empty {
-  border: 1px dashed #555;
+  border: 1px dashed var(--cp-border-strong);
   padding: 1.5rem;
-  color: #8b93a7;
+  color: var(--cp-text-dim);
   text-align: center;
+  background: var(--cp-bg-panel);
 }
 
 .statusMsg {
   margin: 0.5rem 0 0;
   font-size: 0.85rem;
-  color: #2be4ea;
+  color: var(--cp-cyan);
+  font-family: var(--cp-font-mono);
 }
 
 @media (max-width: 900px) {

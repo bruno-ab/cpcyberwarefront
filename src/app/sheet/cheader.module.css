@@ -1,11 +1,12 @@
 .wrap {
   margin: 0.75rem 1rem 0;
   padding: 1rem 1.25rem;
-  border: 1px solid #8814ff;
-  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: var(--cp-bg-panel);
   max-width: 1100px;
   margin-left: auto;
   margin-right: auto;
+  box-shadow: var(--cp-inset-cyan);
 }
 
 .titleRow {
@@ -21,23 +22,24 @@
 
 .name {
   margin: 0;
-  color: #fed33f;
-  font-family: 'Audiowide', 'Segoe UI', sans-serif;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-display);
   font-size: clamp(1.4rem, 3.5vw, 2.2rem);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  text-shadow: -0.06em 0 #ff003c, 0.06em 0 #2be4ea;
+  text-shadow: var(--cp-glow-yellow);
   line-height: 1.1;
 }
 
 .role {
-  font-family: 'Share Tech Mono', 'Raleway', monospace;
-  font-size: 0.85rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #2be4ea;
-  border: 1px solid #2be4ea55;
+  color: var(--cp-cyan);
+  border: 1px solid rgba(0, 243, 255, 0.45);
   padding: 0.25rem 0.55rem;
+  box-shadow: var(--cp-glow-cyan);
 }
 
 .meta {

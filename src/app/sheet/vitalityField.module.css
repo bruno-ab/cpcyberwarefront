@@ -2,11 +2,12 @@
   position: relative;
   margin: 0.5rem 0 1.25rem;
   padding: 1rem 1.1rem;
-  border: 1px solid #2be4ea55;
-  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: var(--cp-bg-panel);
   overflow: hidden;
-  color: #e8eef2;
-  font-family: 'Raleway', 'Segoe UI', sans-serif;
+  color: var(--cp-text);
+  font-family: var(--cp-font-ui);
+  box-shadow: var(--cp-inset-cyan);
 }
 
 .wrap[data-severity='1'] {

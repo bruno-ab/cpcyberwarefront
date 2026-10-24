@@ -1,0 +1,153 @@
+/**
+ * Estilos HUD globais — botões, painéis, inputs, títulos no estilo Vitalidade.
+ */
+
+body {
+  background-color: var(--cp-bg-0) !important;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(0, 243, 255, 0.06) 0%, transparent 45%),
+    radial-gradient(ellipse at 80% 10%, rgba(136, 20, 255, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 100%, rgba(255, 0, 60, 0.05) 0%, transparent 50%) !important;
+  color: var(--cp-text);
+  font-family: var(--cp-font-ui);
+}
+
+::selection {
+  background: var(--cp-cyan);
+  color: var(--cp-bg-0);
+}
+
+a {
+  color: var(--cp-yellow);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--cp-cyan);
+  text-shadow: var(--cp-glow-cyan);
+}
+
+h1,
+h2,
+.cp-title {
+  font-family: var(--cp-font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+}
+
+h3,
+.cp-subtitle {
+  font-family: var(--cp-font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-cyan);
+  font-size: 0.95rem;
+}
+
+/* Painel HUD padrão */
+.cp-panel {
+  background: var(--cp-bg-panel);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  color: var(--cp-text);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--cp-inset-cyan);
+}
+
+/* Abas / chips */
+.cp-tab {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.65rem;
+  cursor: pointer;
+  border-radius: 0;
+  line-height: 1.2;
+}
+
+.cp-tab:hover {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+}
+
+.cp-tab[data-active='true'],
+.cp-tabActive {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
+}
+
+/* Botão HUD */
+.cp-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.cp-btn:hover {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+}
+
+.cp-btnPrimary {
+  border-color: var(--cp-yellow);
+  color: var(--cp-yellow);
+}
+
+.cp-btnPrimary:hover {
+  box-shadow: var(--cp-glow-yellow);
+  background: rgba(255, 184, 0, 0.08);
+}
+
+/* Inputs */
+input[type='text'],
+input[type='search'],
+input[type='number'],
+input[type='email'],
+input[type='password'],
+textarea,
+select {
+  background: var(--cp-bg-1);
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-cyan);
+  font-family: var(--cp-font-mono);
+  border-radius: 0;
+  padding: 0.4rem 0.55rem;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--cp-cyan);
+  box-shadow: var(--cp-glow-cyan);
+}
+
+/* Scrollbar HUD */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--cp-bg-0);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--cp-border-strong);
+  border: 1px solid var(--cp-cyan);
+}

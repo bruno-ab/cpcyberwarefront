@@ -1,12 +1,13 @@
 .shop {
   margin: 0;
   padding: 1rem;
-  border: 1px solid #8814ff;
-  background: rgba(0, 0, 0, 0.55);
-  color: #c3c3c3;
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: var(--cp-bg-panel);
+  color: var(--cp-text);
   position: relative;
   z-index: 2;
   clip-path: none;
+  box-shadow: var(--cp-inset-cyan);
 }
 
 .head {
@@ -20,31 +21,42 @@
 
 .head h3 {
   margin: 0;
-  color: #fff;
-  font-family: 'Audiowide', serif;
-  letter-spacing: 2px;
-  text-shadow: -0.06em 0 red, 0.06em 0 cyan;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: var(--cp-glow-yellow);
+  font-size: 0.95rem;
 }
 
 .partFilter {
   margin: 0.35rem 0 0;
   font-size: 0.85rem;
-  color: #8b93a7;
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
 }
 
 .partFilter strong {
-  color: #2be4ea;
+  color: var(--cp-cyan);
 }
 
 .clearBtn {
   margin-left: 0.65rem;
   background: transparent;
-  border: 1px solid #8b93a7;
-  color: #8b93a7;
-  font-size: 0.7rem;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   padding: 0.2rem 0.45rem;
   cursor: pointer;
   vertical-align: middle;
+}
+
+.clearBtn:hover {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
 }
 
 .section {
@@ -53,20 +65,22 @@
 
 .sectionTitle {
   margin: 0 0 0.5rem;
-  color: #fed33f;
-  font-family: 'Audiowide', serif;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .empty {
   margin: 0 0 0.75rem;
   font-size: 0.85rem;
-  color: #8b93a7;
+  color: var(--cp-text-dim);
 }
 
 .installed {
-  border-color: #2be4ea;
+  border-color: var(--cp-cyan) !important;
+  box-shadow: var(--cp-glow-cyan);
 }
 
 .edgesRow {
@@ -79,29 +93,39 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-size: 0.8rem;
-  color: #fed33f;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-mono);
 }
 
 .edgesRow input {
   width: 5rem;
-  background: #111;
-  border: 1px solid #8814ff;
-  color: #2be4ea;
+  background: var(--cp-bg-1);
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-cyan);
   padding: 0.35rem;
   font-size: 1.1rem;
+  font-family: var(--cp-font-mono);
 }
 
 .edgesRow button,
 .card button {
   background: transparent;
-  border: 1px solid #fed33f;
-  color: #fed33f;
-  font-family: 'Audiowide', serif;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
+  border: 1px solid var(--cp-yellow);
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   padding: 0.45rem 0.7rem;
   cursor: pointer;
+}
+
+.edgesRow button:hover,
+.card button:hover {
+  box-shadow: var(--cp-glow-yellow);
 }
 
 .card button:disabled {
@@ -110,16 +134,18 @@
 }
 
 .msg {
-  color: #2be4ea;
+  color: var(--cp-cyan);
+  font-family: var(--cp-font-mono);
 }
 
 .search {
   width: min(360px, 100%);
   margin-bottom: 0.75rem;
-  background: #111;
-  border: 1px solid #777;
-  color: #fff;
+  background: var(--cp-bg-1);
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text);
   padding: 0.45rem 0.6rem;
+  font-family: var(--cp-font-mono);
 }
 
 .grid {
@@ -132,33 +158,38 @@
   grid-template-columns: 88px 1fr auto;
   gap: 0.75rem;
   align-items: center;
-  border: 1px solid #555;
+  border: 1px solid rgba(0, 243, 255, 0.28);
   padding: 0.55rem;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.45);
 }
 
 .thumb {
   width: 88px;
   height: 88px;
   object-fit: cover;
-  border: 1px solid #1fb6ff;
-  background: #111;
+  border: 1px solid var(--cp-cyan);
+  background: var(--cp-bg-1);
 }
 
 .body strong {
   display: block;
-  color: #fff;
+  color: var(--cp-yellow);
+  font-family: var(--cp-font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
 }
 
 .body span {
-  font-size: 0.8rem;
-  color: #8b93a7;
+  font-size: 0.75rem;
+  color: var(--cp-text-dim);
+  font-family: var(--cp-font-mono);
 }
 
 .body p {
   margin: 0.25rem 0 0;
   font-size: 0.85rem;
-  color: #c3c3c3;
+  color: var(--cp-text);
 }
 
 @media (max-width: 700px) {

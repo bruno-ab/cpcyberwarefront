@@ -40,13 +40,14 @@ body {
             calc(100% - var(--ui-notch-amount) + 2px) 100%,
             0 100%);
 
-    background-color: #222222;
-    background-image: radial-gradient(ellipse at 33% 10%,
-            rgba(70, 22, 22, 0.45) 0%,
-            transparent 75%);
+    background-color: var(--cp-bg-0, #0a0a0a);
+    background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(0, 243, 255, 0.06) 0%, transparent 45%),
+        radial-gradient(ellipse at 80% 8%, rgba(136, 20, 255, 0.07) 0%, transparent 42%),
+        radial-gradient(ellipse at 40% 100%, rgba(255, 0, 60, 0.05) 0%, transparent 50%);
     background-repeat: no-repeat;
-    color: var(--colors-on_bg--500);
-    font-family: var(--fonts-primary);
+    color: var(--cp-text, var(--colors-on_bg--500));
+    font-family: var(--cp-font-ui, var(--fonts-primary));
     font-size: 100%;
     line-height: 1.4;
     margin: 0;

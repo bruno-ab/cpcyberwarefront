@@ -1,25 +1,39 @@
+/**
+ * Cyberpunk Storyteller — HUD tokens
+ * Referência visual: painel Vitalidade (ciano / amarelo / laranja / vermelho em fundo #0a0a0a)
+ */
 :root {
-  --cp-yellow: #fcee0a;
-  --cp-cyan: #2be4ea;
-  --cp-magenta: #ff2a6d;
-  --cp-alert: #ff003c;
+  --cp-bg-0: #0a0a0a;
+  --cp-bg-1: #101014;
+  --cp-bg-2: #16161c;
+  --cp-bg-panel: rgba(0, 0, 0, 0.72);
+  --cp-border: #2a2f3a;
+  --cp-border-strong: #3a4250;
+
+  --cp-cyan: #00f3ff;
+  --cp-cyan-dim: #2be4ea;
+  --cp-yellow: #ffb800;
+  --cp-yellow-bright: #fed33f;
+  --cp-orange: #ff4d00;
+  --cp-magenta: #ff2bd6;
+  --cp-alert: #ff0000;
+  --cp-alert-soft: #ff4d6d;
   --cp-ok: #2bfea0;
-  --cp-bg-0: #222222;
-  --cp-bg-1: #2a2a2a;
-  --cp-bg-2: #333333;
-  --cp-border: #3a3f4b;
+  --cp-violet: #8814ff;
+
   --cp-text: #e8eef2;
   --cp-text-dim: #8b93a7;
-  --cp-font-ui: 'Rajdhani', system-ui, sans-serif;
-  --cp-font-mono: 'Share Tech Mono', ui-monospace, monospace;
-  --cp-notch: 14px;
-  --cp-glow-yellow: 0 0 12px rgba(252, 238, 10, 0.45);
-  --cp-glow-cyan: 0 0 12px rgba(43, 228, 234, 0.4);
-  --cp-rarity-common: #9aa3b5;
-  --cp-rarity-uncommon: #2bfea0;
-  --cp-rarity-rare: #2be4ea;
-  --cp-rarity-epic: #b44aff;
-  --cp-rarity-legendary: #fcee0a;
+
+  --cp-font-ui: var(--font-rajdhani), 'Rajdhani', system-ui, sans-serif;
+  --cp-font-mono: var(--font-share-mono), 'Share Tech Mono', ui-monospace, monospace;
+  --cp-font-display: var(--font-audiowide), 'Audiowide', var(--cp-font-ui), sans-serif;
+
+  --cp-glow-cyan: 0 0 10px rgba(0, 243, 255, 0.45);
+  --cp-glow-yellow: 0 0 10px rgba(255, 184, 0, 0.4);
+  --cp-glow-alert: 0 0 12px rgba(255, 0, 0, 0.35);
+  --cp-inset-cyan: inset 0 0 12px rgba(0, 243, 255, 0.08);
+
+  --cp-notch: 10px;
   --cp-clip: polygon(
     0 0,
     100% 0,
@@ -27,6 +41,14 @@
     calc(100% - var(--cp-notch)) 100%,
     0 100%
   );
+
+  --cp-rarity-common: #9aa3b5;
+  --cp-rarity-uncommon: #2bfea0;
+  --cp-rarity-rare: #00f3ff;
+  --cp-rarity-epic: #b44aff;
+  --cp-rarity-legendary: #ffb800;
+
+  --cp-motion: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
