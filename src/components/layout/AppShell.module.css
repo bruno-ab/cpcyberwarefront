@@ -1,23 +1,13 @@
 .shell {
   min-height: 100vh;
-  background: var(--cp-bg-0);
+  background: transparent; /* herda #222 do body, igual /characters */
   color: var(--cp-text);
   font-family: var(--cp-font-ui);
   position: relative;
 }
 
 .scanlines {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  opacity: 0.06;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.35) 3px
-  );
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

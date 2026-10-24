@@ -1,9 +1,8 @@
 .panel {
-  background: linear-gradient(160deg, var(--cp-bg-2), var(--cp-bg-1));
-  border: 1px solid var(--cp-yellow);
-  clip-path: var(--cp-clip);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid #8814ff;
   color: var(--cp-text);
-  box-shadow: var(--cp-glow-yellow);
+  box-shadow: none;
   position: relative;
 }
 
@@ -17,12 +16,13 @@
 }
 
 .panelTitle {
-  font-family: var(--cp-font-mono);
+  font-family: 'Audiowide', var(--cp-font-ui), serif;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--cp-yellow);
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  text-shadow: -0.08em 0 red, 0.08em 0 cyan;
   padding: 0.65rem 1rem 0.25rem;
-  font-size: 0.85rem;
+  font-size: 1rem;
 }
 
 .panelBody {

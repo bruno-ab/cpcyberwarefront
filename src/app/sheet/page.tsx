@@ -18,31 +18,31 @@ const Sheet = () => {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
 
+  const fetchCharacterData = async () => {
+    if (!id) {
+      setError('Informe ?id= na URL da ficha.');
+      return;
+    }
+    try {
+      const response = await fetch(apiUrl(`/api/characters/${id}`), {
+        method: 'GET',
+        headers: authHeaders(),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCharacterData(data);
+        setError('');
+      } else {
+        setError('Erro ao carregar personagem.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Falha de rede ao carregar personagem.');
+    }
+  };
+
   useEffect(() => {
-    const fetchCharacterData = async () => {
-      if (!id) {
-        setError('Informe ?id= na URL da ficha.');
-        return;
-      }
-      try {
-        const response = await fetch(apiUrl(`/api/characters/${id}`), {
-          method: 'GET',
-          headers: authHeaders(),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCharacterData(data);
-          setError('');
-        } else {
-          setError('Erro ao carregar personagem.');
-        }
-      } catch (err) {
-        console.error(err);
-        setError('Falha de rede ao carregar personagem.');
-      }
-    };
-
     fetchCharacterData();
   }, [id]);
 
@@ -72,7 +72,7 @@ const Sheet = () => {
       <h3 className={styles.attributesSection}>Vitality</h3>
       <VitalityField characterData={characterData} />
 
-      <CyberCapacity characterData={characterData} />
+      <CyberCapacity characterData={characterData} onRefresh={fetchCharacterData} />
 
       <h3 className={styles.attributesSection}>Attributes</h3>
       <Attributes characterData={characterData} />

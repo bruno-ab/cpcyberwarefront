@@ -40,9 +40,9 @@ body {
             calc(100% - var(--ui-notch-amount) + 2px) 100%,
             0 100%);
 
-    background-color: var(--colors-bg--500);
+    background-color: #222222;
     background-image: radial-gradient(ellipse at 33% 10%,
-            #461616 0%,
+            rgba(70, 22, 22, 0.45) 0%,
             transparent 75%);
     background-repeat: no-repeat;
     color: var(--colors-on_bg--500);
@@ -607,9 +607,9 @@ textarea {}
             calc(100% - var(--ui-notch-amount) + 2px) 100%,
             0 100%);
 
-    background-color: var(--colors-bg--500);
+    background-color: #222222;
     background-image: radial-gradient(ellipse at 33% 10%,
-            #461616 0%,
+            rgba(70, 22, 22, 0.45) 0%,
             transparent 75%);
     background-repeat: no-repeat;
     color: var(--colors-on_bg--500);

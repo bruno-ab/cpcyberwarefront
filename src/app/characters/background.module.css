@@ -1,3 +1,36 @@
+.page {
+    padding: 0;
+    background: transparent;
+    text-align: center;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.status {
+    color: #2be4ea;
+    font-family: 'Raleway', sans-serif;
+    letter-spacing: 2px;
+}
+
+.characterGrid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem 1.5rem;
+}
+
+.cwBtn {
+    margin-top: 0.5rem;
+    background: transparent;
+    border: 1px solid #1fb6ff;
+    color: #fed33f;
+    font-family: 'Audiowide', serif;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+}
 
 .body {
     padding: 0px;
@@ -56,6 +89,8 @@
     max-width: 250px;
     max-height: 250px;
     border: 4px solid #777777;
+    position: relative;
+    cursor: pointer;
 }
 
 .img1 {

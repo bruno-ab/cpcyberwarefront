@@ -3,37 +3,65 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import style from './cyberware.module.css';
 import Header from '../header/Header';
 import Skeleton from './components/skeleton/page';
 import { apiUrl, authHeaders } from '../../lib/api';
+import styles from '../characters/background.module.css';
 
 function CyberWare() {
   const [showSkeleton, setShowSkeleton] = useState(false);
-  const [handSelected, setHandSelected] = useState(false); // New state for hand selection
+  const [handSelected, setHandSelected] = useState(false);
   const [characterData, setCharacterData] = useState(null);
+  const [characters, setCharacters] = useState([]);
+  const [status, setStatus] = useState('Carregando…');
   const searchParams = useSearchParams();
-
+  const router = useRouter();
   const id = searchParams.get('id');
 
   useEffect(() => {
-    const fetchCharacterData = async () => {
+    const loadList = async () => {
       try {
-        if (id) {
-          const response = await fetch(apiUrl(`/api/characters/${id}`), {
-            method: 'GET',
-            headers: authHeaders(),
-          });
+        const response = await fetch(apiUrl('/api/characters/player/characters'), {
+          method: 'GET',
+          headers: authHeaders(),
+        });
+        if (response.ok) {
+          const list = await response.json();
+          setCharacters(Array.isArray(list) ? list : []);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadList();
+  }, []);
 
-          if (response.ok) {
-            const data = await response.json();
-            setCharacterData(data);
-          } else {
-            console.log('Error fetching character data');
-          }
+  useEffect(() => {
+    const fetchCharacterData = async () => {
+      if (!id) {
+        setCharacterData(null);
+        setStatus('Selecione um personagem para abrir o scanner de cyberware.');
+        return;
+      }
+      setStatus('Carregando personagem…');
+      try {
+        const response = await fetch(apiUrl(`/api/characters/${id}`), {
+          method: 'GET',
+          headers: authHeaders(),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setCharacterData(data);
+          setStatus('');
+        } else {
+          setStatus('Erro ao carregar personagem.');
+          setCharacterData(null);
         }
       } catch (error) {
         console.error(error);
+        setStatus('Falha de rede ao carregar personagem.');
+        setCharacterData(null);
       }
     };
 
@@ -45,22 +73,53 @@ function CyberWare() {
     setShowSkeleton(!showSkeleton);
   };
 
-  if (!characterData) {
-    return null;
+  if (!id || !characterData) {
+    return (
+      <section className={styles.page}>
+        <Header />
+        <h2 className={styles.titulo}>Cyberwares</h2>
+        <p className={styles.status}>{status}</p>
+        <div className={styles.characterGrid}>
+          {characters.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className={`${styles.img2} ${styles.imagen}`}
+              style={{ cursor: 'pointer', color: '#fff' }}
+              onClick={() => router.push(`/cyberware?id=${c.id}`)}
+            >
+              <div className={styles.captioncontainer} style={{ opacity: 1 }}>
+                <div className={styles.caption} style={{ opacity: 1 }}>
+                  <h3>{c.name}</h3>
+                  <hr />
+                  <p>{c.role}</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   try {
     localStorage.setItem('characterData', JSON.stringify(characterData));
   } catch {
-    /* ignore quota / private mode */
+    /* ignore */
   }
 
   return (
     <section className="cyberpunk">
       <Header />
-      <h2 className="cyberpunk">Cyberwares</h2>
+      <h2 className="cyberpunk">Cyberwares — {characterData.name}</h2>
+      <p className={styles.status}>
+        Clique no corpo para abrir os slots ·{' '}
+        <button type="button" className={styles.cwBtn} onClick={() => router.push(`/sheet?id=${id}`)}>
+          Abrir ficha
+        </button>
+      </p>
       <div
-        className={`human-body ${handSelected ? 'hand-selected' : ''}`} 
+        className={`human-body ${handSelected ? 'hand-selected' : ''}`}
         style={{ position: 'fixed', top: 0, left: 0, zIndex: 999 }}
         onClick={toggleHandSelection}
       >

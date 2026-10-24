@@ -23,8 +23,9 @@
 .title {
   font-size: clamp(2.2rem, 5vw, 3.6rem);
   line-height: 1.05;
-  color: var(--cp-yellow);
-  text-shadow: var(--cp-glow-yellow);
+  color: #ffffff;
+  text-shadow: -0.08em 0 red, 0.08em 0 cyan;
+  font-family: 'Audiowide', var(--cp-font-ui), serif;
   margin: 0.35rem 0 0.75rem;
 }
 

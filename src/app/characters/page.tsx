@@ -5,40 +5,37 @@ import Header from '../header/Header';
 import styles from './background.module.css';
 const imgPath = '/characters/placeholder.png';
 import CreateForm from './createCharacterForm'
+import { apiUrl, authHeaders } from '../../lib/api'
 
 const getLocalStorage = () => {
-    return typeof window !== "undefined" ? window.localStorage.getItem('access_token') : false
-}
-
-const setLocalStorage = (token: string) => {
-    typeof window !== "undefined" ? window.localStorage.setItem('access_token', token) : false
+    return typeof window !== "undefined" ? window.localStorage.getItem('access_token') : null
 }
 
 const getPlayerCharacters = async () => {
   try {
-    const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/api/characters/player/characters', {
+    const response = await fetch(apiUrl('/api/characters/player/characters'), {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getLocalStorage(),
-      },
+      headers: authHeaders(),
     });
 
     if (response.ok) {
-      return response.json();
-    } else {
-      console.log("error");
-      return null;
+      const json = await response.json();
+      return Array.isArray(json) ? json : [];
     }
+    console.log('characters fetch failed', response.status);
+    return [];
   } catch (error) {
     console.error(error);
-    return null;
+    return [];
   }
 };
 
 function Characters() {
   const router = useRouter();
   const accessToken = getLocalStorage();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
      if (!accessToken) {
@@ -46,29 +43,35 @@ function Characters() {
     }
   },[accessToken, router])
 
-  //
- 
-  const [data, setData] = useState(null);
-
   useEffect(() => {
+    if (!accessToken) return;
     const fetchData = async () => {
+      setLoading(true);
       const result = await getPlayerCharacters();
       setData(result);
+      setError(result.length === 0 ? 'Nenhum personagem encontrado para esta conta.' : '');
+      setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [accessToken]);
 
   const handleCharacterClick = (characterId) => {
-    // Redirecionar para a página '/sheet' com o ID do personagem na URL
     router.push(`/sheet?id=${characterId}`);
   };
 
+  const openCyberware = (e, characterId) => {
+    e.stopPropagation();
+    router.push(`/cyberware?id=${characterId}`);
+  };
+
   return (
-    <div>
+    <div className={styles.page}>
       <Header />
       <h2 className={styles.titulo}>Characters</h2>
+      {loading && <p className={styles.status}>Carregando personagens…</p>}
+      {!loading && error && <p className={styles.status}>{error}</p>}
       <div className={styles.characterGrid}>
-        {data && data.map((character) => (
+        {data.map((character) => (
           <div
             key={character.id}
             className={`${styles.img2} ${styles.imagen}`}
@@ -81,6 +84,13 @@ function Characters() {
                 <hr />
                 <p>{character.role}</p>
                 <p>An iconic character that wants to be a legend in Night City.</p>
+                <button
+                  type="button"
+                  className={styles.cwBtn}
+                  onClick={(e) => openCyberware(e, character.id)}
+                >
+                  Cyberware
+                </button>
               </div>
             </div>
           </div>
