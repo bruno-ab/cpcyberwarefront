@@ -6,13 +6,54 @@
 }
 
 .terminal {
-    grid-row: 1;
-    grid-column: 1;
+    min-height: 100vh;
+    margin: 0;
+    background: #050505;
+    color: #ff6666;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
     display: grid;
     grid-gap: 3vw;
     padding: 3vw;
     grid-template-rows: 1fr auto 1fr;
     grid-template-columns: 1fr auto 1fr;
+    box-sizing: border-box;
+}
+
+.spinner {
+    grid-row: 1;
+    grid-column: 2;
+    margin: 0;
+    text-align: center;
+    font-size: 1.5rem;
+    color: #51ff00;
+}
+
+.hydraRebooting p,
+.hydraRebootSuccess p {
+    margin: 0.25rem 0;
+}
+
+.hydraRebootSuccess {
+    margin-top: 1rem;
+    color: #51ff00;
+    text-shadow: 0 0 8px #51ff00;
+}
+
+.processAmount {
+    color: #51ff00;
+}
+
+.loadingBar {
+    letter-spacing: 0.08em;
+    color: #51ff00;
+    margin: 0.75rem 0;
+    word-break: break-all;
+}
+
+.loadingBarUnloaded {
+    color: #fff;
+    text-shadow: 0 0 5px #fff;
+    opacity: 0.45;
 }
 
 .glitch {
@@ -161,9 +202,9 @@
 .progress {
     height: 100%;
     background-color: #51ff00;
-    opacity: 26%;
-    /* Cor da barra de progresso */
-    transition: width 0.5s ease-in-out;
+    opacity: 0.85;
+    box-shadow: 0 0 12px #51ff00;
+    transition: width 0.12s linear;
 }
 
 /* Adicione estilos cyberpunk/glitch conforme necessário */

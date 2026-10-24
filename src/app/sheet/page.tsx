@@ -129,6 +129,13 @@ const Sheet = () => {
                 <strong>{characterData.cyberwares?.length || 0} peças</strong>
               </div>
             </div>
+
+            <h3 className={styles.attributesSection}>Atributos</h3>
+            <Attributes characterData={characterData} />
+
+            <h3 className={styles.attributesSection}>Habilidades</h3>
+            <Abilities characterData={characterData} />
+
             <p className={styles.hint}>
               Para comprar e instalar chrome, use o{' '}
               <Link href={`/cyberware?id=${characterData.id}`}>ripperdoc</Link>.

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { SLOT_LABELS, CyberWareSlot } from '../../data/cyberwareSlots';
 import {
   BodyPart,
@@ -55,6 +56,7 @@ export const CyberwareShop = ({
   onClearPart,
   onUpdated,
 }: Props) => {
+  const router = useRouter();
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [filter, setFilter] = useState('');
   const [edges, setEdges] = useState(Number(sheet?.other_traits?.edges ?? 0));
@@ -166,11 +168,13 @@ export const CyberwareShop = ({
         );
       }
       setEdges(nextEdges);
-      setMsg(`Instalado: ${item.name} (−${cost} E).`);
-      onUpdated?.();
+      const q = new URLSearchParams({
+        id: String(characterId),
+        name: item.name,
+      });
+      router.push(`/installation?${q.toString()}`);
     } catch (e: any) {
       setMsg(e.message || 'Falha na compra');
-    } finally {
       setBusy(false);
     }
   };
