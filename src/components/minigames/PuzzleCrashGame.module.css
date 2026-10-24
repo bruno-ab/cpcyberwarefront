@@ -1,0 +1,149 @@
+.wrap {
+  border: 1px solid #8814ff;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1rem;
+  color: #c3c3c3;
+}
+
+.wrap[data-flash='1'] {
+  animation: crashFlash 0.2s ease;
+}
+
+@keyframes crashFlash {
+  from {
+    filter: brightness(1.6);
+  }
+  to {
+    filter: none;
+  }
+}
+
+.head h3 {
+  margin: 0;
+  color: #fed33f;
+  font-family: 'Audiowide', sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.head p {
+  margin: 0.4rem 0 0.85rem;
+  font-size: 0.85rem;
+  color: #8b93a7;
+  line-height: 1.4;
+}
+
+.menu {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 280px;
+}
+
+.menu label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2be4ea;
+}
+
+.menu select {
+  background: #111;
+  border: 1px solid #555;
+  color: #fff;
+  padding: 0.4rem;
+}
+
+.start,
+.ghost {
+  appearance: none;
+  font-family: 'Audiowide', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  border: 1px solid #fed33f;
+  background: transparent;
+  color: #fed33f;
+}
+
+.ghost {
+  border-color: #555;
+  color: #8b93a7;
+  margin-left: 0.4rem;
+}
+
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  color: #2be4ea;
+}
+
+.timer {
+  margin-left: auto;
+  color: #fed33f;
+}
+
+.board {
+  display: grid;
+  gap: 2px;
+  width: min(100%, 280px);
+  aspect-ratio: 6 / 12;
+  background: #0a0a0f;
+  border: 1px solid #2be4ea55;
+  padding: 3px;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #111;
+  min-height: 0;
+  background: #12141a;
+}
+
+.cell[data-crash='1'] {
+  color: #fed33f;
+  font-size: 0.9rem;
+}
+
+.cell[data-power='3'],
+.cell[data-power='4'] {
+  color: #fff;
+  text-shadow: 0 0 4px #000;
+}
+
+.controls {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #8b93a7;
+}
+
+.result {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #555;
+}
+
+.result[data-ok='1'] {
+  border-color: #2be4ea;
+  color: #2be4ea;
+}
+
+.result[data-ok='0'] {
+  border-color: #ff4d6d;
+  color: #ff4d6d;
+}
+
+.result p {
+  margin: 0.25rem 0;
+}

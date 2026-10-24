@@ -7,6 +7,8 @@ import {
   BreachProtocol,
   BreachState,
 } from '../../components/vtt/BreachProtocol';
+import { PuzzleCrashGame } from '../../components/minigames/PuzzleCrashGame';
+import { TerminalTypingGame } from '../../components/minigames/TerminalTypingGame';
 import { apiUrl, authHeaders } from '../../lib/api';
 import styles from './breach.module.css';
 
@@ -23,10 +25,18 @@ type Challenge = {
 };
 
 type Difficulties = Record<string, string>;
+type Mode = 'protocol' | 'puzzle' | 'terminal';
 
 const DIFF_ORDER = ['treino', 'rua', 'corpo', 'arasaka', 'blackwall'];
 
+const MODES: Array<{ id: Mode; label: string }> = [
+  { id: 'protocol', label: 'Breach Protocol' },
+  { id: 'puzzle', label: 'Puzzle Crash' },
+  { id: 'terminal', label: 'Terminal Jack' },
+];
+
 const BreachPage = () => {
+  const [mode, setMode] = useState<Mode>('protocol');
   const [difficulties, setDifficulties] = useState<Difficulties>({});
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [tab, setTab] = useState('treino');
@@ -63,28 +73,25 @@ const BreachPage = () => {
 
   const selected = challenges.find((c) => c.id === selectedId) || null;
 
-  const startChallenge = useCallback(
-    async (challengeId: string) => {
-      setBusy(true);
-      setMsg('');
-      try {
-        const res = await fetch(apiUrl('/api/vtt/breach'), {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify({ challengeId }),
-        });
-        if (!res.ok) throw new Error('Falha ao iniciar breach');
-        const next = await res.json();
-        setState(next);
-        setSelectedId(challengeId);
-      } catch (e: any) {
-        setMsg(e.message || 'Erro ao jackar o protocolo');
-      } finally {
-        setBusy(false);
-      }
-    },
-    [],
-  );
+  const startChallenge = useCallback(async (challengeId: string) => {
+    setBusy(true);
+    setMsg('');
+    try {
+      const res = await fetch(apiUrl('/api/vtt/breach'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ challengeId }),
+      });
+      if (!res.ok) throw new Error('Falha ao iniciar breach');
+      const next = await res.json();
+      setState(next);
+      setSelectedId(challengeId);
+    } catch (e: any) {
+      setMsg(e.message || 'Erro ao jackar o protocolo');
+    } finally {
+      setBusy(false);
+    }
+  }, []);
 
   const pick = async (x: number, y: number) => {
     if (!state || state.status !== 'active' || busy) return;
@@ -107,96 +114,122 @@ const BreachPage = () => {
   return (
     <PageFrame>
       <div className={styles.page}>
-        <HudPanel title="Breach Protocol">
+        <HudPanel title="Netrunning · Minigames">
           <p className={styles.intro}>
-            Minigame de netrunning estilo Cyberpunk 2077: complete as sequências
-            hex alternando linha e coluna antes do buffer (e do relógio)
-            acabarem. Escolha a dificuldade e o desafio — o Narrador pode usar
-            o resultado como acesso, loot ou custo de Humanidade.
+            Três formas de jackar: Breach Protocol (hex), Puzzle Crash (cores /
+            ⚡) e Terminal Jack (digitação em CRT verde). O Narrador pode
+            tratar vitória/fracasso como acesso, loot ou ICE.
           </p>
 
-          <div className={styles.tabs} role="tablist" aria-label="Dificuldade">
-            {tabs.map((key) => (
+          <div className={styles.tabs} role="tablist" aria-label="Minigame">
+            {MODES.map((m) => (
               <button
-                key={key}
+                key={m.id}
                 type="button"
                 role="tab"
-                aria-selected={tab === key}
+                aria-selected={mode === m.id}
                 className={styles.tab}
-                data-active={tab === key}
-                onClick={() => setTab(key)}
+                data-active={mode === m.id}
+                onClick={() => setMode(m.id)}
               >
-                {difficulties[key] || key}
+                {m.label}
               </button>
             ))}
           </div>
 
-          <div className={styles.layout}>
-            <div className={styles.list}>
-              {filtered.length === 0 && (
-                <p className={styles.empty}>Nenhum desafio nesta faixa.</p>
-              )}
-              {filtered.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  className={styles.card}
-                  data-active={selectedId === c.id}
-                  disabled={busy}
-                  onClick={() => {
-                    setSelectedId(c.id);
-                    startChallenge(c.id);
-                  }}
-                >
-                  <strong>{c.name}</strong>
-                  <span className={styles.meta}>
-                    Grade {c.size}×{c.size} · buffer {c.bufferSize} ·{' '}
-                    {c.sequenceCount} daemon
-                    {c.sequenceCount > 1 ? 's' : ''}
-                    {c.timeLimitSec
-                      ? ` · ${c.timeLimitSec}s`
-                      : ' · sem timer'}
-                  </span>
-                  <p className={styles.blurb}>{c.blurb}</p>
-                  <p className={styles.reward}>{c.rewardHint}</p>
-                </button>
-              ))}
-            </div>
+          {mode === 'protocol' && (
+            <>
+              <div
+                className={styles.tabs}
+                role="tablist"
+                aria-label="Dificuldade"
+              >
+                {tabs.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === key}
+                    className={styles.tab}
+                    data-active={tab === key}
+                    onClick={() => setTab(key)}
+                  >
+                    {difficulties[key] || key}
+                  </button>
+                ))}
+              </div>
 
-            <aside className={styles.play}>
-              {state ? (
-                <BreachProtocol
-                  state={state}
-                  onPick={pick}
-                  onRetry={() =>
-                    selectedId ? startChallenge(selectedId) : undefined
-                  }
-                  onClose={() => setState(null)}
-                />
-              ) : (
-                <div className={styles.empty}>
-                  <p>
-                    {selected
-                      ? `Selecione de novo “${selected.name}” ou clique no card para jackar.`
-                      : 'Escolha um desafio à esquerda para iniciar o breach.'}
-                  </p>
-                  {selected && (
-                    <button
-                      type="button"
-                      className={styles.tab}
-                      data-active="true"
-                      disabled={busy}
-                      style={{ marginTop: '0.75rem' }}
-                      onClick={() => startChallenge(selected.id)}
-                    >
-                      Iniciar breach
-                    </button>
+              <div className={styles.layout}>
+                <div className={styles.list}>
+                  {filtered.length === 0 && (
+                    <p className={styles.empty}>Nenhum desafio nesta faixa.</p>
                   )}
+                  {filtered.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={styles.card}
+                      data-active={selectedId === c.id}
+                      disabled={busy}
+                      onClick={() => {
+                        setSelectedId(c.id);
+                        startChallenge(c.id);
+                      }}
+                    >
+                      <strong>{c.name}</strong>
+                      <span className={styles.meta}>
+                        Grade {c.size}×{c.size} · buffer {c.bufferSize} ·{' '}
+                        {c.sequenceCount} daemon
+                        {c.sequenceCount > 1 ? 's' : ''}
+                        {c.timeLimitSec
+                          ? ` · ${c.timeLimitSec}s`
+                          : ' · sem timer'}
+                      </span>
+                      <p className={styles.blurb}>{c.blurb}</p>
+                      <p className={styles.reward}>{c.rewardHint}</p>
+                    </button>
+                  ))}
                 </div>
-              )}
-              {msg && <p className={styles.statusMsg}>{msg}</p>}
-            </aside>
-          </div>
+
+                <aside className={styles.play}>
+                  {state ? (
+                    <BreachProtocol
+                      state={state}
+                      onPick={pick}
+                      onRetry={() =>
+                        selectedId ? startChallenge(selectedId) : undefined
+                      }
+                      onClose={() => setState(null)}
+                    />
+                  ) : (
+                    <div className={styles.empty}>
+                      <p>
+                        {selected
+                          ? `Clique de novo em “${selected.name}” ou inicie abaixo.`
+                          : 'Escolha um desafio à esquerda.'}
+                      </p>
+                      {selected && (
+                        <button
+                          type="button"
+                          className={styles.tab}
+                          data-active="true"
+                          disabled={busy}
+                          style={{ marginTop: '0.75rem' }}
+                          onClick={() => startChallenge(selected.id)}
+                        >
+                          Iniciar breach
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {msg && <p className={styles.statusMsg}>{msg}</p>}
+                </aside>
+              </div>
+            </>
+          )}
+
+          {mode === 'puzzle' && <PuzzleCrashGame />}
+          {mode === 'terminal' && <TerminalTypingGame />}
         </HudPanel>
       </div>
     </PageFrame>
