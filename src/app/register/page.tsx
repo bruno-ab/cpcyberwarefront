@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import styles from './login.module.css';
 import { useRouter } from 'next/navigation'
+import { apiUrl } from '../../lib/api';
 
 
 function Register() {
@@ -23,7 +24,7 @@ function Register() {
     };
 
     try {
-      const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/api/players', {
+      const response = await fetch(apiUrl('/api/players'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

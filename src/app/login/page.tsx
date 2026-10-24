@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import styles from './login.module.css';
 import { useRouter } from 'next/navigation'
 import Link from 'next/link';
+import { apiUrl } from '../../lib/api';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ function Login() {
     };
 
     try {
-      const response = await fetch('https://cyberpunk-api-262d98a845d6.herokuapp.com/api/auth/login', {
+      const response = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
