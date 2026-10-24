@@ -1,133 +1,195 @@
-import React, { useState, useEffect } from 'react';
-import { apiUrl, authHeaders } from '../../lib/api';
+'use client';
 
-const VitalityField = ({ characterData }) => {
-  const [vitality, setVitality] = useState(0);
-  const [vitalityMarked, setVitalityMarked] = useState(0);
+import { useEffect, useMemo, useState } from 'react';
+import { apiUrl, authHeaders } from '../../lib/api';
+import styles from './vitalityField.module.css';
+
+type Band = 'ok' | 'bruise' | 'hurt' | 'crit' | 'dead';
+
+type Props = {
+  characterData: {
+    id: number;
+    sheet?: Record<string, any>;
+  };
+};
+
+const bandForIndex = (index1: number, max: number): Band => {
+  if (max <= 0) return 'ok';
+  if (index1 >= max) return 'dead';
+  const ratio = index1 / max;
+  if (ratio <= 0) return 'ok';
+  if (ratio <= 0.3) return 'bruise';
+  if (ratio <= 0.55) return 'hurt';
+  if (ratio < 1) return 'crit';
+  return 'dead';
+};
+
+const severityFromMarked = (marked: number, max: number): number => {
+  if (max <= 0) return 0;
+  if (marked <= 0) return 0;
+  if (marked >= max) return 5;
+  const ratio = marked / max;
+  if (ratio <= 0.3) return 1;
+  if (ratio <= 0.55) return 2;
+  if (ratio <= 0.75) return 3;
+  return 4;
+};
+
+const conditionMessage = (marked: number, max: number): string => {
+  if (marked <= 0) return 'Saudável — sem penalidade na parada.';
+  if (marked >= max) return 'INCAPACITADO / MORTO — jack fora.';
+  const ratio = marked / max;
+  if (ratio <= 0.3) return 'Escoriado — −1 dado nas paradas físicas.';
+  if (ratio <= 0.55) return 'Machucado — −2 dados; teste Stamina sob stress.';
+  if (ratio <= 0.75) return 'Gravemente ferido — −3 dados; movimento reduzido.';
+  return 'Aleijado — −4 dados; só ações desesperadas.';
+};
+
+const BAND_LABELS: Record<Band, string> = {
+  ok: 'Saudável',
+  bruise: 'Escoriado',
+  hurt: 'Machucado',
+  crit: 'Crítico',
+  dead: 'Morto',
+};
+
+const VitalityField = ({ characterData }: Props) => {
+  const [max, setMax] = useState(7);
+  const [marked, setMarked] = useState(0);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const max = characterData?.sheet?.vitality ?? 7;
-    const marked = characterData?.sheet?.vitality_marked ?? 0;
-    setVitality(max);
-    setVitalityMarked(marked);
-    updateMessage(marked, max);
+    const nextMax = Number(characterData?.sheet?.vitality ?? 7) || 7;
+    const nextMarked = Math.min(
+      Number(characterData?.sheet?.vitality_marked ?? 0) || 0,
+      nextMax,
+    );
+    setMax(nextMax);
+    setMarked(nextMarked);
+    setMessage(conditionMessage(nextMarked, nextMax));
   }, [characterData?.sheet?.vitality, characterData?.sheet?.vitality_marked]);
 
-  const handleVitalityChange = (e) => {
-    const newVitality = parseInt(e.target.value, 10);
-    setVitality(newVitality);
-    setVitalityMarked((prevVitalityMarked) =>
-      Math.min(prevVitalityMarked, newVitality)
-    );
+  const severity = severityFromMarked(marked, max);
+  const activeBand: Band =
+    marked <= 0 ? 'ok' : bandForIndex(marked, max);
+
+  const boxes = useMemo(
+    () => Array.from({ length: Math.max(0, max) }, (_, i) => i + 1),
+    [max],
+  );
+
+  const persist = (nextMax: number, nextMarked: number) => {
+    const sheet = { ...(characterData.sheet || {}) };
+    sheet.vitality = nextMax;
+    sheet.vitality_marked = nextMarked;
+    fetch(apiUrl(`/api/characters/${characterData.id}/sheet`), {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(sheet),
+    }).catch((err) => console.error(err));
   };
 
-  const handleVitalityBlur = () => {
-    saveData();
+  const applyMarked = (next: number) => {
+    const clamped = Math.max(0, Math.min(max, next));
+    setMarked(clamped);
+    setMessage(conditionMessage(clamped, max));
+    persist(max, clamped);
   };
 
-  const handleVitalityMarkedChange = (e) => {
-    const newVitalityMarked = parseInt(e.target.value, 10);
-    setVitalityMarked(newVitalityMarked);
-    updateMessage(newVitalityMarked, vitality);
-  };
-
-  const handleRangeMouseUp = () => {
-    saveData();
-  };
-
-  const updateMessage = (vitalityMarkedValue, vitalityInput) => {
-    console.log(vitalityMarkedValue,vitalityInput)
-    if (vitalityMarkedValue === 1) {
-      setMessage('Saudável: sem penalidade');
-    } else if (vitalityMarkedValue == vitalityInput) {
-      setMessage('DEAD');
-    } else if (vitalityMarkedValue === 0) {
-      setMessage('Saudável: sem penalidade');
-    } else if (vitalityMarkedValue === 2) {
-      setMessage('Escoriado: -2 dados para a parada de dados');
-    } else if (vitalityMarkedValue === 3) {
-      setMessage('Escoriado: -2 dados para a parada de dados');
-    } else if (vitalityMarkedValue === 4) {
-      setMessage('Machucado: -3 na parada de dados');
-    } else if (vitalityMarkedValue === 5) {
-      setMessage('Gravemente Ferido: -4 na parada de dados');
-    } else if (vitalityMarkedValue >= 6) {
-      setMessage('Aleijado: -5 na parada de dados');
+  const onBoxClick = (index1: number) => {
+    if (marked === index1) {
+      applyMarked(index1 - 1);
     } else {
-      setMessage('');
+      applyMarked(index1);
     }
   };
 
-  const saveDataToApi = (id, data) => {
-    fetch(apiUrl(`/api/characters/${id}/sheet`), {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify(data),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          console.log('Erro ao enviar dados para a API');
-          throw new Error('Erro ao enviar dados para a API');
-        }
-      })
-      .catch((error) => {
-        console.error('Erro:', error.message);
-      });
-  };
-
-  const saveData = () => {
-    const data = characterData.sheet;
-    data.vitality = vitality;
-    data.vitality_marked = vitalityMarked;
-
-    saveDataToApi(characterData.id, data);
+  const onMaxChange = (value: number) => {
+    const nextMax = Math.max(1, Math.min(20, value || 1));
+    const nextMarked = Math.min(marked, nextMax);
+    setMax(nextMax);
+    setMarked(nextMarked);
+    setMessage(conditionMessage(nextMarked, nextMax));
   };
 
   return (
-    <div style={{ textAlign: 'center', color: '#fed33f' }}>
-      <div style={{ marginBottom: '10px' }}>
-        <label htmlFor="vitalityInput" style={{ marginRight: '10px', fontSize: '16px' }}>
-          Vitality:
+    <section
+      className={styles.wrap}
+      data-severity={severity}
+      aria-label="Trilha de vitalidade"
+    >
+      <div className={styles.scan} aria-hidden />
+
+      <div className={styles.top}>
+        <h4 className={styles.title}>Vitalidade</h4>
+        <div className={styles.ratio}>
+          {marked}/{max}
+        </div>
+        <label className={styles.maxField}>
+          Máx.
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={max}
+            onChange={(e) => onMaxChange(Number(e.target.value))}
+            onBlur={() => persist(max, marked)}
+          />
         </label>
-        <input
-          type="number"
-          id="vitalityInput"
-          value={vitality}
-          onChange={handleVitalityChange}
-          onBlur={handleVitalityBlur}
-          style={{
-            padding: '8px',
-            fontSize: '14px',
-            color: '#2be4ea',
-            backgroundColor: '#1e181e',
-            border: '1px solid #fed33f',
-            borderRadius: '5px',
-          }}
-        />
       </div>
-      <div>
-        <label htmlFor="vitalityMarkedInput" style={{ marginRight: '10px', fontSize: '16px' }}>
-          Vitality Marked:
-        </label>
-        <input
-          type="range"
-          id="vitalityMarkedInput"
-          min="0"
-          max={vitality}
-          value={vitalityMarked}
-          onChange={handleVitalityMarkedChange}
-          onMouseUp={handleRangeMouseUp}
-          style={{
-            width: '80%',
-            marginTop: '5px',
-            marginBottom: '10px',
-          }}
-        />
-        <div style={{ fontSize: '14px', color: '#2be4ea' }}>{vitalityMarked}</div>
-        <div style={{ fontSize: '14px', color: '#2be4ea' }}>{message}</div>
+
+      <div className={styles.bands} aria-hidden>
+        {(Object.keys(BAND_LABELS) as Band[]).map((band) => (
+          <span
+            key={band}
+            className={styles.bandTag}
+            data-band={band}
+            data-active={activeBand === band}
+          >
+            {BAND_LABELS[band]}
+          </span>
+        ))}
       </div>
-    </div>
+
+      <div className={styles.track} role="group" aria-label="Marcar dano">
+        {boxes.map((n) => {
+          const filled = n <= marked;
+          const band = bandForIndex(n, max);
+          return (
+            <button
+              key={n}
+              type="button"
+              className={styles.box}
+              data-filled={filled}
+              data-band={band}
+              aria-pressed={filled}
+              aria-label={`Vitalidade ${n} de ${max}`}
+              onClick={() => onBoxClick(n)}
+            >
+              <span className={styles.boxIndex}>{n}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <p className={styles.status}>{message}</p>
+      <p className={styles.hint}>
+        Clique num quadrado pra marcar dano até ele · clique de novo no último
+        pra curar 1.
+      </p>
+
+      <div className={styles.actions}>
+        <button type="button" onClick={() => applyMarked(Math.max(0, marked - 1))}>
+          −1 dano
+        </button>
+        <button type="button" onClick={() => applyMarked(marked + 1)}>
+          +1 dano
+        </button>
+        <button type="button" onClick={() => applyMarked(0)}>
+          Curar tudo
+        </button>
+      </div>
+    </section>
   );
 };
 
