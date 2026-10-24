@@ -122,7 +122,7 @@ const Sheet = () => {
               </div>
               <div className={styles.summaryCard}>
                 <span>Eddies</span>
-                <strong>¤{credits}</strong>
+                <strong>{Number(credits) || 0}</strong>
               </div>
               <div className={styles.summaryCard}>
                 <span>Chrome</span>
@@ -171,12 +171,14 @@ const Sheet = () => {
         {tab === 'inventario' && (
           <div className={styles.inventory}>
             <h3 className={styles.attributesSection}>Inventário</h3>
-            <p>
-              Eddies na conta: <strong>¤{credits}</strong>
-            </p>
-            <p>
-              Edges (moeda de chrome): <strong>{edges} E</strong>
-            </p>
+            <div className={styles.inventoryRow}>
+              <span>Eddies na conta</span>
+              <strong>{Number(credits) || 0}</strong>
+            </div>
+            <div className={styles.inventoryRow}>
+              <span>Edges (moeda de chrome)</span>
+              <strong>{Number(edges) || 0} E</strong>
+            </div>
             <p className={styles.hint}>
               Itens de gear e veículos da campanha ficam no{' '}
               <Link href="/shop">Ripperdoc / loja</Link> e no quadro de{' '}
