@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   GemColor,
   GEM_COLORS,
+  GEM_GLOW,
   GEM_HEX,
+  GEM_LABELS,
   PuzzleSpeed,
   SPEED_LABELS,
   SPEED_MS,
@@ -16,17 +18,17 @@ const ROWS = 12;
 
 type Cell = {
   color: GemColor;
-  /** 1 = gem normal; 2+ = power gem (quadrado maior lógico). */
   power: number;
   crash?: boolean;
 };
 
+type GemKind = { color: GemColor; crash?: boolean };
+
 type Piece = {
   x: number;
   y: number;
-  a: GemColor | 'crash';
-  b: GemColor | 'crash';
-  /** 0 = a em cima de b; 1 = a à direita; etc. */
+  a: GemKind;
+  b: GemKind;
   rot: 0 | 1 | 2 | 3;
 };
 
@@ -39,17 +41,23 @@ const randColor = (): GemColor =>
 const emptyGrid = (): (Cell | null)[][] =>
   Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => null));
 
-const cloneGrid = (g: (Cell | null)[][]) => g.map((row) => row.map((c) => (c ? { ...c } : null)));
+const cloneGrid = (g: (Cell | null)[][]) =>
+  g.map((row) => row.map((c) => (c ? { ...c } : null)));
+
+const makeCrash = (): GemKind => ({ color: randColor(), crash: true });
+const makeGem = (): GemKind => ({ color: randColor() });
 
 const newPiece = (forceCrash = false): Piece => ({
   x: 2,
   y: 0,
-  a: forceCrash ? 'crash' : Math.random() < 0.08 ? 'crash' : randColor(),
-  b: randColor(),
+  a: forceCrash || Math.random() < 0.12 ? makeCrash() : makeGem(),
+  b: makeGem(),
   rot: 0,
 });
 
-const pieceCells = (p: Piece): Array<{ x: number; y: number; v: GemColor | 'crash' }> => {
+const pieceCells = (
+  p: Piece,
+): Array<{ x: number; y: number; v: GemKind }> => {
   const cells = [{ x: p.x, y: p.y, v: p.a }];
   if (p.rot === 0) cells.push({ x: p.x, y: p.y + 1, v: p.b });
   if (p.rot === 1) cells.push({ x: p.x + 1, y: p.y, v: p.b });
@@ -64,7 +72,6 @@ const fits = (g: (Cell | null)[][], p: Piece) =>
       x >= 0 && x < COLS && y >= 0 && y < ROWS && g[y][x] == null,
   );
 
-/** Detecta blocos 2×2 da mesma cor e sobe power. */
 const mergePowers = (g: (Cell | null)[][]) => {
   let changed = true;
   while (changed) {
@@ -114,27 +121,16 @@ const applyGravity = (g: (Cell | null)[][]) => {
   }
 };
 
-/** Crash destrói gems da cor adjacente; power maior = mais pontos. */
-const detonateCrash = (g: (Cell | null)[][], cx: number, cy: number) => {
-  const dirs = [
-    [0, 1],
-    [0, -1],
-    [1, 0],
-    [-1, 0],
-  ];
-  let target: GemColor | null = null;
-  for (const [dx, dy] of dirs) {
-    const nx = cx + dx;
-    const ny = cy + dy;
-    if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) continue;
-    const n = g[ny][nx];
-    if (n && !n.crash) {
-      target = n.color;
-      break;
-    }
-  }
+/** ⚡ da cor X apaga todas as gems da cor X. */
+const detonateCrash = (
+  g: (Cell | null)[][],
+  cx: number,
+  cy: number,
+): { score: number; color: GemColor | null } => {
+  const crash = g[cy][cx];
+  if (!crash?.crash) return { score: 0, color: null };
+  const target = crash.color;
   g[cy][cx] = null;
-  if (!target) return 0;
   let score = 0;
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
@@ -145,7 +141,7 @@ const detonateCrash = (g: (Cell | null)[][], cx: number, cy: number) => {
       }
     }
   }
-  return score;
+  return { score, color: target };
 };
 
 export const PuzzleCrashGame = () => {
@@ -158,7 +154,9 @@ export const PuzzleCrashGame = () => {
   const [score, setScore] = useState(0);
   const [combos, setCombos] = useState(0);
   const [remaining, setRemaining] = useState(90);
-  const [flash, setFlash] = useState(false);
+  const [glitch, setGlitch] = useState(false);
+  const [glitchColor, setGlitchColor] = useState<GemColor | null>(null);
+  const [lastCrash, setLastCrash] = useState<GemColor | null>(null);
   const lock = useRef(false);
 
   const start = () => {
@@ -168,31 +166,41 @@ export const PuzzleCrashGame = () => {
     setCombos(0);
     setRemaining(timerSec);
     setStatus('playing');
-    setFlash(false);
+    setGlitch(false);
+    setGlitchColor(null);
+    setLastCrash(null);
+  };
+
+  const triggerGlitch = (color: GemColor | null) => {
+    setGlitchColor(color);
+    setGlitch(true);
+    setTimeout(() => setGlitch(false), 420);
   };
 
   const lockPiece = useCallback((g: (Cell | null)[][], p: Piece) => {
     const next = cloneGrid(g);
     let gained = 0;
+    let boomColor: GemColor | null = null;
     for (const { x, y, v } of pieceCells(p)) {
-      if (v === 'crash') {
-        next[y][x] = { color: 'cyan', power: 1, crash: true };
-      } else {
-        next[y][x] = { color: v, power: 1 };
-      }
+      next[y][x] = {
+        color: v.color,
+        power: 1,
+        crash: Boolean(v.crash),
+      };
     }
-    // Detona crashes que acabaram de cair
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
         if (next[y][x]?.crash) {
-          gained += detonateCrash(next, x, y);
+          const { score: s, color } = detonateCrash(next, x, y);
+          gained += s;
+          if (color) boomColor = color;
         }
       }
     }
     applyGravity(next);
     mergePowers(next);
     applyGravity(next);
-    return { next, gained };
+    return { next, gained, boomColor };
   }, []);
 
   const softDrop = useCallback(() => {
@@ -203,25 +211,23 @@ export const PuzzleCrashGame = () => {
       return;
     }
     lock.current = true;
-    const { next, gained } = lockPiece(grid, piece);
+    const { next, gained, boomColor } = lockPiece(grid, piece);
     setGrid(next);
     if (gained > 0) {
       setScore((s) => s + gained);
       setCombos((c) => c + 1);
-      setFlash(true);
-      setTimeout(() => setFlash(false), 200);
-    }
-    // game over?
-    if (next[0].some(Boolean) || next[1].some(Boolean)) {
-      const topBlocked = next[0].some(Boolean);
-      if (topBlocked) {
-        setStatus('lost');
-        setPiece(null);
-        lock.current = false;
-        return;
+      if (boomColor) {
+        setLastCrash(boomColor);
+        triggerGlitch(boomColor);
       }
     }
-    setPiece(newPiece(combos > 0 && combos % 5 === 4));
+    if (next[0].some(Boolean)) {
+      setStatus('lost');
+      setPiece(null);
+      lock.current = false;
+      return;
+    }
+    setPiece(newPiece(combos > 0 && combos % 4 === 3));
     lock.current = false;
   }, [status, piece, grid, lockPiece, combos]);
 
@@ -268,22 +274,41 @@ export const PuzzleCrashGame = () => {
   if (piece && status === 'playing') {
     for (const { x, y, v } of pieceCells(piece)) {
       if (y >= 0 && y < ROWS && x >= 0 && x < COLS) {
-        display[y][x] =
-          v === 'crash'
-            ? { color: 'yellow', power: 1, crash: true }
-            : { color: v, power: 1 };
+        display[y][x] = {
+          color: v.color,
+          power: 1,
+          crash: Boolean(v.crash),
+        };
       }
     }
   }
 
   return (
-    <div className={styles.wrap} data-flash={flash ? '1' : '0'}>
+    <div
+      className={styles.wrap}
+      data-glitch={glitch ? '1' : '0'}
+      style={
+        glitchColor
+          ? ({ ['--crash-color' as string]: GEM_HEX[glitchColor] } as any)
+          : undefined
+      }
+    >
+      <div className={styles.scan} aria-hidden />
       <header className={styles.head}>
         <h3>Puzzle Crash</h3>
         <p>
-          Combine 2×2 da mesma cor pra formar power gems. O gem com{' '}
-          <strong>⚡</strong> destrói a cor adjacente — power gems valem mais.
+          Monte power gems 2×2. O <strong>⚡</strong> nasce com uma cor neon e
+          apaga <em>todas</em> as peças dessa cor — quanto maior o power, mais
+          score.
         </p>
+        <div className={styles.legend}>
+          {GEM_COLORS.map((c) => (
+            <span key={c} style={{ color: GEM_HEX[c], textShadow: GEM_GLOW[c] }}>
+              ■ {GEM_LABELS[c]}
+            </span>
+          ))}
+          <span className={styles.legendCrash}>⚡ crash</span>
+        </div>
       </header>
 
       {status === 'menu' && (
@@ -333,46 +358,68 @@ export const PuzzleCrashGame = () => {
       {status !== 'menu' && (
         <>
           <div className={styles.hud}>
-            <span>Score {score}</span>
-            <span>Crashes {combos}</span>
-            <span>{SPEED_LABELS[speed]}</span>
-            {mode === 'timer' && <span className={styles.timer}>{remaining}s</span>}
-          </div>
-          <div
-            className={styles.board}
-            style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}
-          >
-            {display.flatMap((row, y) =>
-              row.map((cell, x) => (
-                <div
-                  key={`${x}-${y}`}
-                  className={styles.cell}
-                  data-crash={cell?.crash ? '1' : '0'}
-                  data-power={cell?.power || 0}
-                  style={
-                    cell
-                      ? {
-                          background: cell.crash
-                            ? '#111'
-                            : GEM_HEX[cell.color],
-                          boxShadow: cell.crash
-                            ? '0 0 10px #fed33f'
-                            : `inset 0 0 ${4 * cell.power}px rgba(0,0,0,0.35)`,
-                        }
-                      : undefined
-                  }
-                >
-                  {cell?.crash ? '⚡' : cell && cell.power > 1 ? cell.power : ''}
-                </div>
-              )),
+            <span>SCORE {score}</span>
+            <span>CRASH {combos}</span>
+            <span>{SPEED_LABELS[speed].toUpperCase()}</span>
+            {lastCrash && (
+              <span style={{ color: GEM_HEX[lastCrash] }}>
+                LAST ⚡ {GEM_LABELS[lastCrash]}
+              </span>
             )}
+            {mode === 'timer' && (
+              <span className={styles.timer}>{remaining}s</span>
+            )}
+          </div>
+          <div className={styles.boardFrame}>
+            <div
+              className={styles.board}
+              style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}
+            >
+              {display.flatMap((row, y) =>
+                row.map((cell, x) => (
+                  <div
+                    key={`${x}-${y}`}
+                    className={styles.cell}
+                    data-crash={cell?.crash ? '1' : '0'}
+                    data-power={cell?.power || 0}
+                    data-empty={cell ? '0' : '1'}
+                    style={
+                      cell
+                        ? {
+                            background: cell.crash
+                              ? `radial-gradient(circle, #0a0a0f 30%, ${GEM_HEX[cell.color]} 100%)`
+                              : GEM_HEX[cell.color],
+                            boxShadow: cell.crash
+                              ? `${GEM_GLOW[cell.color]}, inset 0 0 8px #000`
+                              : `${GEM_GLOW[cell.color]}, inset 0 0 ${3 * cell.power}px rgba(0,0,0,0.45)`,
+                            color: cell.crash ? GEM_HEX[cell.color] : '#0a0a0f',
+                          }
+                        : undefined
+                    }
+                  >
+                    {cell?.crash
+                      ? '⚡'
+                      : cell && cell.power > 1
+                        ? cell.power
+                        : ''}
+                  </div>
+                )),
+              )}
+            </div>
           </div>
           <p className={styles.controls}>
             ← → mover · ↑/Espaço girar · ↓ acelerar
           </p>
           {(status === 'won' || status === 'lost') && (
-            <div className={styles.result} data-ok={status === 'won' ? '1' : '0'}>
-              <p>{status === 'won' ? 'Puzzle limpo — bom netrun.' : 'Stack overflow — ICE venceu.'}</p>
+            <div
+              className={styles.result}
+              data-ok={status === 'won' ? '1' : '0'}
+            >
+              <p>
+                {status === 'won'
+                  ? 'Puzzle limpo — bom netrun.'
+                  : 'Stack overflow — ICE venceu.'}
+              </p>
               <p>Score final: {score}</p>
               <button type="button" className={styles.start} onClick={start}>
                 De novo
