@@ -1,25 +1,37 @@
 'use client';
+
 import React, { useState } from 'react';
-import styles from './abilities.module.css';
-import styles2 from  './resources.module.css'
+import styles from './resources.module.css';
 import { defaultResources } from './defaultSheet';
 import { apiUrl, authHeaders } from '../../lib/api';
 
-const saveDataToApi = (id,data,backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues) => {
-  data.backgrounds = backgroundsValues;
-  data.virtues = virtuesValues;
-  data.other_traits = otherTraitsValues;
-  data.merits = meritsValues;
-  data.flaws = flawsValues;
+const labelOf = (name: string) => name.replace(/_/g, ' ');
+
+const saveDataToApi = (
+  id: string | number,
+  data: Record<string, unknown>,
+  backgroundsValues: Record<string, number>,
+  virtuesValues: Record<string, number>,
+  otherTraitsValues: Record<string, number>,
+  meritsValues: Record<string, string>,
+  flawsValues: Record<string, string>,
+) => {
+  const next = {
+    ...data,
+    backgrounds: backgroundsValues,
+    virtues: virtuesValues,
+    other_traits: otherTraitsValues,
+    merits: meritsValues,
+    flaws: flawsValues,
+  };
 
   fetch(apiUrl(`/api/characters/${id}/sheet`), {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify(data),
+    body: JSON.stringify(next),
   })
     .then((response) => {
       if (!response.ok) {
-        console.log('Erro ao enviar dados para a API')
         throw new Error('Erro ao enviar dados para a API');
       }
     })
@@ -28,281 +40,300 @@ const saveDataToApi = (id,data,backgroundsValues, virtuesValues, otherTraitsValu
     });
 };
 
+const toNumberMap = (obj: Record<string, unknown> | undefined) =>
+  Object.entries(obj || {}).reduce<Record<string, number>>((acc, [name, value]) => {
+    acc[name] = Number(value) || 0;
+    return acc;
+  }, {});
 
-const Resources = ({ characterData }) => {
+const toStringMap = (obj: Record<string, unknown> | undefined) =>
+  Object.entries(obj || {}).reduce<Record<string, string>>((acc, [name, value]) => {
+    acc[name] = value == null ? '' : String(value);
+    return acc;
+  }, {});
+
+type ResourcesProps = {
+  characterData: {
+    id: string | number;
+    sheet?: Record<string, any>;
+  };
+};
+
+const Resources = ({ characterData }: ResourcesProps) => {
   const data = characterData.sheet || defaultResources;
   const [maxBolinhas] = useState(10);
   const [newMerits, setNewMerits] = useState('');
   const [newFlaws, setNewFlaws] = useState('');
   const [backgroundsValues, setBackgroundsValues] = useState(
-    Object.entries(data.backgrounds || {}).reduce((acc, [name, value]) => {
-      acc[name] = value;
-      return acc;
-    }, {})
+    toNumberMap(data.backgrounds),
   );
-
-  const [newBackground, setNewBackground] = useState({
-    name: '',
-    value: 0,
-  });
-
-  const [virtuesValues, setVirtuesValues] = useState(
-    Object.entries(data.virtues || {}).reduce((acc, [name, value]) => {
-      acc[name] = value;
-      return acc;
-    }, {})
-  );
-
+  const [newBackground, setNewBackground] = useState({ name: '', value: 1 });
+  const [virtuesValues, setVirtuesValues] = useState(toNumberMap(data.virtues));
   const [otherTraitsValues, setOtherTraitsValues] = useState(
-    Object.entries(data.other_traits || {}).reduce((acc, [name, value]) => {
-      acc[name] = value;
-      return acc;
-    }, {})
+    toNumberMap(data.other_traits),
   );
-  const [meritsValues, setMeritsValues] = useState(
-    Object.entries(data.merits || {}).reduce((acc, [name, value]) => {
-      acc[name] = value;
-      return acc;
-    }, {})
-  );
-  const [flawsValues, setFlawsValues] = useState(
-    Object.entries(data.flaws || {}).reduce((acc, [name, value]) => {
-      acc[name] = value;
-      return acc;
-    }, {})
-  );
-    const handleAddBackground = () => {
-  if (newBackground.name.trim() === '') {
+  const [meritsValues, setMeritsValues] = useState(toStringMap(data.merits));
+  const [flawsValues, setFlawsValues] = useState(toStringMap(data.flaws));
 
-    return;
-  }
-
-
-  const newValue = Math.max(1, Math.min(5, newBackground.value));
-
-
-  setBackgroundsValues((prevBackgroundsValues) => ({
-    ...prevBackgroundsValues,
-    [newBackground.name]: newValue,
-  }));
-
-  setNewBackground({ name: '', value: 0 });
-
-  saveDataToApi(
-    characterData.id,
-    data,
-    backgroundsValues,
-    virtuesValues,
-    otherTraitsValues,
-    meritsValues,
-    flawsValues
-  );
-};
- 
-  const handleAddMerits = () => {
-    if (newMerits.trim() === '') {
-      return;
-    }
-
-    setMeritsValues((prevMeritsValues) => ({
-      ...prevMeritsValues,
-      [newMerits]: '',
-    }));
-
-    setNewMerits('');
-
+  const persist = (patch: {
+    backgrounds?: Record<string, number>;
+    virtues?: Record<string, number>;
+    other?: Record<string, number>;
+    merits?: Record<string, string>;
+    flaws?: Record<string, string>;
+  } = {}) => {
     saveDataToApi(
       characterData.id,
       data,
-      backgroundsValues,
-      virtuesValues,
-      otherTraitsValues,
-      meritsValues,
-      flawsValues
+      patch.backgrounds ?? backgroundsValues,
+      patch.virtues ?? virtuesValues,
+      patch.other ?? otherTraitsValues,
+      patch.merits ?? meritsValues,
+      patch.flaws ?? flawsValues,
     );
+  };
+
+  const handleAddBackground = () => {
+    if (newBackground.name.trim() === '') return;
+    const newValue = Math.max(1, Math.min(5, newBackground.value));
+    const next = {
+      ...backgroundsValues,
+      [newBackground.name.trim()]: newValue,
+    };
+    setBackgroundsValues(next);
+    setNewBackground({ name: '', value: 1 });
+    persist({ backgrounds: next });
+  };
+
+  const handleAddMerits = () => {
+    if (newMerits.trim() === '') return;
+    const key = newMerits.trim();
+    const next = { ...meritsValues, [key]: '' };
+    setMeritsValues(next);
+    setNewMerits('');
+    persist({ merits: next });
   };
 
   const handleAddFlaws = () => {
-    if (newFlaws.trim() === '') {
+    if (newFlaws.trim() === '') return;
+    const key = newFlaws.trim();
+    const next = { ...flawsValues, [key]: '' };
+    setFlawsValues(next);
+    setNewFlaws('');
+    persist({ flaws: next });
+  };
+
+  const handleBolinhaClick = (
+    category: 'backgrounds' | 'virtues' | 'other' | 'merits' | 'flaws',
+    attributeName: string,
+    currentIndex: number,
+  ) => {
+    if (category === 'merits' || category === 'flaws') return;
+
+    const source =
+      category === 'backgrounds'
+        ? backgroundsValues
+        : category === 'virtues'
+          ? virtuesValues
+          : otherTraitsValues;
+
+    let nextVal = Number(source[attributeName]) || 0;
+    if (currentIndex < nextVal) nextVal -= 1;
+    else nextVal += 1;
+    nextVal = Math.min(maxBolinhas, Math.max(0, nextVal));
+
+    if (category === 'backgrounds') {
+      const next = { ...backgroundsValues, [attributeName]: nextVal };
+      setBackgroundsValues(next);
+      persist({ backgrounds: next });
       return;
     }
-
-    setFlawsValues((prevFlawsValues) => ({
-      ...prevFlawsValues,
-      [newFlaws]: '',
-    }));
-
-    setNewFlaws('');
-
-    saveDataToApi(
-      characterData.id,
-      data,
-      {
-        ...backgroundsValues,
-      },
-      virtuesValues,
-      otherTraitsValues,
-      meritsValues,
-      {
-        ...flawsValues,
-        [newFlaws]: '',
-      },
-    );
+    if (category === 'virtues') {
+      const next = { ...virtuesValues, [attributeName]: nextVal };
+      setVirtuesValues(next);
+      persist({ virtues: next });
+      return;
+    }
+    const next = { ...otherTraitsValues, [attributeName]: nextVal };
+    setOtherTraitsValues(next);
+    persist({ other: next });
   };
 
-  const handleBolinhaClick = (category, attributeName, currentIndex) => {
-    if (currentIndex < category[attributeName] - 0) {
-      category[attributeName] -= 1;
-    } else {
-      category[attributeName] += 1;
-    }
-    category[attributeName] = Math.min(maxBolinhas, category[attributeName]);
-
-    switch (category) {
-      case backgroundsValues:
-        setBackgroundsValues({ ...backgroundsValues, [attributeName]: category[attributeName] });
-        saveDataToApi(characterData.id,data, backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues);
-        break;
-      case virtuesValues:
-        setVirtuesValues({ ...virtuesValues, [attributeName]: category[attributeName] });
-         saveDataToApi(characterData.id,data, backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues);
-        break;
-      case otherTraitsValues:
-        setOtherTraitsValues({ ...otherTraitsValues, [attributeName]: category[attributeName] });
-        saveDataToApi(characterData.id,data, backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues);
-        break;
-      case meritsValues:
-        setMeritsValues({ ...meritsValues, [attributeName]: category[attributeName] });
-        saveDataToApi(characterData.id,data, backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues);
-        break;
-      case flawsValues:
-        setFlawsValues({ ...flawsValues, [attributeName]: category[attributeName] });
-        saveDataToApi(characterData.id,data, backgroundsValues, virtuesValues, otherTraitsValues,meritsValues, flawsValues);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const renderBolinhhas = (category, attributeName) => {
-    
-    const bolinhas = Array.from({ length: maxBolinhas }, (_, index) => (
-      <span
+  const renderDots = (
+    category: 'backgrounds' | 'virtues' | 'other',
+    attributeName: string,
+    values: Record<string, number>,
+  ) =>
+    Array.from({ length: maxBolinhas }, (_, index) => (
+      <button
         key={index}
-        role="img"
-        aria-label={`Bolinha ${index < category[attributeName] ? 'preenchida' : 'vazia'}`}
-        style={{
-          color: index < category[attributeName] ? '#02d7f2' : '',
-          fontSize: '24px',
-          cursor: 'pointer',
-          userSelect: 'none',
-        }}
+        type="button"
+        className={styles.dot}
+        data-on={index < (values[attributeName] || 0) ? '1' : '0'}
+        aria-label={`Nível ${index + 1}`}
         onClick={() => handleBolinhaClick(category, attributeName, index)}
       >
         ●
-      </span>
+      </button>
     ));
 
-    return bolinhas;
-  };
-
   return (
-    <center>
-      <table className={styles.abilitiestable}>
-        <tbody>
-          <tr>
-            <td valign="top" width="30%">
-              <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Backgrounds</p>
-              {Object.entries(data.backgrounds || {}).map(([name, value]) => (
-                <p key={name}>
-                  {renderBolinhhas(backgroundsValues, name)} {name}
-                </p>
-              ))}
-              {/* Novo background para adição */}
-              <p>
-                <input
-                  type="text"
-                    className={styles2.input2077}
-                  placeholder="Novo Background"
-                  value={newBackground.name}
-                  onChange={(e) => setNewBackground({ ...newBackground, name: e.target.value })}
-                />
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  step="1"
-                  value={newBackground.value}
-                  onChange={(e) => setNewBackground({ ...newBackground, value: parseInt(e.target.value) })}
-                />
-                <span>{newBackground.value} bolinhas</span>
-                <button onClick={handleAddBackground}>Adicionar</button>
-              </p>
-            </td>
-            <td valign="top" width="30%">
-              <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Resources</p>
-              {Object.entries(data.other_traits || {}).map(([name, value]) => (
-                <p key={name}>
-                  {renderBolinhhas(otherTraitsValues, name)} {name}
-                </p>
-              ))}
-            </td>
-            <td valign="top" width="30%">
-              <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Merits</p>
-              {Object.entries(data.merits || {}).map(([name]) => (
-                <p key={name}>
-                  <input
-                    type="text"
-                       className={styles2.input2077}
-                    placeholder={name}
-                    value={meritsValues[name]}
-                    onChange={(e) =>
-                      setMeritsValues({ ...meritsValues, [name]: e.target.value })
-                    }
-                  />
-                </p>
-              ))}
-              <p>
-                <input
-                  type="text"
-                   className={styles2.input2077}
-                  placeholder="Novo Merit"
-                  value={newMerits}
-                  onChange={(e) => setNewMerits(e.target.value)}
-                />
-                <button onClick={handleAddMerits}>Adicionar</button>
-              </p>
-            </td>
-            <td valign="top" width="30%">
-              <p style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '16px', color: '#ff1111' }}>Flaws</p>
-              {Object.entries(data.flaws || {}).map(([name]) => (
-                <p key={name}>
-                  <input
-                    type="text"
-                    className={styles2.input2077}
-                    placeholder={name}
-                    value={flawsValues[name]}
-                    onChange={(e) =>
-                      setFlawsValues({ ...flawsValues, [name]: e.target.value })
-                    }
-                  />
-                </p>
-              ))}
-              <p>
-                <input
-                  type="text"
-                    className={styles2.input2077}
-                  placeholder="Novo Flaw"
-                  value={newFlaws}
-                  onChange={(e) => setNewFlaws(e.target.value)}
-                />
-                <button onClick={handleAddFlaws}>Adicionar</button>
-              </p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </center>
+    <div className={styles.panel}>
+      <div className={styles.grid}>
+        <section className={styles.col}>
+          <h4 className={styles.colTitle}>Backgrounds</h4>
+          {Object.keys(backgroundsValues).length === 0 && (
+            <p className={styles.empty}>nenhum background</p>
+          )}
+          {Object.entries(backgroundsValues).map(([name]) => (
+            <div key={name} className={styles.row}>
+              <span className={styles.dots}>
+                {renderDots('backgrounds', name, backgroundsValues)}
+              </span>
+              <span className={styles.label}>{labelOf(name)}</span>
+            </div>
+          ))}
+          <div className={styles.addBlock}>
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="Novo Background"
+              value={newBackground.name}
+              onChange={(e) =>
+                setNewBackground({ ...newBackground, name: e.target.value })
+              }
+            />
+            <div className={styles.rangeRow}>
+              <input
+                type="range"
+                className={styles.range}
+                min={1}
+                max={5}
+                step={1}
+                value={newBackground.value}
+                onChange={(e) =>
+                  setNewBackground({
+                    ...newBackground,
+                    value: parseInt(e.target.value, 10),
+                  })
+                }
+              />
+              <span className={styles.rangeValue}>
+                {newBackground.value} dots
+              </span>
+            </div>
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={handleAddBackground}
+            >
+              Adicionar
+            </button>
+          </div>
+        </section>
+
+        <section className={styles.col}>
+          <h4 className={styles.colTitle}>Resources</h4>
+          {Object.entries(otherTraitsValues).map(([name]) => (
+            <div key={name} className={styles.row}>
+              <span className={styles.dots}>
+                {renderDots('other', name, otherTraitsValues)}
+              </span>
+              <span className={styles.label}>{labelOf(name)}</span>
+            </div>
+          ))}
+        </section>
+
+        <section className={styles.col}>
+          <h4 className={styles.colTitle}>Merits</h4>
+          {Object.keys(meritsValues).length === 0 && (
+            <p className={styles.empty}>nenhum merit</p>
+          )}
+          {Object.entries(meritsValues).map(([name, value]) => (
+            <div key={name} className={styles.row}>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder={labelOf(name)}
+                value={value}
+                onChange={(e) => {
+                  setMeritsValues({
+                    ...meritsValues,
+                    [name]: e.target.value,
+                  });
+                }}
+                onBlur={(e) =>
+                  persist({
+                    merits: { ...meritsValues, [name]: e.target.value },
+                  })
+                }
+              />
+            </div>
+          ))}
+          <div className={styles.addBlock}>
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="Novo Merit"
+              value={newMerits}
+              onChange={(e) => setNewMerits(e.target.value)}
+            />
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={handleAddMerits}
+            >
+              Adicionar
+            </button>
+          </div>
+        </section>
+
+        <section className={styles.col}>
+          <h4 className={styles.colTitle}>Flaws</h4>
+          {Object.keys(flawsValues).length === 0 && (
+            <p className={styles.empty}>nenhum flaw</p>
+          )}
+          {Object.entries(flawsValues).map(([name, value]) => (
+            <div key={name} className={styles.row}>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder={labelOf(name)}
+                value={value}
+                onChange={(e) => {
+                  setFlawsValues({
+                    ...flawsValues,
+                    [name]: e.target.value,
+                  });
+                }}
+                onBlur={(e) =>
+                  persist({
+                    flaws: { ...flawsValues, [name]: e.target.value },
+                  })
+                }
+              />
+            </div>
+          ))}
+          <div className={styles.addBlock}>
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="Novo Flaw"
+              value={newFlaws}
+              onChange={(e) => setNewFlaws(e.target.value)}
+            />
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={handleAddFlaws}
+            >
+              Adicionar
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
   );
 };
+
 export default Resources;
