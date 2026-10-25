@@ -1982,7 +1982,42 @@ const TablePage = () => {
       }
       if (e.key === '4') {
         if (isGm || myTokenIds.length > 0) setSafeVision((v) => !v);
+        return;
       }
+      let dx = 0;
+      let dy = 0;
+      switch (e.key) {
+        case 'ArrowUp':
+          dy = -1;
+          break;
+        case 'ArrowDown':
+          dy = 1;
+          break;
+        case 'ArrowLeft':
+          dx = -1;
+          break;
+        case 'ArrowRight':
+          dx = 1;
+          break;
+        default: {
+          const lk = e.key.toLowerCase();
+          if (lk === 'w') dy = -1;
+          else if (lk === 's') dy = 1;
+          else if (lk === 'a') dx = -1;
+          else if (lk === 'd') dx = 1;
+          else return;
+        }
+      }
+      if (!selectedTokenId) return;
+      const nudgeTok = state?.tokens?.find((t) => t.id === selectedTokenId);
+      if (!nudgeTok || !canDragToken(nudgeTok)) return;
+      if (tool !== 'select' || aimMode || spawnPlacement) return;
+      if ((nudgeTok.floor ?? 0) !== currentFloor) return;
+      e.preventDefault();
+      const nx = Math.max(0, Math.min(mapW - 1, nudgeTok.x + dx));
+      const ny = Math.max(0, Math.min(mapH - 1, nudgeTok.y + dy));
+      if (nx === nudgeTok.x && ny === nudgeTok.y) return;
+      intent('token:move', { tokenId: nudgeTok.id, x: nx, y: ny });
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.key !== ' ' && e.code !== 'Space') return;
@@ -2013,6 +2048,16 @@ const TablePage = () => {
     toggleBothHuds,
     spawnPlacement,
     selectedNetLink,
+    selectedTokenId,
+    state?.tokens,
+    tool,
+    aimMode,
+    currentFloor,
+    mapW,
+    mapH,
+    layers,
+    isGm,
+    myPlayerId,
   ]);
 
   const chromeBootCharacter = useMemo(() => {
@@ -3185,7 +3230,8 @@ const TablePage = () => {
               </div>
             </div>
             <div className={styles.hudOverlay}>
-              zoom {zoom.toFixed(2)} · shift+drag régua · {distance}u
+              zoom {zoom.toFixed(2)} · shift+drag régua · setas/WASD: mover token ·{' '}
+              {distance}u
               {rangeLabel ? ` (${rangeLabel})` : ''}
               {` · layer:${activeLayer} · view:${viewMode} · F${currentFloor}`}
               {tool !== 'select' ? ` · tool:${tool}` : ''}
