@@ -19,6 +19,7 @@ const NAV = [
   { href: '/lore', key: 'lore' },
   { href: '/map', key: 'map' },
   { href: '/npcs', key: 'npcs' },
+  { href: '/campaigns', key: 'campaigns' },
   { href: '/gigs', key: 'gigs' },
   { href: '/adventure', key: 'adventure' },
   { href: '/news', key: 'news' },

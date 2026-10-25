@@ -1,0 +1,281 @@
+'use client';
+
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { PageFrame } from '../../../components/layout/PageFrame';
+import { HudPanel } from '../../../components/ui/HudPanel';
+import { HudButton } from '../../../components/ui/HudButton';
+import { useCampaign } from '../../../lib/campaign';
+import { getAccessToken, getPlayerIdFromToken } from '../../../lib/authSession';
+import {
+  activateScene,
+  createScene,
+  fetchCampaignNpcs,
+  fetchCampaignScenes,
+  fetchRoster,
+  updateCampaign,
+  type CampaignNpc,
+  type CampaignRow,
+  type ScenesListResponse,
+  type VttSceneSummary,
+} from '../../../lib/campaignsApi';
+import { apiUrl, authHeaders } from '../../../lib/api';
+import styles from '../campaigns.module.css';
+
+const CampaignDetailPage = () => {
+  const params = useParams();
+  const router = useRouter();
+  const campaignId = Number(params?.id);
+  const { setCampaignId } = useCampaign();
+
+  const [campaign, setCampaign] = useState<CampaignRow | null>(null);
+  const [scenes, setScenes] = useState<VttSceneSummary[]>([]);
+  const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+  const [rosterChars, setRosterChars] = useState<
+    Array<{ id: string; name: string; role?: string }>
+  >([]);
+  const [npcs, setNpcs] = useState<CampaignNpc[]>([]);
+  const [editName, setEditName] = useState('');
+  const [sceneName, setSceneName] = useState('');
+  const [sceneDesc, setSceneDesc] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const playerId = getPlayerIdFromToken();
+  const isGm = campaign != null && Number(campaign.gmPlayerId) === playerId;
+
+  const loadCampaign = useCallback(async () => {
+    if (!Number.isFinite(campaignId) || campaignId <= 0) return;
+    const res = await fetch(apiUrl(`/api/campaigns/${campaignId}`), {
+      headers: authHeaders(),
+    });
+    if (!res.ok) {
+      setCampaign(null);
+      return;
+    }
+    const row = (await res.json()) as CampaignRow;
+    setCampaign(row);
+    setEditName(row.name);
+  }, [campaignId]);
+
+  const loadScenes = useCallback(async () => {
+    const data: ScenesListResponse | null = await fetchCampaignScenes(campaignId);
+    if (!data) return;
+    setScenes(data.scenes || []);
+    setActiveSceneId(data.activeSceneId);
+  }, [campaignId]);
+
+  const loadRoster = useCallback(async () => {
+    const data = await fetchRoster(campaignId);
+    if (data?.characters) setRosterChars(data.characters);
+  }, [campaignId]);
+
+  const loadNpcs = useCallback(async () => {
+    setNpcs(await fetchCampaignNpcs(campaignId));
+  }, [campaignId]);
+
+  useEffect(() => {
+    if (!getAccessToken()) return;
+    void loadCampaign();
+    void loadScenes();
+    void loadRoster();
+    void loadNpcs();
+  }, [loadCampaign, loadScenes, loadRoster, loadNpcs]);
+
+  const openTable = (scene?: VttSceneSummary) => {
+    setCampaignId(campaignId);
+    if (scene?.id) {
+      try {
+        localStorage.setItem(`cp-vtt-scene-${campaignId}`, scene.id);
+      } catch {
+        /* ignore */
+      }
+    }
+    router.push('/table');
+  };
+
+  const onSaveName = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!isGm || !editName.trim()) return;
+    setBusy(true);
+    const updated = await updateCampaign(campaignId, { name: editName.trim() });
+    setBusy(false);
+    if (updated) {
+      setCampaign(updated);
+      setMsg('Campanha atualizada.');
+    }
+  };
+
+  const onCreateScene = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!isGm || !sceneName.trim()) return;
+    setBusy(true);
+    await createScene(campaignId, {
+      name: sceneName.trim(),
+      description: sceneDesc.trim(),
+    });
+    setSceneName('');
+    setSceneDesc('');
+    await loadScenes();
+    setBusy(false);
+    setMsg('Cena criada.');
+  };
+
+  const onActivate = async (sceneId: string) => {
+    if (!isGm) return;
+    setBusy(true);
+    await activateScene(campaignId, sceneId);
+    await loadScenes();
+    setBusy(false);
+  };
+
+  const activeScene = useMemo(
+    () => scenes.find((s) => s.id === activeSceneId) || scenes.find((s) => s.active),
+    [scenes, activeSceneId],
+  );
+
+  if (!Number.isFinite(campaignId)) {
+    return (
+      <PageFrame>
+        <p className={styles.empty}>Campanha inválida.</p>
+      </PageFrame>
+    );
+  }
+
+  return (
+    <PageFrame>
+      <div className={styles.page}>
+        <Link href="/campaigns" className={styles.back}>
+          ← Campanhas
+        </Link>
+
+        <header className={styles.hero}>
+          <h1>{campaign?.name || `Campanha ${campaignId}`}</h1>
+          <p>
+            {isGm ? 'Modo Narrador' : 'Modo Jogador'} · ID {campaignId}
+            {activeScene ? ` · Cena ativa: ${activeScene.name}` : ''}
+          </p>
+        </header>
+
+        {msg ? <p className={styles.status}>{msg}</p> : null}
+
+        {isGm && (
+          <HudPanel title="Informações da campanha">
+            <form className={styles.formRow} onSubmit={onSaveName}>
+              <input
+                value={editName}
+                onChange={(ev) => setEditName(ev.target.value)}
+                aria-label="Nome da campanha"
+              />
+              <HudButton type="submit" disabled={busy}>
+                Salvar
+              </HudButton>
+            </form>
+          </HudPanel>
+        )}
+
+        <HudPanel title="Cenas VTT">
+          {isGm && (
+            <form className={styles.formRow} onSubmit={onCreateScene}>
+              <input
+                value={sceneName}
+                onChange={(ev) => setSceneName(ev.target.value)}
+                placeholder="Nome da cena"
+                required
+              />
+              <input
+                value={sceneDesc}
+                onChange={(ev) => setSceneDesc(ev.target.value)}
+                placeholder="Descrição (opcional)"
+              />
+              <HudButton type="submit" disabled={busy}>
+                Nova cena
+              </HudButton>
+            </form>
+          )}
+          {scenes.length === 0 ? (
+            <p className={styles.empty}>Nenhuma cena ainda.</p>
+          ) : (
+            <ul className={styles.list}>
+              {scenes.map((scene) => (
+                <li key={scene.id} className={styles.listItem}>
+                  <div>
+                    <strong>{scene.name}</strong>
+                    {scene.active || scene.id === activeSceneId ? (
+                      <span className={styles.badge}>ativa</span>
+                    ) : null}
+                    {scene.description ? (
+                      <p className={styles.meta}>{scene.description}</p>
+                    ) : null}
+                  </div>
+                  <div className={styles.actions}>
+                    {isGm && !scene.active && scene.id !== activeSceneId ? (
+                      <HudButton
+                        variant="ghost"
+                        type="button"
+                        disabled={busy}
+                        onClick={() => onActivate(scene.id)}
+                      >
+                        Ativar
+                      </HudButton>
+                    ) : null}
+                    <HudButton type="button" onClick={() => openTable(scene)}>
+                      Abrir mesa
+                    </HudButton>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </HudPanel>
+
+        <HudPanel title="Roster (personagens)">
+          {rosterChars.length === 0 ? (
+            <p className={styles.empty}>Roster vazio.</p>
+          ) : (
+            <ul className={styles.list}>
+              {rosterChars.map((c) => (
+                <li key={c.id} className={styles.listItem}>
+                  <span>
+                    <strong>{c.name}</strong>
+                    {c.role ? ` · ${c.role}` : ''}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </HudPanel>
+
+        <HudPanel title="NPCs da campanha">
+          {npcs.length === 0 ? (
+            <p className={styles.empty}>
+              Nenhum NPC vinculado (`npcIds`). Edite via API ou seed demo.
+            </p>
+          ) : (
+            <div className={styles.npcGrid}>
+              {npcs.map((npc) => (
+                <article key={npc.id} className={styles.npcCard}>
+                  <h4>{npc.name}</h4>
+                  <p className={styles.meta}>
+                    {npc.role} · {npc.affiliation} · {npc.threat}
+                  </p>
+                  <p>{npc.summary}</p>
+                  <Link href={`/npcs/${npc.id}`}>Ficha</Link>
+                </article>
+              ))}
+            </div>
+          )}
+        </HudPanel>
+
+        <div className={styles.actions}>
+          <HudButton type="button" onClick={() => openTable(activeScene || undefined)}>
+            Ir para a mesa (cena ativa)
+          </HudButton>
+        </div>
+      </div>
+    </PageFrame>
+  );
+};
+
+export default CampaignDetailPage;
