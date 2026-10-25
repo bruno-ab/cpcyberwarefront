@@ -1402,6 +1402,11 @@ const TablePage = () => {
   const viewMode: ViewMode =
     localViewMode || state?.viewMode || 'normal';
 
+  const netEditLinks = useMemo(
+    () => isGm && viewMode === 'net' && gmTab === 'map' && netWireMode,
+    [isGm, viewMode, gmTab, netWireMode],
+  );
+
   const myRosterChar = useMemo(() => {
     if (selectedChar) return selectedChar;
     return (
@@ -1537,6 +1542,27 @@ const TablePage = () => {
       });
     },
     [intent, isGm, selectedTokenId, currentFloor],
+  );
+
+  const onNetDevicePress = useCallback(
+    (deviceId: string) => {
+      if (netEditLinks) {
+        if (!netLinkFrom) {
+          setNetLinkFrom(deviceId);
+          setSelectedNetLink(null);
+          return;
+        }
+        if (netLinkFrom === deviceId) {
+          setNetLinkFrom(null);
+          return;
+        }
+        intent('device:link', { fromId: netLinkFrom, toId: deviceId });
+        setNetLinkFrom(null);
+        return;
+      }
+      openNetNode({ deviceId });
+    },
+    [netEditLinks, netLinkFrom, intent, openNetNode],
   );
 
   const castQuickhack = useCallback(
@@ -1754,30 +1780,6 @@ const TablePage = () => {
     if (!Number.isFinite(s) || s <= 0) return 1;
     return Math.min(3, Math.max(0.25, s));
   }, [state?.map?.backgroundScale]);
-
-  const netEditLinks =
-    isGm && viewMode === 'net' && gmTab === 'map' && netWireMode;
-
-  const onNetDevicePress = useCallback(
-    (deviceId: string) => {
-      if (netEditLinks) {
-        if (!netLinkFrom) {
-          setNetLinkFrom(deviceId);
-          setSelectedNetLink(null);
-          return;
-        }
-        if (netLinkFrom === deviceId) {
-          setNetLinkFrom(null);
-          return;
-        }
-        intent('device:link', { fromId: netLinkFrom, toId: deviceId });
-        setNetLinkFrom(null);
-        return;
-      }
-      openNetNode({ deviceId });
-    },
-    [netEditLinks, netLinkFrom, intent, openNetNode],
-  );
 
   const combatCurrent = state?.initiative?.[state?.turnIndex ?? 0];
   const combatMyTurn = useMemo(() => {
