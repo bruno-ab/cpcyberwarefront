@@ -126,6 +126,22 @@
   line-height: 1.4;
 }
 
+.linkish {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--cp-cyan);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.linkish:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .list {
   display: grid;
   gap: 0.4rem;

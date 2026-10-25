@@ -87,8 +87,8 @@ const slotImage = (type: CyberWareSlot) =>
   `/images/cyberware/${String(type)}.svg`;
 
 /** Gera catálogo de chrome que adiciona bolinhas (dados) em attrs/skills. */
-export const buildStatBoosterCatalog = (): CyberwareCatalogEntry[] => {
-  const out: CyberwareCatalogEntry[] = [];
+export const buildStatBoosterCatalog = (): BoosterEntry[] => {
+  const out: BoosterEntry[] = [];
   for (const target of STAT_BOOST_TARGETS) {
     for (const tier of TIER_META) {
       const price = Math.round(BASE_PRICE * tier.priceMul * (1 + (tier.bonus - 1) * 0.15));

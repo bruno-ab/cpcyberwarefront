@@ -5,7 +5,14 @@ import { useRouter } from 'next/navigation';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import { HudButton } from '../../components/ui/HudButton';
+import { CyberwareFilterBar } from '../../components/cyberware/CyberwareFilterBar';
 import { apiUrl, authHeaders } from '../../lib/api';
+import {
+  DEFAULT_CYBERWARE_FILTERS,
+  matchesChromeFilters,
+  sortChromeItems,
+  type CyberwareFilterState,
+} from '../../lib/cyberwareFilters';
 import {
   formatEddies,
   itemEddiePrice,
@@ -34,6 +41,8 @@ type Character = {
       cyberware?: Array<{
         id: string | number;
         name: string;
+        price?: number;
+        type?: string;
         installable?: boolean;
         installed?: boolean;
       }>;
@@ -53,6 +62,9 @@ const ShopPage = () => {
   const [characterId, setCharacterId] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [chromeFilters, setChromeFilters] = useState<CyberwareFilterState>(
+    DEFAULT_CYBERWARE_FILTERS,
+  );
 
   const selected = useMemo(
     () => characters.find((c) => String(c.id) === String(characterId)) || null,
@@ -64,10 +76,26 @@ const ShopPage = () => {
     return list.filter((c) => c.installable !== false && !c.installed);
   }, [selected]);
 
+  const installedIds = useMemo(() => {
+    const inv = selected?.sheet?.inventory?.cyberware || [];
+    return new Set(
+      inv
+        .filter((c) => c.installed)
+        .map((c) => Number(c.id))
+        .filter((id) => Number.isFinite(id)),
+    );
+  }, [selected]);
+
+  const ownedIds = useMemo(
+    () => new Set(ownedChrome.map((c) => Number(c.id))),
+    [ownedChrome],
+  );
+
   const streetCred = campaign?.streetCred || 0;
   const heat = campaign?.heat;
   const heatMod = heatShopMarkup(heat);
   const priceOf = (base: number) => heatAwarePrice(base, streetCred, heat);
+  const wallet = Number(campaign?.eddies || 0);
 
   const reload = async () => {
     const [g, v, c, camp, chars] = await Promise.all([
@@ -85,7 +113,7 @@ const ShopPage = () => {
     ]);
     setGear(Array.isArray(g) ? g : []);
     setVehicles(Array.isArray(v) ? v : []);
-    setCyberware(Array.isArray(c) ? c.slice(0, 16) : []);
+    setCyberware(Array.isArray(c) ? c : []);
     setCampaign(camp);
     const list = Array.isArray(chars) ? chars : [];
     setCharacters(list);
@@ -136,6 +164,83 @@ const ShopPage = () => {
     return formatEddies(base);
   };
 
+  const filteredOwnedChrome = useMemo(() => {
+    if (
+      chromeFilters.status === 'buyable' ||
+      chromeFilters.status === 'installed'
+    ) {
+      return [];
+    }
+    const rows = ownedChrome
+      .map((c) => {
+        const cat = cyberware.find((x) => Number(x.id) === Number(c.id));
+        return {
+          ...c,
+          rarity: cat?.rarity,
+          type: cat?.type,
+          description: cat?.description || cat?.effect,
+          effect: cat?.effect,
+          price: Number(c.price) || priceOf(itemEddiePrice(cat || c)),
+          edgeCost: Number(cat?.edge_cost ?? cat?.edgeCost ?? 0) || 0,
+        };
+      })
+      .filter((c) =>
+        matchesChromeFilters(
+          c,
+          { ...chromeFilters, affordableOnly: false },
+        ),
+      );
+    return sortChromeItems(rows, chromeFilters.sort);
+  }, [ownedChrome, cyberware, chromeFilters, streetCred, heat]);
+
+  const filteredCyberware = useMemo(() => {
+    if (
+      chromeFilters.status === 'owned' ||
+      chromeFilters.status === 'installed'
+    ) {
+      return [];
+    }
+    const rows = cyberware
+      .filter((c) => {
+        const id = Number(c.id);
+        if (installedIds.has(id)) return false;
+        if (chromeFilters.status === 'buyable' && ownedIds.has(id)) {
+          return false;
+        }
+        return matchesChromeFilters(
+          {
+            id: c.id,
+            name: c.name,
+            type: c.type,
+            rarity: c.rarity,
+            description: c.description,
+            effect: c.effect,
+            price: priceOf(itemEddiePrice(c)),
+            edgeCost: Number(c.edge_cost ?? c.edgeCost ?? 0) || 0,
+          },
+          chromeFilters,
+          { wallet },
+        );
+      })
+      .map((c) => ({
+        ...c,
+        price: priceOf(itemEddiePrice(c)),
+        edgeCost: Number(c.edge_cost ?? c.edgeCost ?? 0) || 0,
+      }));
+    return sortChromeItems(rows, chromeFilters.sort);
+  }, [
+    cyberware,
+    chromeFilters,
+    installedIds,
+    ownedIds,
+    wallet,
+    streetCred,
+    heat,
+  ]);
+
+  const chromeResultCount =
+    filteredOwnedChrome.length + filteredCyberware.length;
+
   return (
     <PageFrame>
       <HudPanel title="Ripperdoc / Loja">
@@ -169,28 +274,6 @@ const ShopPage = () => {
 
           {msg && <p className={styles.msg}>{msg}</p>}
 
-          {ownedChrome.length > 0 && (
-            <div className={styles.pending}>
-              <div className={styles.pendingTitle}>
-                Chrome comprado — aguardando instalação
-              </div>
-              {ownedChrome.map((c) => (
-                <div key={`own-${c.id}-${c.name}`} className={styles.row}>
-                  <span className={styles.rowName}>{c.name}</span>
-                  <HudButton
-                    onClick={() =>
-                      router.push(
-                        `/cyberware?id=${encodeURIComponent(characterId)}`,
-                      )
-                    }
-                  >
-                    Instalar
-                  </HudButton>
-                </div>
-              ))}
-            </div>
-          )}
-
           <section className={styles.section}>
             <h3>Armas & gear</h3>
             <div className={styles.list}>
@@ -217,35 +300,111 @@ const ShopPage = () => {
               Comprar coloca o chrome no inventário da ficha. Instalar abre o
               ripperdoc do personagem.
             </p>
-            <div className={styles.list}>
-              {cyberware.map((c) => (
-                <div key={c.id} className={styles.row}>
-                  <div className={styles.rowMeta}>
-                    <span className={styles.rowName}>{c.name}</span>
-                    <span className={styles.rowPrice}>{priceLabel(c)}</span>
+            <CyberwareFilterBar
+              value={chromeFilters}
+              onChange={setChromeFilters}
+              showAffordable
+              resultCount={chromeResultCount}
+              searchPlaceholder="Filtrar chrome por nome, raridade…"
+            />
+            {(chromeFilters.status === 'all' ||
+              chromeFilters.status === 'owned') &&
+              (filteredOwnedChrome.length > 0 ||
+                chromeFilters.status === 'owned') && (
+                <div className={styles.pending}>
+                  <div className={styles.pendingTitle}>
+                    Chrome comprado — aguardando instalação
                   </div>
-                  <div className={styles.rowActions}>
-                    <HudButton
-                      disabled={busy || !characterId}
-                      onClick={() => buy(String(c.id), 'cyberware')}
-                    >
-                      Comprar
-                    </HudButton>
-                    <HudButton
-                      variant="ghost"
-                      disabled={!characterId}
-                      onClick={() =>
-                        router.push(
-                          `/cyberware?id=${encodeURIComponent(characterId)}`,
-                        )
-                      }
-                    >
-                      Instalar
-                    </HudButton>
-                  </div>
+                  {filteredOwnedChrome.length === 0 ? (
+                    <p className={styles.hint}>
+                      Nenhum chrome no inventário com esses filtros.
+                    </p>
+                  ) : (
+                    filteredOwnedChrome.map((c) => (
+                      <div
+                        key={`own-${c.id}-${c.name}`}
+                        className={styles.row}
+                      >
+                        <div className={styles.rowMeta}>
+                          <span className={styles.rowName}>{c.name}</span>
+                          <span className={styles.rowPrice}>
+                            {c.rarity ? `${c.rarity} · ` : ''}
+                            pago {formatEddies(Number(c.price) || 0)}
+                          </span>
+                        </div>
+                        <HudButton
+                          onClick={() =>
+                            router.push(
+                              `/cyberware?id=${encodeURIComponent(characterId)}`,
+                            )
+                          }
+                        >
+                          Instalar
+                        </HudButton>
+                      </div>
+                    ))
+                  )}
                 </div>
-              ))}
-            </div>
+              )}
+            {(chromeFilters.status === 'all' ||
+              chromeFilters.status === 'buyable') && (
+              <div className={styles.list}>
+                {filteredCyberware.length === 0 ? (
+                  <p className={styles.hint}>
+                    Nenhuma peça à venda com esses filtros.
+                  </p>
+                ) : (
+                  filteredCyberware.map((c) => (
+                    <div key={c.id} className={styles.row}>
+                      <div className={styles.rowMeta}>
+                        <span className={styles.rowName}>{c.name}</span>
+                        <span className={styles.rowPrice}>
+                          {c.rarity ? `${c.rarity} · ` : ''}
+                          {priceLabel(c)}
+                        </span>
+                      </div>
+                      <div className={styles.rowActions}>
+                        <HudButton
+                          disabled={busy || !characterId}
+                          onClick={() => buy(String(c.id), 'cyberware')}
+                        >
+                          Comprar
+                        </HudButton>
+                        <HudButton
+                          variant="ghost"
+                          disabled={!characterId}
+                          onClick={() =>
+                            router.push(
+                              `/cyberware?id=${encodeURIComponent(characterId)}`,
+                            )
+                          }
+                        >
+                          Instalar
+                        </HudButton>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+            {chromeFilters.status === 'installed' && (
+              <p className={styles.hint}>
+                Chrome instalado fica no ripperdoc — abra{' '}
+                <button
+                  type="button"
+                  className={styles.linkish}
+                  disabled={!characterId}
+                  onClick={() =>
+                    router.push(
+                      `/cyberware?id=${encodeURIComponent(characterId)}`,
+                    )
+                  }
+                >
+                  /cyberware
+                </button>{' '}
+                para filtrar peças implantadas.
+              </p>
+            )}
           </section>
 
           <section className={styles.section}>

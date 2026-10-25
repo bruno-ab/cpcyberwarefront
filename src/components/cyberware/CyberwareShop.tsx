@@ -17,7 +17,14 @@ import {
   itemEddiePrice,
   heatAwarePrice,
 } from '../../lib/shopPricing';
+import {
+  DEFAULT_CYBERWARE_FILTERS,
+  matchesChromeFilters,
+  sortChromeItems,
+  type CyberwareFilterState,
+} from '../../lib/cyberwareFilters';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
+import { CyberwareFilterBar } from './CyberwareFilterBar';
 import styles from './CyberwareShop.module.css';
 
 type CatalogItem = {
@@ -84,7 +91,9 @@ export const CyberwareShop = ({
   const router = useRouter();
   const { campaignId, refresh: refreshCampaign } = useCampaign();
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
-  const [filter, setFilter] = useState('');
+  const [filters, setFilters] = useState<CyberwareFilterState>(
+    DEFAULT_CYBERWARE_FILTERS,
+  );
   const [edges, setEdges] = useState(sheetEdges(sheet));
   const [streetCred, setStreetCred] = useState(0);
   const [heat, setHeat] = useState<import('../../lib/heat').CampaignHeat | null>(
@@ -169,28 +178,7 @@ export const CyberwareShop = ({
     [ownedPending],
   );
 
-  const available = useMemo(() => {
-    const q = filter.trim().toLowerCase();
-    return catalog.filter((c) => {
-      if (slotFilter && !slotFilter.includes(c.type as CyberWareSlot)) {
-        return false;
-      }
-      if (installedIds.has(Number(c.id))) return false;
-      if (!q) return true;
-      return (
-        c.name?.toLowerCase().includes(q) ||
-        c.type?.toLowerCase().includes(q) ||
-        c.rarity?.toLowerCase().includes(q)
-      );
-    });
-  }, [catalog, filter, slotFilter, installedIds]);
-
-  const displayPrice = (item: CatalogItem) => {
-    const base = itemEddiePrice(item);
-    return heatAwarePrice(base, streetCred, heat);
-  };
-
-  const catalogEdgeCostOf = (item: CatalogItem | OwnedChrome) => {
+  const catalogEdgeCostOf = (item: CatalogItem | OwnedChrome | InstalledItem) => {
     const catalogItem =
       catalog.find((c) => Number(c.id) === Number(item.id)) || null;
     if (catalogItem) {
@@ -200,13 +188,19 @@ export const CyberwareShop = ({
       );
     }
     const fromItem = Number(
-      (item as CatalogItem).edge_cost ?? (item as any).edgeCost ?? 0,
+      (item as CatalogItem).edge_cost ?? (item as InstalledItem).edgeCost ?? 0,
     );
     if (fromItem > 0) return fromItem;
     const byName = CYBERWARE_CATALOG.find(
       (c) => c.name.toLowerCase() === String(item.name || '').toLowerCase(),
     );
     return Math.max(0, Number(byName?.edgeCost ?? 0) || 0);
+  };
+
+  const displayPrice = (item: CatalogItem | InstalledItem | OwnedChrome) => {
+    const cat = catalog.find((c) => Number(c.id) === Number(item.id));
+    const base = itemEddiePrice(cat || item);
+    return heatAwarePrice(base, streetCred, heat);
   };
 
   const edgesAlreadyPaid = (item: CatalogItem | OwnedChrome) => {
@@ -219,6 +213,151 @@ export const CyberwareShop = ({
   /** Custo real a debitar agora (0 se Edges já foram pagos nesta peça). */
   const edgeCostOf = (item: CatalogItem | OwnedChrome) =>
     edgesAlreadyPaid(item) ? 0 : catalogEdgeCostOf(item);
+
+  const effectiveFilters = useMemo((): CyberwareFilterState => {
+    if (!slotFilter) return filters;
+    return { ...filters, type: 'all' };
+  }, [filters, slotFilter]);
+
+  const filteredOwned = useMemo(() => {
+    if (effectiveFilters.status === 'buyable') return [];
+    if (effectiveFilters.status === 'installed') return [];
+    const rows = ownedPending
+      .filter((item) => {
+        const cat = catalog.find((c) => Number(c.id) === Number(item.id));
+        const type = cat?.type || item.type;
+        if (
+          slotFilter &&
+          type &&
+          !slotFilter.includes(type as CyberWareSlot)
+        ) {
+          return false;
+        }
+        return matchesChromeFilters(
+          {
+            id: item.id,
+            name: item.name,
+            type,
+            rarity: cat?.rarity,
+            description: cat?.description,
+            effect: cat?.effect,
+            price: Number(item.price) || displayPrice(cat || item),
+            edgeCost: catalogEdgeCostOf(item),
+          },
+          { ...effectiveFilters, affordableOnly: false },
+        );
+      })
+      .map((item) => {
+        const cat = catalog.find((c) => Number(c.id) === Number(item.id));
+        return {
+          item,
+          cat,
+          price: Number(item.price) || displayPrice(cat || item),
+          edgeCost: catalogEdgeCostOf(item),
+          rarity: cat?.rarity,
+          name: item.name,
+        };
+      });
+    return sortChromeItems(rows, effectiveFilters.sort);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    ownedPending,
+    catalog,
+    slotFilter,
+    effectiveFilters,
+    streetCred,
+    heat,
+  ]);
+
+  const filteredInstalled = useMemo(() => {
+    if (effectiveFilters.status === 'buyable') return [];
+    if (effectiveFilters.status === 'owned') return [];
+    const rows = installedHere
+      .filter((item) =>
+        matchesChromeFilters(
+          {
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            rarity: item.rarity,
+            description: item.description,
+            effect: item.effect,
+            price: displayPrice(item),
+            edgeCost: Number(item.edgeCost) || catalogEdgeCostOf(item),
+          },
+          { ...effectiveFilters, affordableOnly: false },
+        ),
+      )
+      .map((item) => ({
+        item,
+        price: displayPrice(item),
+        edgeCost: Number(item.edgeCost) || catalogEdgeCostOf(item),
+        rarity: item.rarity,
+        name: item.name,
+      }));
+    return sortChromeItems(rows, effectiveFilters.sort);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [installedHere, catalog, effectiveFilters, streetCred, heat]);
+
+  const available = useMemo(() => {
+    if (effectiveFilters.status === 'owned') return [];
+    if (effectiveFilters.status === 'installed') return [];
+    const rows = catalog.filter((c) => {
+      if (slotFilter && !slotFilter.includes(c.type as CyberWareSlot)) {
+        return false;
+      }
+      if (installedIds.has(Number(c.id))) return false;
+      if (
+        effectiveFilters.status === 'buyable' &&
+        ownedIds.has(Number(c.id))
+      ) {
+        return false;
+      }
+      return matchesChromeFilters(
+        {
+          id: c.id,
+          name: c.name,
+          type: c.type,
+          rarity: c.rarity,
+          description: c.description,
+          effect: c.effect,
+          price: displayPrice(c),
+          edgeCost: Number(c.edge_cost ?? c.edgeCost ?? 0) || 0,
+        },
+        effectiveFilters,
+        { wallet: campaignEddies },
+      );
+    });
+    return sortChromeItems(
+      rows.map((c) => ({
+        ...c,
+        price: displayPrice(c),
+        edgeCost: Number(c.edge_cost ?? c.edgeCost ?? 0) || 0,
+      })),
+      effectiveFilters.sort,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    catalog,
+    effectiveFilters,
+    slotFilter,
+    installedIds,
+    ownedIds,
+    campaignEddies,
+    streetCred,
+    heat,
+  ]);
+
+  const filterResultCount =
+    filteredOwned.length + filteredInstalled.length + available.length;
+
+  const showOwnedSection =
+    effectiveFilters.status === 'all' || effectiveFilters.status === 'owned';
+  const showInstalledSection =
+    effectiveFilters.status === 'all' ||
+    effectiveFilters.status === 'installed';
+  const showCatalogSection =
+    effectiveFilters.status === 'all' || effectiveFilters.status === 'buyable';
 
   const refreshAll = async () => {
     await Promise.all([
@@ -518,151 +657,113 @@ export const CyberwareShop = ({
       </header>
       {msg && <p className={styles.msg}>{msg}</p>}
 
-      {ownedPending.length > 0 && (
+      <CyberwareFilterBar
+        value={filters}
+        onChange={setFilters}
+        hideType={Boolean(slotFilter)}
+        resultCount={filterResultCount}
+        searchPlaceholder={
+          partLabel
+            ? `Buscar chrome para ${partLabel.toLowerCase()}…`
+            : 'Buscar por nome, tipo, efeito…'
+        }
+      />
+
+      {showOwnedSection &&
+        (filteredOwned.length > 0 ||
+          effectiveFilters.status === 'owned') && (
         <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Comprado — aguardando instalação</h4>
-          <div className={styles.grid}>
-            {ownedPending.map((item) => {
-              const cat = catalog.find((c) => Number(c.id) === Number(item.id));
-              const catalogCost = catalogEdgeCostOf(item);
-              const prepaid = edgesAlreadyPaid(item);
-              const cost = prepaid ? 0 : catalogCost;
-              const canInstall = edges >= cost;
-              return (
-                <article
-                  key={`owned-${item.id}`}
-                  className={`${styles.card} ${styles.owned}`}
-                >
-                  <img
-                    src={cyberwareImageSrc(cat || { name: item.name })}
-                    alt={item.name}
-                    className={styles.thumb}
-                  />
-                  <div className={styles.body}>
-                    <strong>{item.name}</strong>
-                    <span>
-                      {cat
-                        ? SLOT_LABELS[cat.type as CyberWareSlot] || cat.type
-                        : item.type || 'chrome'}
-                      {' · pago '}
-                      {formatEddies(Number(item.price) || 0)}
-                      {prepaid
-                        ? ' · Edges já pagos'
-                        : catalogCost > 0
-                          ? ` · inst. ${catalogCost} E`
-                          : ''}
-                    </span>
-                    <p>{cat?.effect || cat?.description || 'Pronto para instalar.'}</p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={busy || !canInstall}
-                    title={
-                      canInstall
-                        ? prepaid
-                          ? 'Reinstalação sem custo de Edges'
-                          : undefined
-                        : `Precisa ${cost} E (ficha tem ${edges} E)`
-                    }
-                    onClick={() => installOwned(item)}
+          <h4 className={styles.sectionTitle}>
+            Comprado — aguardando instalação
+          </h4>
+          {filteredOwned.length === 0 ? (
+            <p className={styles.empty}>
+              Nenhum chrome no inventário com esses filtros.
+            </p>
+          ) : (
+            <div className={styles.grid}>
+              {filteredOwned.map(({ item, cat }) => {
+                const catalogCost = catalogEdgeCostOf(item);
+                const prepaid = edgesAlreadyPaid(item);
+                const cost = prepaid ? 0 : catalogCost;
+                const canInstall = edges >= cost;
+                return (
+                  <article
+                    key={`owned-${item.id}`}
+                    className={`${styles.card} ${styles.owned}`}
                   >
-                    {canInstall
-                      ? prepaid
-                        ? 'Reinstalar (0 E)'
-                        : `Instalar (${cost} E)`
-                      : `Sem E (${cost})`}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
+                    <img
+                      src={cyberwareImageSrc(cat || { name: item.name })}
+                      alt={item.name}
+                      className={styles.thumb}
+                    />
+                    <div className={styles.body}>
+                      <strong>{item.name}</strong>
+                      <span>
+                        {cat
+                          ? SLOT_LABELS[cat.type as CyberWareSlot] || cat.type
+                          : item.type || 'chrome'}
+                        {cat?.rarity ? ` · ${cat.rarity}` : ''}
+                        {' · pago '}
+                        {formatEddies(Number(item.price) || 0)}
+                        {prepaid
+                          ? ' · Edges já pagos'
+                          : catalogCost > 0
+                            ? ` · inst. ${catalogCost} E`
+                            : ''}
+                      </span>
+                      <p>
+                        {cat?.effect ||
+                          cat?.description ||
+                          'Pronto para instalar.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={busy || !canInstall}
+                      title={
+                        canInstall
+                          ? prepaid
+                            ? 'Reinstalação sem custo de Edges'
+                            : undefined
+                          : `Precisa ${cost} E (ficha tem ${edges} E)`
+                      }
+                      onClick={() => installOwned(item)}
+                    >
+                      {canInstall
+                        ? prepaid
+                          ? 'Reinstalar (0 E)'
+                          : `Instalar (${cost} E)`
+                        : `Sem E (${cost})`}
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 
-      <section className={styles.section}>
-        <h4 className={styles.sectionTitle}>
-          {partLabel
-            ? `Chrome instalado — ${partLabel}`
-            : 'Chrome instalado'}
-        </h4>
-        {installedHere.length === 0 ? (
-          <p className={styles.empty}>
+      {showInstalledSection && (
+        <section className={styles.section}>
+          <h4 className={styles.sectionTitle}>
             {partLabel
-              ? 'Nenhuma peça nesta região.'
-              : 'Nenhum chrome implantado ainda.'}
-          </p>
-        ) : (
-          <div className={styles.grid}>
-            {installedHere.map((item) => (
-              <article
-                key={`in-${item.id}`}
-                className={`${styles.card} ${styles.installed}`}
-              >
-                <img
-                  src={cyberwareImageSrc(item)}
-                  alt={item.name}
-                  className={styles.thumb}
-                />
-                <div className={styles.body}>
-                  <strong>{item.name}</strong>
-                  <span>
-                    {SLOT_LABELS[item.type as CyberWareSlot] || item.type}
-                    {item.rarity ? ` · ${item.rarity}` : ''}
-                    {item.edgeCost != null ? ` · ${item.edgeCost} E` : ''}
-                  </span>
-                  <p>{item.effect || item.description}</p>
-                </div>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => {
-                    playCyberSound('blip');
-                    setRemoveTarget(item);
-                  }}
+              ? `Chrome instalado — ${partLabel}`
+              : 'Chrome instalado'}
+          </h4>
+          {filteredInstalled.length === 0 ? (
+            <p className={styles.empty}>
+              {partLabel
+                ? 'Nenhuma peça nesta região com esses filtros.'
+                : 'Nenhum chrome implantado com esses filtros.'}
+            </p>
+          ) : (
+            <div className={styles.grid}>
+              {filteredInstalled.map(({ item }) => (
+                <article
+                  key={`in-${item.id}`}
+                  className={`${styles.card} ${styles.installed}`}
                 >
-                  Remover
-                </button>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <input
-        className={styles.search}
-        type="search"
-        placeholder={
-          partLabel
-            ? `Buscar chrome para ${partLabel.toLowerCase()}…`
-            : 'Buscar peça de chrome…'
-        }
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-      />
-
-      <section className={styles.section}>
-        <h4 className={styles.sectionTitle}>
-          {partLabel
-            ? `Catálogo para ${partLabel}`
-            : 'Catálogo do ripperdoc'}
-        </h4>
-        {available.length === 0 ? (
-          <p className={styles.empty}>
-            Nenhuma peça disponível
-            {partLabel ? ` para ${partLabel.toLowerCase()}` : ''}.
-          </p>
-        ) : (
-          <div className={styles.grid}>
-            {available.map((item) => {
-              const catalogCost = catalogEdgeCostOf(item);
-              const prepaid = edgesAlreadyPaid(item);
-              const edgeCost = prepaid ? 0 : catalogCost;
-              const eddiePrice = displayPrice(item);
-              const alreadyOwned = ownedIds.has(Number(item.id));
-              const canAfford = campaignEddies >= eddiePrice;
-              const canInstall = edges >= edgeCost;
-              return (
-                <article key={item.id} className={styles.card}>
                   <img
                     src={cyberwareImageSrc(item)}
                     alt={item.name}
@@ -671,60 +772,117 @@ export const CyberwareShop = ({
                   <div className={styles.body}>
                     <strong>{item.name}</strong>
                     <span>
-                      {SLOT_LABELS[item.type as CyberWareSlot] || item.type} ·{' '}
-                      {item.rarity || '—'} · {formatEddies(eddiePrice)}
-                      {prepaid
-                        ? ' · Edges já pagos'
-                        : catalogCost > 0
-                          ? ` · inst. ${catalogCost} E`
-                          : ''}{' '}
-                      · carga {item.implant_cost ?? item.implantCost ?? '—'}
+                      {SLOT_LABELS[item.type as CyberWareSlot] || item.type}
+                      {item.rarity ? ` · ${item.rarity}` : ''}
+                      {item.edgeCost != null ? ` · ${item.edgeCost} E` : ''}
                     </span>
                     <p>{item.effect || item.description}</p>
                   </div>
-                  <div className={styles.actions}>
-                    {alreadyOwned ? (
-                      <button
-                        type="button"
-                        disabled={busy || !canInstall}
-                        title={
-                          canInstall
-                            ? prepaid
-                              ? 'Reinstalação sem custo de Edges'
-                              : undefined
-                            : `Precisa ${edgeCost} E (ficha tem ${edges} E)`
-                        }
-                        onClick={() => installOwned(item)}
-                      >
-                        {canInstall
-                          ? prepaid
-                            ? 'Reinstalar (0 E)'
-                            : `Instalar (${edgeCost} E)`
-                          : `Sem E (${edgeCost})`}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled={busy || !canAfford}
-                        title={
-                          canAfford
-                            ? undefined
-                            : `Precisa ${formatEddies(eddiePrice)} (tem ${formatEddies(campaignEddies)})`
-                        }
-                        onClick={() => buyOnly(item)}
-                      >
-                        {canAfford
-                          ? `Comprar ${formatEddies(eddiePrice)}`
-                          : `Sem ¤ (${formatEddies(eddiePrice)})`}
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      playCyberSound('ui');
+                      setRemoveTarget(item);
+                    }}
+                  >
+                    Remover
+                  </button>
                 </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {showCatalogSection && (
+        <section className={styles.section}>
+          <h4 className={styles.sectionTitle}>
+            {partLabel
+              ? `Catálogo para ${partLabel}`
+              : 'Catálogo do ripperdoc'}
+          </h4>
+          {available.length === 0 ? (
+            <p className={styles.empty}>
+              Nenhuma peça disponível
+              {partLabel ? ` para ${partLabel.toLowerCase()}` : ''} com esses
+              filtros.
+            </p>
+          ) : (
+            <div className={styles.grid}>
+              {available.map((item) => {
+                const catalogCost = catalogEdgeCostOf(item);
+                const prepaid = edgesAlreadyPaid(item);
+                const edgeCost = prepaid ? 0 : catalogCost;
+                const eddiePrice = Number(item.price) || displayPrice(item);
+                const alreadyOwned = ownedIds.has(Number(item.id));
+                const canAfford = campaignEddies >= eddiePrice;
+                const canInstall = edges >= edgeCost;
+                return (
+                  <article key={item.id} className={styles.card}>
+                    <img
+                      src={cyberwareImageSrc(item)}
+                      alt={item.name}
+                      className={styles.thumb}
+                    />
+                    <div className={styles.body}>
+                      <strong>{item.name}</strong>
+                      <span>
+                        {SLOT_LABELS[item.type as CyberWareSlot] || item.type} ·{' '}
+                        {item.rarity || '—'} · {formatEddies(eddiePrice)}
+                        {prepaid
+                          ? ' · Edges já pagos'
+                          : catalogCost > 0
+                            ? ` · inst. ${catalogCost} E`
+                            : ''}{' '}
+                        · carga {item.implant_cost ?? item.implantCost ?? '—'}
+                      </span>
+                      <p>{item.effect || item.description}</p>
+                    </div>
+                    <div className={styles.actions}>
+                      {alreadyOwned ? (
+                        <button
+                          type="button"
+                          disabled={busy || !canInstall}
+                          title={
+                            canInstall
+                              ? prepaid
+                                ? 'Reinstalação sem custo de Edges'
+                                : undefined
+                              : `Precisa ${edgeCost} E (ficha tem ${edges} E)`
+                          }
+                          onClick={() => installOwned(item)}
+                        >
+                          {canInstall
+                            ? prepaid
+                              ? 'Reinstalar (0 E)'
+                              : `Instalar (${edgeCost} E)`
+                            : `Sem E (${edgeCost})`}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={busy || !canAfford}
+                          title={
+                            canAfford
+                              ? undefined
+                              : `Precisa ${formatEddies(eddiePrice)} (tem ${formatEddies(campaignEddies)})`
+                          }
+                          onClick={() => buyOnly(item)}
+                        >
+                          {canAfford
+                            ? `Comprar ${formatEddies(eddiePrice)}`
+                            : `Sem ¤ (${formatEddies(eddiePrice)})`}
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
     </section>
   );
 };
