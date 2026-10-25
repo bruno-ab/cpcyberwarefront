@@ -134,6 +134,25 @@
   pointer-events: none;
 }
 
+.wallDoor {
+  stroke: #fed33f;
+  stroke-width: 3;
+  stroke-dasharray: 6 3;
+  pointer-events: none;
+}
+
+.wallDoorOpen {
+  stroke: #7cff6b;
+  stroke-width: 2;
+  stroke-dasharray: 2 4;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.lightMark {
+  pointer-events: none;
+}
+
 .ruler {
   stroke: #fcee0a;
   stroke-width: 2;

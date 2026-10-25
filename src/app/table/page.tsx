@@ -132,7 +132,23 @@ type VttState = {
     backgroundUrl?: string | null;
   };
   tokens: Token[];
-  walls: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }>;
+  walls: Array<{
+    id: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    door?: boolean;
+    open?: boolean;
+  }>;
+  lights?: Array<{
+    id: string;
+    x: number;
+    y: number;
+    radius: number;
+    color?: string;
+    intensity?: number;
+  }>;
   fog: Array<{ x: number; y: number; revealed: boolean }>;
   devices?: VttDevice[];
   zones?: Array<{
@@ -314,6 +330,7 @@ const TablePage = () => {
   const [handoutBody, setHandoutBody] = useState('');
   const [handoutFrom, setHandoutFrom] = useState('Rogue');
   const [uploadingBg, setUploadingBg] = useState(false);
+  const [importingUvtt, setImportingUvtt] = useState(false);
   const [safeVision, setSafeVision] = useState(false);
   const [localViewMode, setLocalViewMode] = useState<ViewMode | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
@@ -344,6 +361,7 @@ const TablePage = () => {
   const socketRef = useRef<Socket | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const bgInputRef = useRef<HTMLInputElement | null>(null);
+  const uvttInputRef = useRef<HTMLInputElement | null>(null);
   const chatLogRef = useRef<HTMLDivElement | null>(null);
   const panStart = useRef<{ x: number; y: number; panX: number; panY: number } | null>(
     null,
@@ -1006,6 +1024,51 @@ const TablePage = () => {
     }
   };
 
+  const importUvtt = async (file: File) => {
+    if (!isGm || !file) return;
+    setImportingUvtt(true);
+    try {
+      const content = await file.text();
+      const res = await fetch(apiUrl('/api/vtt/import/uvtt'), {
+        method: 'POST',
+        headers: {
+          ...authHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          campaignId,
+          content,
+          name: file.name.replace(/\.(dd2vtt|df2vtt|uvtt)$/i, ''),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.ok) {
+        throw new Error(json?.message || json?.error || 'uvtt import failed');
+      }
+      intent('map:import-uvtt', {
+        map: json.map,
+        walls: json.walls,
+        lights: json.lights,
+        stats: json.stats,
+        replaceWalls: true,
+        replaceLights: true,
+        resetFog: true,
+      });
+      setScanToast(
+        `UVTT · ${json.map?.width}×${json.map?.height} · ${json.stats?.wallSegments ?? 0} paredes · ${json.stats?.lights ?? 0} luzes`,
+      );
+      window.setTimeout(() => setScanToast(null), 3600);
+      playCyberSound('confirm', { volume: 0.45 });
+    } catch {
+      playCyberSound('deny', { volume: 0.45 });
+      setScanToast('Falha ao importar Universal VTT');
+      window.setTimeout(() => setScanToast(null), 2800);
+    } finally {
+      setImportingUvtt(false);
+      if (uvttInputRef.current) uvttInputRef.current.value = '';
+    }
+  };
+
   const paintFog = (e: React.MouseEvent) => {
     if (!isGm || tool !== 'fog' || layerLocked('fog')) return;
     const c = cellFromEvent(e);
@@ -1517,6 +1580,24 @@ const TablePage = () => {
                     if (f) void uploadBackground(f);
                   }}
                 />
+                <HudButton
+                  variant="ghost"
+                  disabled={importingUvtt}
+                  onClick={() => uvttInputRef.current?.click()}
+                  title="Universal VTT (.dd2vtt / .uvtt / .df2vtt)"
+                >
+                  {importingUvtt ? 'UVTT…' : 'Import UVTT'}
+                </HudButton>
+                <input
+                  ref={uvttInputRef}
+                  type="file"
+                  accept=".dd2vtt,.df2vtt,.uvtt,application/json"
+                  className={styles.hiddenInput}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void importUvtt(f);
+                  }}
+                />
                 {mapBgSrc && (
                   <HudButton
                     variant="ghost"
@@ -1791,9 +1872,49 @@ const TablePage = () => {
                         y1={w.y1 * GRID + GRID / 2}
                         x2={w.x2 * GRID + GRID / 2}
                         y2={w.y2 * GRID + GRID / 2}
-                        className={styles.wall}
+                        className={
+                          w.door
+                            ? w.open
+                              ? styles.wallDoorOpen
+                              : styles.wallDoor
+                            : styles.wall
+                        }
                       />
                     ))}
+                  {(state?.lights || []).map((l) => {
+                    const color = l.color
+                      ? l.color.length === 8
+                        ? `#${l.color.slice(2)}`
+                        : l.color.startsWith('#')
+                          ? l.color
+                          : `#${l.color}`
+                      : '#fed33f';
+                    const r = Math.max(0.5, l.radius) * GRID;
+                    const cx = l.x * GRID + GRID / 2;
+                    const cy = l.y * GRID + GRID / 2;
+                    const opacity = Math.max(
+                      0.12,
+                      Math.min(0.45, (l.intensity ?? 0.7) * 0.4),
+                    );
+                    return (
+                      <g key={l.id} className={styles.lightMark}>
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={r}
+                          fill={color}
+                          opacity={opacity}
+                        />
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={4}
+                          fill={color}
+                          opacity={0.9}
+                        />
+                      </g>
+                    );
+                  })}
                   {ruler && (
                     <line
                       x1={ruler.x1 * GRID + GRID / 2}
