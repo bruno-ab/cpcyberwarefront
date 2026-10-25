@@ -9,6 +9,10 @@ import {
 } from '../../components/vtt/BreachProtocol';
 import { PuzzleCrashGame } from '../../components/minigames/PuzzleCrashGame';
 import { TerminalTypingGame } from '../../components/minigames/TerminalTypingGame';
+import { HotwireCircuitGame } from '../../components/minigames/HotwireCircuitGame';
+import { PacketSnifferGame } from '../../components/minigames/PacketSnifferGame';
+import { SignalTraceGame } from '../../components/minigames/SignalTraceGame';
+import { CrowdDodgeGame } from '../../components/minigames/CrowdDodgeGame';
 import { apiUrl, authHeaders } from '../../lib/api';
 import styles from './breach.module.css';
 
@@ -25,7 +29,14 @@ type Challenge = {
 };
 
 type Difficulties = Record<string, string>;
-type Mode = 'protocol' | 'puzzle' | 'terminal';
+type Mode =
+  | 'protocol'
+  | 'puzzle'
+  | 'terminal'
+  | 'hotwire'
+  | 'sniffer'
+  | 'trace'
+  | 'dodge';
 
 const DIFF_ORDER = ['treino', 'rua', 'corpo', 'arasaka', 'blackwall'];
 
@@ -33,6 +44,10 @@ const MODES: Array<{ id: Mode; label: string }> = [
   { id: 'protocol', label: 'Breach Protocol' },
   { id: 'puzzle', label: 'Puzzle Crash' },
   { id: 'terminal', label: 'Terminal Jack' },
+  { id: 'hotwire', label: 'Hotwire Circuit' },
+  { id: 'sniffer', label: 'Packet Sniffer' },
+  { id: 'trace', label: 'Signal Trace' },
+  { id: 'dodge', label: 'Crowd Dodge' },
 ];
 
 const BreachPage = () => {
@@ -116,9 +131,9 @@ const BreachPage = () => {
       <div className={styles.page}>
         <HudPanel title="Netrunning · Minigames">
           <p className={styles.intro}>
-            Três formas de jackar: Breach Protocol (hex), Puzzle Crash (cores /
-            ⚡) e Terminal Jack (digitação em CRT verde). O Narrador pode
-            tratar vitória/fracasso como acesso, loot ou ICE.
+            Kit de jack: hex protocol, puzzle de cores, terminal CRT, hotwire
+            físico, sniffer de pacotes, trace de sinal e fuga na rua. O Narrador
+            pode tratar vitória/fracasso como acesso, loot ou ICE.
           </p>
 
           <div className={styles.tabs} role="tablist" aria-label="Minigame">
@@ -230,6 +245,10 @@ const BreachPage = () => {
 
           {mode === 'puzzle' && <PuzzleCrashGame />}
           {mode === 'terminal' && <TerminalTypingGame />}
+          {mode === 'hotwire' && <HotwireCircuitGame />}
+          {mode === 'sniffer' && <PacketSnifferGame />}
+          {mode === 'trace' && <SignalTraceGame />}
+          {mode === 'dodge' && <CrowdDodgeGame />}
         </HudPanel>
       </div>
     </PageFrame>

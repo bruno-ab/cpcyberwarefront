@@ -1,0 +1,241 @@
+.wrap {
+  border: 1px solid #ff2bd666;
+  background: linear-gradient(180deg, rgba(40, 0, 30, 0.75), rgba(0, 0, 0, 0.85));
+  padding: 1rem;
+  color: #c3c3c3;
+  overflow: hidden;
+}
+
+.wrap[data-glitch='1'] {
+  animation: crash 0.45s steps(2, end);
+  border-color: #ff4d6d;
+}
+
+@keyframes crash {
+  25% {
+    filter: contrast(1.4) hue-rotate(-20deg);
+    transform: translateX(-3px);
+  }
+  55% {
+    filter: brightness(1.5);
+    transform: translateX(3px);
+  }
+  100% {
+    filter: none;
+    transform: none;
+  }
+}
+
+.head h3 {
+  margin: 0;
+  color: #ff2bd6;
+  font-family: 'Audiowide', sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.head p {
+  margin: 0.4rem 0 0.75rem;
+  font-size: 0.85rem;
+  color: #8b93a7;
+  line-height: 1.4;
+}
+
+.menu {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 320px;
+}
+
+.card {
+  text-align: left;
+  background: #0a0a12;
+  border: 1px solid #ff2bd644;
+  color: inherit;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.card:hover {
+  border-color: #ff2bd6;
+  box-shadow: 0 0 12px #ff2bd644;
+}
+
+.card strong {
+  color: #ff2bd6;
+  font-family: 'Audiowide', sans-serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.card span {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: #8b93a7;
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  color: #2be4ea;
+  margin-bottom: 0.55rem;
+}
+
+.timer {
+  color: #fed33f;
+}
+
+.street {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  width: min(100%, 280px);
+  height: 360px;
+  background: #08060c;
+  border: 1px solid #ff2bd644;
+  overflow: hidden;
+  box-shadow: inset 0 0 30px #ff2bd622;
+}
+
+.scan {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 10px,
+    rgba(255, 43, 214, 0.04) 11px
+  );
+  z-index: 2;
+}
+
+.lane {
+  position: relative;
+  background: linear-gradient(180deg, #121018, #0a080e);
+  border-right: 1px dashed #ff2bd622;
+}
+
+.lane[data-player='1'] {
+  background: linear-gradient(180deg, #1a1020, #100814);
+}
+
+.obs {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  z-index: 1;
+  border: 1px solid;
+}
+
+.obs[data-kind='drone'] {
+  color: #2be4ea;
+  border-color: #2be4ea;
+  box-shadow: 0 0 10px #2be4ea66;
+  border-radius: 50%;
+}
+
+.obs[data-kind='ncpd'] {
+  color: #ff4d6d;
+  border-color: #ff4d6d;
+  box-shadow: 0 0 10px #ff4d6d66;
+}
+
+.obs[data-kind='civ'] {
+  color: #fed33f;
+  border-color: #fed33f88;
+}
+
+.player {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  color: #ff2bd6;
+  font-size: 1.35rem;
+  text-shadow: 0 0 12px #ff2bd6;
+  z-index: 3;
+}
+
+.mobile {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  max-width: 280px;
+}
+
+.mobile button {
+  flex: 1;
+  appearance: none;
+  border: 1px solid #ff2bd666;
+  background: #0a0a12;
+  color: #ff2bd6;
+  font-size: 1.1rem;
+  padding: 0.45rem;
+  cursor: pointer;
+}
+
+.legend {
+  display: flex;
+  gap: 0.85rem;
+  margin: 0.55rem 0 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+}
+
+.legend span[data-kind='drone'] {
+  color: #2be4ea;
+}
+.legend span[data-kind='ncpd'] {
+  color: #ff4d6d;
+}
+.legend span[data-kind='civ'] {
+  color: #fed33f;
+}
+
+.result {
+  margin-top: 0.75rem;
+  padding: 0.65rem;
+  border: 1px solid #555;
+  max-width: 360px;
+}
+
+.result[data-ok='1'] {
+  border-color: #2be4ea;
+  color: #2be4ea;
+}
+.result[data-ok='0'] {
+  border-color: #ff4d6d;
+  color: #ff4d6d;
+}
+
+.start,
+.ghost {
+  appearance: none;
+  font-family: 'Audiowide', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  border: 1px solid #ff2bd6;
+  background: transparent;
+  color: #ff2bd6;
+  margin-top: 0.4rem;
+  margin-right: 0.35rem;
+}
+
+.ghost {
+  border-color: #555;
+  color: #8b93a7;
+}
