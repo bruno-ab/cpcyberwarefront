@@ -7,10 +7,17 @@
   pointer-events: none;
   background: color-mix(in srgb, #000 55%, transparent);
   backdrop-filter: blur(1px);
+  transition: opacity 0.85s ease, background 0.85s ease;
 }
 
 .overlay[data-phase='scramble'] {
   animation: overlayGlitch 0.35s steps(2, end) infinite;
+}
+
+.overlay[data-phase='fadeout'] {
+  opacity: 0;
+  background: transparent;
+  pointer-events: none;
 }
 
 .overlay[data-botch='1'][data-phase='reveal'] {
@@ -26,6 +33,39 @@
   background: rgba(6, 10, 16, 0.92);
   box-shadow: 0 0 24px color-mix(in srgb, var(--cp-cyan, #02d7f2) 25%, transparent);
   clip-path: polygon(0 0, 100% 0, 100% 88%, 94% 100%, 0 100%);
+  pointer-events: auto;
+  transition: opacity 0.85s ease, transform 0.85s ease;
+}
+
+.overlay[data-phase='fadeout'] .panel {
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+}
+
+.close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.4rem;
+  z-index: 3;
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent);
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--cp-cyan, #02d7f2);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.close:hover {
+  border-color: var(--cp-yellow, #fed33f);
+  color: var(--cp-yellow, #fed33f);
 }
 
 .panel::before {
