@@ -126,7 +126,9 @@ const Sheet = () => {
       <p className={styles.backRow}>
         <Link href="/sheet">← Campanha / missões</Link>
       </p>
-      <CHeader characterData={characterData} />
+      <div className={styles.glitchHeader}>
+        <CHeader characterData={characterData} />
+      </div>
 
       <nav className={styles.tabs} aria-label="Seções da ficha">
         {TABS.map((t) => (
@@ -144,8 +146,10 @@ const Sheet = () => {
       <div className={styles.tabBody}>
         {tab === 'resumo' && (
           <>
-            <h3 className={styles.attributesSection}>Vitalidade</h3>
-            <VitalityField characterData={characterData} />
+            <div className={styles.glitchVitality}>
+              <h3 className={styles.attributesSection}>Vitalidade</h3>
+              <VitalityField characterData={characterData} />
+            </div>
             <div className={styles.summaryCards}>
               <div className={styles.summaryCard} data-band="bruise">
                 <span className={styles.cardScan} aria-hidden />
@@ -173,14 +177,20 @@ const Sheet = () => {
               </div>
             </div>
 
-            <h3 className={styles.attributesSection}>Role Ability</h3>
-            <RoleAbilities characterData={characterData} compact />
+            <div className={styles.glitchRole}>
+              <h3 className={styles.attributesSection}>Role Ability</h3>
+              <RoleAbilities characterData={characterData} compact />
+            </div>
 
-            <h3 className={styles.attributesSection}>Atributos</h3>
-            <Attributes characterData={characterData} />
+            <div className={styles.glitchAttrs}>
+              <h3 className={styles.attributesSection}>Atributos</h3>
+              <Attributes characterData={characterData} />
+            </div>
 
-            <h3 className={styles.attributesSection}>Habilidades</h3>
-            <Abilities characterData={characterData} />
+            <div className={styles.glitchSkills}>
+              <h3 className={styles.attributesSection}>Habilidades</h3>
+              <Abilities characterData={characterData} />
+            </div>
 
             <p className={styles.hint}>
               Para comprar e instalar chrome, use o{' '}
@@ -190,28 +200,28 @@ const Sheet = () => {
         )}
 
         {tab === 'atributos' && (
-          <>
+          <div className={styles.glitchAttrs}>
             <h3 className={styles.attributesSection}>Atributos</h3>
             <Attributes characterData={characterData} />
-          </>
+          </div>
         )}
 
         {tab === 'habilidades' && (
-          <>
+          <div className={styles.glitchSkills}>
             <h3 className={styles.attributesSection}>Habilidades</h3>
             <Abilities characterData={characterData} />
-          </>
+          </div>
         )}
 
         {tab === 'role' && (
-          <>
+          <div className={styles.glitchRole}>
             <h3 className={styles.attributesSection}>Habilidades de Role</h3>
             <RoleAbilities characterData={characterData} />
             <p className={styles.hint}>
               Detalhes de patamares e lore: capítulo{' '}
               <Link href="/book">Roles e Role Abilities</Link> no Book.
             </p>
-          </>
+          </div>
         )}
 
         {tab === 'chrome' && (
@@ -226,14 +236,14 @@ const Sheet = () => {
         )}
 
         {tab === 'recursos' && (
-          <>
+          <div className={styles.glitchResources}>
             <h3 className={styles.attributesSection}>Recursos & Antecedentes</h3>
             <CyberPunkResource characterData={characterData} />
-          </>
+          </div>
         )}
 
         {tab === 'inventario' && (
-          <div className={styles.inventory}>
+          <div className={`${styles.inventory} ${styles.glitchInventory}`}>
             <h3 className={styles.attributesSection}>Inventário</h3>
             <div className={styles.inventoryRow} data-band="ok">
               <span className={styles.cardScan} aria-hidden />

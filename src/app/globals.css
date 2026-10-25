@@ -638,8 +638,18 @@ textarea {}
     fill: #ff7d16;
 }
 
-.human-body svg.body-part-selected path {
+.human-body svg.body-part-installed path {
     fill: #fed33f;
+    filter: drop-shadow(0 0 6px rgba(254, 211, 63, 0.55));
+}
+
+.human-body svg.body-part-installed:hover path {
+    fill: #ffe066;
+}
+
+.human-body svg.body-part-selected path {
+    fill: #ffb800;
+    filter: drop-shadow(0 0 10px rgba(255, 184, 0, 0.75));
 }
 
 .human-body svg.body-part-selected:hover path {

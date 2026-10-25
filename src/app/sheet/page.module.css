@@ -391,3 +391,150 @@
   color: #ff4d6d;
   text-shadow: -0.04em 0 #2be4ea, 0.04em 0 #ff4d6d;
 }
+
+/* Section-scoped glitch flavors */
+.glitchVitality {
+  position: relative;
+  animation: sheetSectionScan 5.5s linear infinite;
+}
+
+.glitchVitality::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  background: linear-gradient(
+    180deg,
+    transparent 40%,
+    color-mix(in srgb, var(--cp-cyan) 35%, transparent) 50%,
+    transparent 60%
+  );
+  background-size: 100% 220%;
+  animation: sheetSectionScanMove 3.8s linear infinite;
+  z-index: 0;
+}
+
+.glitchAttrs {
+  position: relative;
+  animation: sheetSoftGlitch 4.2s steps(2, end) infinite;
+}
+
+.glitchSkills {
+  position: relative;
+  animation: sheetMidGlitch 3.4s steps(2, end) infinite;
+  animation-delay: 0.6s;
+}
+
+.glitchRole {
+  position: relative;
+  animation: sheetHardGlitch 2.6s steps(2, end) infinite;
+  animation-delay: 0.2s;
+}
+
+.glitchChrome {
+  position: relative;
+  animation: sheetSoftGlitch 3.1s steps(2, end) infinite;
+}
+
+.glitchChrome::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: -2px;
+  opacity: 0;
+  border: 1px solid color-mix(in srgb, var(--cp-yellow) 50%, transparent);
+  box-shadow:
+    2px 0 0 color-mix(in srgb, var(--cp-cyan) 40%, transparent),
+    -2px 0 0 color-mix(in srgb, var(--cp-magenta, #ff2bd6) 40%, transparent);
+  animation: sheetChromeTear 6.5s steps(3, end) infinite;
+  z-index: 0;
+}
+
+.glitchResources {
+  position: relative;
+  animation: sheetMidGlitch 3.8s steps(2, end) infinite;
+  animation-delay: 1s;
+}
+
+.glitchInventory {
+  position: relative;
+  animation: sheetSoftGlitch 4.8s steps(2, end) infinite;
+  animation-delay: 0.35s;
+}
+
+.glitchHeader {
+  position: relative;
+  animation: sheetHeaderFlicker 7s steps(2, end) infinite;
+}
+
+@keyframes sheetSectionScanMove {
+  from {
+    background-position: 0 -40%;
+  }
+  to {
+    background-position: 0 140%;
+  }
+}
+
+@keyframes sheetSectionScan {
+  0%,
+  92%,
+  100% {
+    filter: none;
+  }
+  94% {
+    filter: brightness(1.08) contrast(1.05);
+  }
+}
+
+@keyframes sheetChromeTear {
+  0%,
+  86%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+  88% {
+    opacity: 0.7;
+    transform: translate(2px, -1px);
+  }
+  91% {
+    opacity: 0.35;
+    transform: translate(-3px, 1px);
+  }
+  94% {
+    opacity: 0.55;
+    transform: translate(1px, 0);
+  }
+}
+
+@keyframes sheetHeaderFlicker {
+  0%,
+  90%,
+  100% {
+    filter: none;
+    text-shadow: none;
+  }
+  92% {
+    filter: hue-rotate(12deg);
+  }
+  94% {
+    filter: contrast(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitchVitality,
+  .glitchVitality::after,
+  .glitchAttrs,
+  .glitchSkills,
+  .glitchRole,
+  .glitchChrome,
+  .glitchChrome::before,
+  .glitchResources,
+  .glitchInventory,
+  .glitchHeader {
+    animation: none !important;
+  }
+}

@@ -8,6 +8,7 @@ import { CyberwareShop } from '../../components/cyberware/CyberwareShop';
 import {
   BodyPart,
   BODY_PART_LABELS,
+  bodyPartsWithInstalledChrome,
 } from '../../data/bodyPartSlots';
 import { apiUrl, authHeaders } from '../../lib/api';
 import charStyles from '../characters/background.module.css';
@@ -139,6 +140,11 @@ const CyberWare = () => {
             <BodyFigure
               selectedPart={selectedPart}
               onSelectPart={handleSelectPart}
+              installedParts={bodyPartsWithInstalledChrome(
+                (characterData.cyberwares || []).map(
+                  (cw: { type?: string }) => cw.type,
+                ),
+              )}
             />
           </div>
           <span className={styles.bodyHint}>

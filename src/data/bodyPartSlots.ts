@@ -58,3 +58,23 @@ export const BODY_PART_SLOTS: Record<BodyPart, CyberWareSlot[]> = {
 
 export const isBodyPart = (value: string): value is BodyPart =>
   (BODY_PARTS as string[]).includes(value);
+
+/** Regiões da silhueta que têm pelo menos um chrome instalado do slot mapeado. */
+export const bodyPartsWithInstalledChrome = (
+  cyberwareTypes: Array<string | undefined | null>,
+): BodyPart[] => {
+  const installed = new Set(
+    cyberwareTypes.filter((t): t is string => Boolean(t)),
+  );
+  return BODY_PARTS.filter((part) =>
+    BODY_PART_SLOTS[part].some((slot) => installed.has(slot)),
+  );
+};
+
+export const cyberwareMatchesBodyPart = (
+  type: string | undefined | null,
+  part: BodyPart,
+): boolean => {
+  if (!type) return false;
+  return BODY_PART_SLOTS[part].includes(type as CyberWareSlot);
+};
