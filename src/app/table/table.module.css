@@ -81,9 +81,39 @@
   max-height: 560px;
 }
 
-.canvas {
-  display: block;
+.mapStage {
+  position: relative;
+  overflow: hidden;
   touch-action: none;
+  cursor: crosshair;
+  background: #050608;
+}
+
+.mapWorld {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.mapBackground {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.gridSvg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .cell {
@@ -92,32 +122,182 @@
   stroke-width: 1;
 }
 
-.fogDark {
-  fill: rgba(0, 0, 0, 0.72);
-  pointer-events: none;
+.cellOverBg {
+  fill: transparent;
+  stroke: rgba(2, 215, 242, 0.18);
+  stroke-width: 1;
 }
 
 .wall {
   stroke: #ff2a6d;
   stroke-width: 3;
+  pointer-events: none;
 }
 
 .ruler {
   stroke: #fcee0a;
   stroke-width: 2;
   stroke-dasharray: 4 3;
+  pointer-events: none;
 }
 
-.tokenLabel {
-  fill: #0a0a0c;
-  font-size: 8px;
-  font-family: var(--font-share-mono), monospace;
+.tokenLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
 }
 
-.tokenTurn {
-  stroke: var(--cp-yellow, #fed33f);
-  stroke-width: 2;
-  filter: drop-shadow(0 0 6px rgba(254, 211, 63, 0.65));
+.token {
+  position: absolute;
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--token-color, #fcee0a);
+  border-radius: 50%;
+  overflow: hidden;
+  background: #12141a;
+  pointer-events: auto;
+  cursor: default;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+}
+
+.token[data-mine='1'] {
+  cursor: grab;
+}
+
+.token[data-mine='1']:active {
+  cursor: grabbing;
+}
+
+.token[data-selected='1'] {
+  box-shadow:
+    0 0 0 2px var(--cp-cyan, #02d7f2),
+    0 0 10px rgba(2, 215, 242, 0.55);
+  z-index: 4;
+}
+
+.token[data-turn='1'] {
+  box-shadow:
+    0 0 0 2px var(--cp-yellow, #fed33f),
+    0 0 12px rgba(254, 211, 63, 0.7);
+  z-index: 5;
+}
+
+.token[data-hidden='1'] {
+  opacity: 0.45;
+  border-style: dashed;
+}
+
+.token img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.tokenInitial {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--token-color, #fcee0a);
+  letter-spacing: 0.04em;
+}
+
+.tokenName {
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.04em;
+  color: #e8eef5;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
+.tokenBar {
+  position: absolute;
+  left: 10%;
+  top: 4px;
+  height: 3px;
+  max-width: 80%;
+  background: #ff2a6d;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.selectionBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.72rem;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.selectionBar strong {
+  color: var(--cp-cyan, #02d7f2);
+  font-weight: 600;
+}
+
+.inlineLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.inlineLabel input {
+  width: 2.4rem;
+  background: #12141a;
+  border: 1px solid var(--cp-border);
+  color: var(--cp-cyan, #02d7f2);
+  padding: 0.2rem 0.25rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.75rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.ctxMenu {
+  position: fixed;
+  z-index: 80;
+  min-width: 10rem;
+  background: #0c0e14;
+  border: 1px solid var(--cp-cyan, #02d7f2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  display: grid;
+  padding: 0.2rem;
+}
+
+.ctxMenu button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  color: var(--cp-text, #e8eef5);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.72rem;
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+}
+
+.ctxMenu button:hover {
+  background: rgba(2, 215, 242, 0.12);
+  color: var(--cp-cyan, #02d7f2);
 }
 
 .hudOverlay {

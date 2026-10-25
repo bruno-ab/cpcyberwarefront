@@ -11,8 +11,10 @@ import {
   DiceGlitchOverlay,
   type DiceReveal,
 } from '../../components/vtt/DiceGlitchOverlay';
+import { FogCanvas } from '../../components/vtt/FogCanvas';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
+import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
 import {
   ATTR_OPTIONS,
   SKILL_OPTIONS,
@@ -32,6 +34,7 @@ type Token = {
   bars?: { hp: number; hpMax: number };
   ownerPlayerId?: number;
   characterId?: number;
+  portraitUrl?: string | null;
 };
 
 type ChatMsg = {
@@ -69,14 +72,22 @@ type RosterChar = {
   name: string;
   role?: string;
   playerId?: number;
+  image?: string | null;
   vitality?: number;
   vitalityMax?: number;
   sheetSummary?: Record<string, any>;
 };
 
 type ToolMode = 'select' | 'fog' | 'wall' | 'pan';
+type FogMode = 'reveal' | 'hide';
 
-const GRID = 28;
+type CtxMenu = {
+  x: number;
+  y: number;
+  tokenId: string;
+};
+
+const GRID = 36;
 const CHAT_MAX = 500;
 const TOKEN_COLORS = [
   '#FCEE0A',
@@ -112,6 +123,8 @@ const TablePage = () => {
   const [skillKey, setSkillKey] = useState<string>('firearms');
   const [roster, setRoster] = useState<RosterChar[]>([]);
   const [selectedCharId, setSelectedCharId] = useState('');
+  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
+  const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -124,6 +137,8 @@ const TablePage = () => {
   const [replay, setReplay] = useState<any[]>([]);
   const [dragging, setDragging] = useState<string | null>(null);
   const [tool, setTool] = useState<ToolMode>('select');
+  const [fogMode, setFogMode] = useState<FogMode>('reveal');
+  const [fogRadius, setFogRadius] = useState(1);
   const [panning, setPanning] = useState(false);
   const [wallDraft, setWallDraft] = useState<{ x: number; y: number } | null>(
     null,
@@ -131,17 +146,20 @@ const TablePage = () => {
   const [gmTab, setGmTab] = useState<'tokens' | 'map' | 'scene'>('tokens');
   const [handoutBody, setHandoutBody] = useState('');
   const [handoutFrom, setHandoutFrom] = useState('Rogue');
+  const [uploadingBg, setUploadingBg] = useState(false);
   const [diceOverlay, setDiceOverlay] = useState<{
     active: boolean;
     reveal: DiceReveal | null;
   }>({ active: false, reveal: null });
 
   const socketRef = useRef<Socket | null>(null);
-  const svgRef = useRef<SVGSVGElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const bgInputRef = useRef<HTMLInputElement | null>(null);
   const chatLogRef = useRef<HTMLDivElement | null>(null);
   const panStart = useRef<{ x: number; y: number; panX: number; panY: number } | null>(
     null,
   );
+  const lastFogCell = useRef<string | null>(null);
 
   const isGm = myRole === 'gm';
   const selectedChar = useMemo(
@@ -187,6 +205,23 @@ const TablePage = () => {
       setMyRole(me.role);
     }
   }, [state?.presence, myPlayerId]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setCtxMenu(null);
+        setSelectedTokenId(null);
+        setRuler(null);
+      }
+    };
+    const onClick = () => setCtxMenu(null);
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('click', onClick);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('click', onClick);
+    };
+  }, []);
 
   useEffect(() => {
     const token =
@@ -272,9 +307,9 @@ const TablePage = () => {
   };
 
   const cellFromEvent = (e: React.MouseEvent) => {
-    const svg = svgRef.current;
-    if (!svg) return { x: 0, y: 0 };
-    const rect = svg.getBoundingClientRect();
+    const stage = stageRef.current;
+    if (!stage) return { x: 0, y: 0 };
+    const rect = stage.getBoundingClientRect();
     const x = (e.clientX - rect.left - pan.x) / (GRID * zoom);
     const y = (e.clientY - rect.top - pan.y) / (GRID * zoom);
     return { x: Math.floor(x), y: Math.floor(y) };
@@ -308,10 +343,7 @@ const TablePage = () => {
     const s = opts?.skill || skillKey;
     const useSheet = Boolean(selectedChar?.sheetSummary);
     const rollPool = useSheet
-      ? Math.max(
-          1,
-          computeSheetPool(selectedChar!.sheetSummary, a, s),
-        )
+      ? Math.max(1, computeSheetPool(selectedChar!.sheetSummary, a, s))
       : Math.max(1, pool);
     if (opts?.attr) setAttrKey(opts.attr);
     if (opts?.skill) setSkillKey(opts.skill);
@@ -335,6 +367,7 @@ const TablePage = () => {
         name: c.name,
         playerId: c.playerId,
         color: TOKEN_COLORS[i % TOKEN_COLORS.length],
+        portraitUrl: characterImageSrc(c),
         bars: {
           hp: Number(c.vitality) || 7,
           hpMax: Number(c.vitalityMax) || 7,
@@ -349,15 +382,62 @@ const TablePage = () => {
     return Number(t.ownerPlayerId) === Number(myPlayerId);
   };
 
-  const fogRevealed = useMemo(() => {
-    const map = new Map<string, boolean>();
-    for (const f of state?.fog || []) {
-      map.set(`${f.x},${f.y}`, !!f.revealed);
-    }
-    return map;
-  }, [state?.fog]);
-
   const fogActive = (state?.fog?.length || 0) > 0;
+
+  const mapBgSrc = useMemo(() => {
+    const url = state?.map?.backgroundUrl;
+    if (!url) return null;
+    return resolveMediaSrc(url) || url;
+  }, [state?.map?.backgroundUrl]);
+
+  const uploadBackground = async (file: File) => {
+    if (!isGm || !file) return;
+    setUploadingBg(true);
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+      const key = `maps/campaign-${campaignId}-${Date.now()}.${
+        file.name.split('.').pop()?.toLowerCase() || 'jpg'
+      }`;
+      const res = await fetch(apiUrl('/api/media/upload'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          key,
+          data: dataUrl,
+          contentType: file.type || 'image/jpeg',
+          credit: `map:${campaignId}`,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.url) throw new Error(json?.error || 'upload failed');
+      intent('map:background', { url: json.url });
+      playCyberSound('confirm', { volume: 0.4 });
+    } catch {
+      playCyberSound('deny', { volume: 0.4 });
+    } finally {
+      setUploadingBg(false);
+      if (bgInputRef.current) bgInputRef.current.value = '';
+    }
+  };
+
+  const paintFog = (e: React.MouseEvent) => {
+    if (!isGm || tool !== 'fog') return;
+    const c = cellFromEvent(e);
+    const key = `${c.x},${c.y}`;
+    if (lastFogCell.current === key) return;
+    lastFogCell.current = key;
+    intent('fog:brush', {
+      x: c.x,
+      y: c.y,
+      radius: fogRadius,
+      mode: e.altKey || fogMode === 'hide' ? 'hide' : 'reveal',
+    });
+  };
 
   const loadReplay = () => {
     socketRef.current?.emit(
@@ -371,6 +451,10 @@ const TablePage = () => {
 
   const mapW = state?.map?.width || 30;
   const mapH = state?.map?.height || 20;
+  const stageW = mapW * GRID;
+  const stageH = mapH * GRID;
+
+  const selectedToken = state?.tokens?.find((t) => t.id === selectedTokenId);
 
   return (
     <PageFrame>
@@ -438,6 +522,33 @@ const TablePage = () => {
                 >
                   Fog brush
                 </HudButton>
+                <label className={styles.inlineLabel}>
+                  Raio
+                  <input
+                    type="number"
+                    min={0}
+                    max={5}
+                    value={fogRadius}
+                    onChange={(e) =>
+                      setFogRadius(
+                        Math.min(5, Math.max(0, Number(e.target.value) || 0)),
+                      )
+                    }
+                    aria-label="Raio do fog"
+                  />
+                </label>
+                <HudButton
+                  variant={fogMode === 'reveal' ? 'primary' : 'ghost'}
+                  onClick={() => setFogMode('reveal')}
+                >
+                  Reveal
+                </HudButton>
+                <HudButton
+                  variant={fogMode === 'hide' ? 'primary' : 'ghost'}
+                  onClick={() => setFogMode('hide')}
+                >
+                  Hide
+                </HudButton>
                 <HudButton
                   variant="ghost"
                   onClick={() => intent('fog:blank', {})}
@@ -456,6 +567,31 @@ const TablePage = () => {
                 >
                   Pan
                 </HudButton>
+                <HudButton
+                  variant="ghost"
+                  disabled={uploadingBg}
+                  onClick={() => bgInputRef.current?.click()}
+                >
+                  {uploadingBg ? 'Upload…' : 'Background'}
+                </HudButton>
+                <input
+                  ref={bgInputRef}
+                  type="file"
+                  accept="image/*"
+                  className={styles.hiddenInput}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void uploadBackground(f);
+                  }}
+                />
+                {mapBgSrc && (
+                  <HudButton
+                    variant="ghost"
+                    onClick={() => intent('map:background', { url: null })}
+                  >
+                    Limpar BG
+                  </HudButton>
+                )}
               </>
             )}
             {isGm && gmTab === 'scene' && (
@@ -540,6 +676,37 @@ const TablePage = () => {
             </div>
           )}
 
+          {selectedToken && (
+            <div className={styles.selectionBar}>
+              Selecionado: <strong>{selectedToken.name}</strong>
+              {selectedToken.hidden ? ' · oculto' : ''}
+              {isGm && (
+                <>
+                  <HudButton
+                    variant="ghost"
+                    onClick={() =>
+                      intent('token:update', {
+                        tokenId: selectedToken.id,
+                        hidden: !selectedToken.hidden,
+                      })
+                    }
+                  >
+                    {selectedToken.hidden ? 'Revelar' : 'Ocultar'}
+                  </HudButton>
+                  <HudButton
+                    variant="ghost"
+                    onClick={() => {
+                      intent('token:remove', { tokenId: selectedToken.id });
+                      setSelectedTokenId(null);
+                    }}
+                  >
+                    Remover
+                  </HudButton>
+                </>
+              )}
+            </div>
+          )}
+
           <div className={styles.canvasWrap} onWheel={onWheel}>
             <DiceGlitchOverlay
               active={diceOverlay.active}
@@ -548,11 +715,14 @@ const TablePage = () => {
                 setDiceOverlay({ active: false, reveal: null })
               }
             />
-            <svg
-              ref={svgRef}
-              className={styles.canvas}
-              width={Math.min(900, mapW * GRID)}
-              height={Math.min(560, mapH * GRID)}
+            <div
+              ref={stageRef}
+              className={styles.mapStage}
+              style={{
+                width: Math.min(900, stageW),
+                height: Math.min(560, stageH),
+              }}
+              onContextMenu={(e) => e.preventDefault()}
               onMouseDown={(e) => {
                 if (e.shiftKey) {
                   const c = cellFromEvent(e);
@@ -570,8 +740,8 @@ const TablePage = () => {
                   return;
                 }
                 if (isGm && tool === 'fog') {
-                  const c = cellFromEvent(e);
-                  intent('fog:reveal', { cells: [c] });
+                  lastFogCell.current = null;
+                  paintFog(e);
                   return;
                 }
                 if (isGm && tool === 'wall') {
@@ -586,6 +756,10 @@ const TablePage = () => {
                     });
                     setWallDraft(null);
                   }
+                  return;
+                }
+                if (e.target === e.currentTarget || (e.target as HTMLElement).dataset?.layer === 'board') {
+                  setSelectedTokenId(null);
                 }
               }}
               onMouseMove={(e) => {
@@ -605,8 +779,7 @@ const TablePage = () => {
                   setRuler({ ...ruler, x2: c.x, y2: c.y });
                 }
                 if (isGm && tool === 'fog' && e.buttons === 1) {
-                  const c = cellFromEvent(e);
-                  intent('fog:reveal', { cells: [c] });
+                  paintFog(e);
                 }
                 if (dragging && e.buttons === 1) {
                   const c = cellFromEvent(e);
@@ -621,110 +794,156 @@ const TablePage = () => {
                 setDragging(null);
                 setPanning(false);
                 panStart.current = null;
+                lastFogCell.current = null;
               }}
               onMouseLeave={() => {
                 setPanning(false);
                 panStart.current = null;
+                lastFogCell.current = null;
               }}
             >
-              <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
-                {Array.from({ length: mapH }).map((_, y) =>
-                  Array.from({ length: mapW }).map((__, x) => (
-                    <rect
-                      key={`${x}-${y}`}
-                      x={x * GRID}
-                      y={y * GRID}
-                      width={GRID}
-                      height={GRID}
-                      className={styles.cell}
-                    />
-                  )),
-                )}
-                {fogActive &&
-                  Array.from({ length: mapH }).map((_, y) =>
-                    Array.from({ length: mapW }).map((__, x) => {
-                      const revealed = fogRevealed.get(`${x},${y}`);
-                      if (revealed) return null;
-                      return (
-                        <rect
-                          key={`fog-${x}-${y}`}
-                          x={x * GRID}
-                          y={y * GRID}
-                          width={GRID}
-                          height={GRID}
-                          className={styles.fogDark}
-                        />
-                      );
-                    }),
-                  )}
-                {(state?.walls || []).map((w) => (
-                  <line
-                    key={w.id}
-                    x1={w.x1 * GRID}
-                    y1={w.y1 * GRID}
-                    x2={w.x2 * GRID}
-                    y2={w.y2 * GRID}
-                    className={styles.wall}
+              <div
+                className={styles.mapWorld}
+                data-layer="board"
+                style={{
+                  width: stageW,
+                  height: stageH,
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                }}
+              >
+                {mapBgSrc && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={mapBgSrc}
+                    alt=""
+                    className={styles.mapBackground}
+                    draggable={false}
                   />
-                ))}
-                {(state?.tokens || []).map((t) => {
-                  const turn =
-                    state?.initiative?.[state.turnIndex || 0]?.tokenId ===
-                    t.id;
-                  return (
-                    <g
-                      key={t.id}
-                      transform={`translate(${t.x * GRID},${t.y * GRID})`}
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        if (!canDragToken(t)) return;
-                        setDragging(t.id);
-                      }}
-                      style={{
-                        cursor: canDragToken(t) ? 'grab' : 'default',
-                      }}
-                    >
-                      <circle
-                        cx={GRID / 2}
-                        cy={GRID / 2}
-                        r={GRID / 2 - 2}
-                        fill={t.color}
-                        opacity={t.hidden ? 0.45 : 1}
-                        className={turn ? styles.tokenTurn : undefined}
+                )}
+                <svg
+                  className={styles.gridSvg}
+                  width={stageW}
+                  height={stageH}
+                  data-layer="board"
+                >
+                  {Array.from({ length: mapH }).map((_, y) =>
+                    Array.from({ length: mapW }).map((__, x) => (
+                      <rect
+                        key={`${x}-${y}`}
+                        x={x * GRID}
+                        y={y * GRID}
+                        width={GRID}
+                        height={GRID}
+                        className={
+                          mapBgSrc ? styles.cellOverBg : styles.cell
+                        }
                       />
-                      <text x={4} y={GRID - 4} className={styles.tokenLabel}>
-                        {t.name.slice(0, 6)}
-                      </text>
-                      {t.bars && (
-                        <rect
-                          x={2}
-                          y={2}
-                          width={
-                            (GRID - 4) *
-                            (t.bars.hp / Math.max(1, t.bars.hpMax))
-                          }
-                          height={3}
-                          fill="#ff2a6d"
-                        />
-                      )}
-                    </g>
-                  );
-                })}
-                {ruler && (
-                  <line
-                    x1={ruler.x1 * GRID + GRID / 2}
-                    y1={ruler.y1 * GRID + GRID / 2}
-                    x2={ruler.x2 * GRID + GRID / 2}
-                    y2={ruler.y2 * GRID + GRID / 2}
-                    className={styles.ruler}
-                  />
-                )}
-              </g>
-            </svg>
+                    )),
+                  )}
+                  {(state?.walls || []).map((w) => (
+                    <line
+                      key={w.id}
+                      x1={w.x1 * GRID + GRID / 2}
+                      y1={w.y1 * GRID + GRID / 2}
+                      x2={w.x2 * GRID + GRID / 2}
+                      y2={w.y2 * GRID + GRID / 2}
+                      className={styles.wall}
+                    />
+                  ))}
+                  {ruler && (
+                    <line
+                      x1={ruler.x1 * GRID + GRID / 2}
+                      y1={ruler.y1 * GRID + GRID / 2}
+                      x2={ruler.x2 * GRID + GRID / 2}
+                      y2={ruler.y2 * GRID + GRID / 2}
+                      className={styles.ruler}
+                    />
+                  )}
+                </svg>
+                <FogCanvas
+                  width={mapW}
+                  height={mapH}
+                  cellSize={GRID}
+                  fog={state?.fog || []}
+                  active={fogActive}
+                  gmView={isGm}
+                />
+                <div className={styles.tokenLayer}>
+                  {(state?.tokens || []).map((t) => {
+                    const turn =
+                      state?.initiative?.[state.turnIndex || 0]?.tokenId ===
+                      t.id;
+                    const selected = selectedTokenId === t.id;
+                    const portrait =
+                      resolveMediaSrc(t.portraitUrl) || t.portraitUrl || null;
+                    const mine = canDragToken(t);
+                    return (
+                      <button
+                        type="button"
+                        key={t.id}
+                        className={styles.token}
+                        data-turn={turn ? '1' : '0'}
+                        data-selected={selected ? '1' : '0'}
+                        data-mine={mine ? '1' : '0'}
+                        data-hidden={t.hidden ? '1' : '0'}
+                        style={{
+                          left: t.x * GRID,
+                          top: t.y * GRID,
+                          width: GRID,
+                          height: GRID,
+                          ['--token-color' as string]: t.color,
+                        }}
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          if (e.button !== 0) return;
+                          setSelectedTokenId(t.id);
+                          setCtxMenu(null);
+                          if (!mine || tool !== 'select') return;
+                          setDragging(t.id);
+                        }}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedTokenId(t.id);
+                          setCtxMenu({
+                            x: e.clientX,
+                            y: e.clientY,
+                            tokenId: t.id,
+                          });
+                        }}
+                        aria-label={t.name}
+                      >
+                        {portrait ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={portrait} alt="" draggable={false} />
+                        ) : (
+                          <span className={styles.tokenInitial}>
+                            {t.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                        <span className={styles.tokenName}>{t.name.slice(0, 8)}</span>
+                        {t.bars && (
+                          <span
+                            className={styles.tokenBar}
+                            style={{
+                              width: `${
+                                (t.bars.hp / Math.max(1, t.bars.hpMax)) * 100
+                              }%`,
+                            }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
             <div className={styles.hudOverlay}>
               zoom {zoom.toFixed(2)} · shift+drag régua · {distance}u
               {tool !== 'select' ? ` · tool:${tool}` : ''}
+              {tool === 'fog' ? ` · fog:${fogMode} r${fogRadius}` : ''}
               {state?.radioStation ? ` · ${state.radioStation}` : ''}
+              {mapBgSrc ? ' · bg' : ''}
             </div>
           </div>
         </HudPanel>
@@ -925,6 +1144,77 @@ const TablePage = () => {
           )}
         </aside>
       </div>
+
+      {ctxMenu && (
+        <div
+          className={styles.ctxMenu}
+          style={{ left: ctxMenu.x, top: ctxMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedTokenId(ctxMenu.tokenId);
+              setCtxMenu(null);
+            }}
+          >
+            Selecionar
+          </button>
+          {isGm && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  const t = state?.tokens?.find(
+                    (x) => x.id === ctxMenu.tokenId,
+                  );
+                  intent('token:update', {
+                    tokenId: ctxMenu.tokenId,
+                    hidden: !t?.hidden,
+                  });
+                  setCtxMenu(null);
+                }}
+              >
+                Toggle oculto
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  intent('token:remove', { tokenId: ctxMenu.tokenId });
+                  setSelectedTokenId(null);
+                  setCtxMenu(null);
+                }}
+              >
+                Remover
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const t = state?.tokens?.find(
+                    (x) => x.id === ctxMenu.tokenId,
+                  );
+                  if (!t) return;
+                  const order = [
+                    {
+                      tokenId: t.id,
+                      name: t.name,
+                      score: 99,
+                    },
+                    ...(state?.initiative || []).filter(
+                      (i) => i.tokenId !== t.id,
+                    ),
+                  ];
+                  intent('initiative:set', { order });
+                  setCtxMenu(null);
+                }}
+              >
+                Destacar turno
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </PageFrame>
   );
 };
