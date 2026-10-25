@@ -1,193 +1,115 @@
 'use client';
 
-import React, { useState } from 'react';
-import styles from './abilities.module.css';
+import React, { useMemo, useState } from 'react';
 import { defaultAttributes } from './defaultSheet';
 import { apiUrl, authHeaders } from '../../lib/api';
-import { StatDots } from '../../components/sheet/StatDots';
+import { StatPanel } from '../../components/sheet/StatPanel';
+
+const toNumberMap = (obj: Record<string, unknown> | undefined) =>
+  Object.entries(obj || {}).reduce<Record<string, number>>((acc, [k, v]) => {
+    acc[k] = Number(v) || 0;
+    return acc;
+  }, {});
 
 const saveDataToApi = (
-  id,
-  data,
-  physicalValues,
-  socialValues,
-  mentalValues,
+  id: string | number,
+  data: Record<string, unknown>,
+  physicalValues: Record<string, number>,
+  socialValues: Record<string, number>,
+  mentalValues: Record<string, number>,
 ) => {
-  data.physical = physicalValues;
-  data.social = socialValues;
-  data.mental = mentalValues;
+  const next = {
+    ...data,
+    physical: physicalValues,
+    social: socialValues,
+    mental: mentalValues,
+  };
 
   fetch(apiUrl(`/api/characters/${id}/sheet`), {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify(data),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Erro ao enviar dados para a API');
-      }
-    })
-    .catch((error) => {
-      console.error('Erro:', error.message);
-    });
+    body: JSON.stringify(next),
+  }).catch((error) => {
+    console.error('Erro:', error.message);
+  });
 };
 
-const Attributes = ({ characterData }) => {
+type Props = {
+  characterData: {
+    id: string | number;
+    sheet?: Record<string, any>;
+    statBonuses?: Record<string, number>;
+  };
+};
+
+const Attributes = ({ characterData }: Props) => {
   const data = characterData.sheet || defaultAttributes;
   const bonuses = characterData.statBonuses || {};
-  const [physicalValues, setPhysicalValues] = useState(
-    Object.entries(data.physical || defaultAttributes.physical).reduce(
-      (acc, [name, value]) => {
-        acc[name] = Number(value) || 0;
-        return acc;
-      },
-      {},
-    ),
+
+  const [physicalValues, setPhysicalValues] = useState(() =>
+    toNumberMap(data.physical || defaultAttributes.physical),
+  );
+  const [socialValues, setSocialValues] = useState(() =>
+    toNumberMap(data.social || defaultAttributes.social),
+  );
+  const [mentalValues, setMentalValues] = useState(() =>
+    toNumberMap(data.mental || defaultAttributes.mental),
   );
 
-  const [socialValues, setSocialValues] = useState(
-    Object.entries(data.social || defaultAttributes.social).reduce(
-      (acc, [name, value]) => {
-        acc[name] = Number(value) || 0;
-        return acc;
+  const columns = useMemo(
+    () => [
+      {
+        id: 'physical',
+        title: 'Physical',
+        keys: Object.keys(data.physical || defaultAttributes.physical),
+        values: physicalValues,
       },
-      {},
-    ),
+      {
+        id: 'social',
+        title: 'Social',
+        keys: Object.keys(data.social || defaultAttributes.social),
+        values: socialValues,
+      },
+      {
+        id: 'mental',
+        title: 'Mental',
+        keys: Object.keys(data.mental || defaultAttributes.mental),
+        values: mentalValues,
+      },
+    ],
+    [data.physical, data.social, data.mental, physicalValues, socialValues, mentalValues],
   );
 
-  const [mentalValues, setMentalValues] = useState(
-    Object.entries(data.mental || defaultAttributes.mental).reduce(
-      (acc, [name, value]) => {
-        acc[name] = Number(value) || 0;
-        return acc;
-      },
-      {},
-    ),
-  );
+  const onDotClick = (columnId: string, key: string, index: number) => {
+    const bump = (
+      current: Record<string, number>,
+      set: (v: Record<string, number>) => void,
+    ) => {
+      const cur = Number(current[key]) || 0;
+      let nextVal = cur;
+      if (index < cur) nextVal -= 1;
+      else nextVal += 1;
+      nextVal = Math.max(0, Math.min(5, nextVal));
+      const next = { ...current, [key]: nextVal };
+      set(next);
+      return next;
+    };
 
-  const handleBolinhaClick = (category, attributeName, currentIndex) => {
-    const current = Number(category[attributeName]) || 0;
-    let next = current;
-    if (currentIndex < current) next -= 1;
-    else next += 1;
-    next = Math.max(0, Math.min(5, next));
-    category[attributeName] = next;
-
-    if (category === physicalValues) {
-      const updated = { ...physicalValues, [attributeName]: next };
-      setPhysicalValues(updated);
-      saveDataToApi(
-        characterData.id,
-        data,
-        updated,
-        socialValues,
-        mentalValues,
-      );
+    if (columnId === 'physical') {
+      const next = bump(physicalValues, setPhysicalValues);
+      saveDataToApi(characterData.id, data, next, socialValues, mentalValues);
       return;
     }
-    if (category === socialValues) {
-      const updated = { ...socialValues, [attributeName]: next };
-      setSocialValues(updated);
-      saveDataToApi(
-        characterData.id,
-        data,
-        physicalValues,
-        updated,
-        mentalValues,
-      );
+    if (columnId === 'social') {
+      const next = bump(socialValues, setSocialValues);
+      saveDataToApi(characterData.id, data, physicalValues, next, mentalValues);
       return;
     }
-    const updated = { ...mentalValues, [attributeName]: next };
-    setMentalValues(updated);
-    saveDataToApi(
-      characterData.id,
-      data,
-      physicalValues,
-      socialValues,
-      updated,
-    );
+    const next = bump(mentalValues, setMentalValues);
+    saveDataToApi(characterData.id, data, physicalValues, socialValues, next);
   };
 
-  const renderRow = (category, name) => (
-    <p key={name}>
-      <StatDots
-        base={Number(category[name]) || 0}
-        bonus={Number(bonuses[name]) || 0}
-        max={5}
-        onBaseClick={(index) => handleBolinhaClick(category, name, index)}
-        label={`${name}: base ${category[name] || 0}${
-          bonuses[name] ? ` + chrome ${bonuses[name]}` : ''
-        }`}
-      />{' '}
-      {name}
-    </p>
-  );
-
-  return (
-    <center>
-      <table className={styles.abilitiestable}>
-        <tbody>
-          <tr>
-            <td valign="top" width="30%">
-              <p
-                style={{
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  color: '#ff1111',
-                }}
-              >
-                Physical
-              </p>
-              {Object.keys(data.physical || defaultAttributes.physical).map(
-                (name) => renderRow(physicalValues, name),
-              )}
-            </td>
-            <td valign="top" width="30%">
-              <p
-                style={{
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  color: '#ff1111',
-                }}
-              >
-                Social
-              </p>
-              {Object.keys(data.social || defaultAttributes.social).map((name) =>
-                renderRow(socialValues, name),
-              )}
-            </td>
-            <td valign="top" width="30%">
-              <p
-                style={{
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  color: '#ff1111',
-                }}
-              >
-                Mental
-              </p>
-              {Object.keys(data.mental || defaultAttributes.mental).map((name) =>
-                renderRow(mentalValues, name),
-              )}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p
-        style={{
-          marginTop: '0.5rem',
-          fontSize: '0.7rem',
-          color: '#02d7f2',
-          fontFamily: 'monospace',
-        }}
-      >
-        Ciano = ficha · Vermelho = chrome instalado
-      </p>
-    </center>
-  );
+  return <StatPanel columns={columns} bonuses={bonuses} onDotClick={onDotClick} />;
 };
 
 export default Attributes;

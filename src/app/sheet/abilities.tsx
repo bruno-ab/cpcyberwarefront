@@ -1,172 +1,134 @@
 'use client';
 
-import React, { useState } from 'react';
-import styles from './abilities.module.css';
+import React, { useMemo, useState } from 'react';
 import { defaultAbilities } from './defaultSheet';
 import { apiUrl, authHeaders } from '../../lib/api';
-import { StatDots } from '../../components/sheet/StatDots';
+import { StatPanel } from '../../components/sheet/StatPanel';
 
-const saveDataToApi = (id, data, talentValues, skillValues, knowledgeValues) => {
-  data.talents = talentValues;
-  data.skills = skillValues;
-  data.knowledges = knowledgeValues;
+const toNumberMap = (obj: Record<string, unknown> | undefined) =>
+  Object.entries(obj || {}).reduce<Record<string, number>>((acc, [k, v]) => {
+    acc[k] = Number(v) || 0;
+    return acc;
+  }, {});
+
+const saveDataToApi = (
+  id: string | number,
+  data: Record<string, unknown>,
+  talentValues: Record<string, number>,
+  skillValues: Record<string, number>,
+  knowledgeValues: Record<string, number>,
+) => {
+  const next = {
+    ...data,
+    talents: talentValues,
+    skills: skillValues,
+    knowledges: knowledgeValues,
+  };
 
   fetch(apiUrl(`/api/characters/${id}/sheet`), {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify(data),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Erro ao enviar dados para a API');
-      }
-    })
-    .catch((error) => {
-      console.error('Erro:', error.message);
-    });
+    body: JSON.stringify(next),
+  }).catch((error) => {
+    console.error('Erro:', error.message);
+  });
 };
 
-const Abilities = ({ characterData }) => {
+type Props = {
+  characterData: {
+    id: string | number;
+    sheet?: Record<string, any>;
+    statBonuses?: Record<string, number>;
+  };
+};
+
+const Abilities = ({ characterData }: Props) => {
   const data = characterData.sheet || defaultAbilities;
   const bonuses = characterData.statBonuses || {};
-  const [talentValues, setTalentValues] = useState(
-    Object.entries(data.talents || {}).reduce((acc, [name, value]) => {
-      acc[name] = Number(value) || 0;
-      return acc;
-    }, {}),
+
+  const [talentValues, setTalentValues] = useState(() =>
+    toNumberMap(data.talents || defaultAbilities.talents),
+  );
+  const [skillValues, setSkillValues] = useState(() =>
+    toNumberMap(data.skills || defaultAbilities.skills),
+  );
+  const [knowledgeValues, setKnowledgeValues] = useState(() =>
+    toNumberMap(data.knowledges || defaultAbilities.knowledges),
   );
 
-  const [skillValues, setSkillValues] = useState(
-    Object.entries(data.skills || {}).reduce((acc, [name, value]) => {
-      acc[name] = Number(value) || 0;
-      return acc;
-    }, {}),
+  const columns = useMemo(
+    () => [
+      {
+        id: 'talents',
+        title: 'Talents',
+        keys: Object.keys(data.talents || defaultAbilities.talents),
+        values: talentValues,
+      },
+      {
+        id: 'skills',
+        title: 'Skills',
+        keys: Object.keys(data.skills || defaultAbilities.skills),
+        values: skillValues,
+      },
+      {
+        id: 'knowledges',
+        title: 'Knowledges',
+        keys: Object.keys(data.knowledges || defaultAbilities.knowledges),
+        values: knowledgeValues,
+      },
+    ],
+    [
+      data.talents,
+      data.skills,
+      data.knowledges,
+      talentValues,
+      skillValues,
+      knowledgeValues,
+    ],
   );
 
-  const [knowledgeValues, setKnowledgeValues] = useState(
-    Object.entries(data.knowledges || {}).reduce((acc, [name, value]) => {
-      acc[name] = Number(value) || 0;
-      return acc;
-    }, {}),
-  );
+  const onDotClick = (columnId: string, key: string, index: number) => {
+    const bump = (
+      current: Record<string, number>,
+      set: (v: Record<string, number>) => void,
+    ) => {
+      const cur = Number(current[key]) || 0;
+      let nextVal = cur;
+      if (index < cur) nextVal -= 1;
+      else nextVal += 1;
+      nextVal = Math.max(0, Math.min(5, nextVal));
+      const next = { ...current, [key]: nextVal };
+      set(next);
+      return next;
+    };
 
-  const handleBolinhaClick = (category, attributeName, currentIndex) => {
-    const current = Number(category[attributeName]) || 0;
-    let next = current;
-    if (currentIndex < current) next -= 1;
-    else next += 1;
-    next = Math.max(0, Math.min(5, next));
-    category[attributeName] = next;
-
-    if (category === talentValues) {
-      const updated = { ...talentValues, [attributeName]: next };
-      setTalentValues(updated);
+    if (columnId === 'talents') {
+      const next = bump(talentValues, setTalentValues);
       saveDataToApi(
         characterData.id,
         data,
-        updated,
+        next,
         skillValues,
         knowledgeValues,
       );
       return;
     }
-    if (category === skillValues) {
-      const updated = { ...skillValues, [attributeName]: next };
-      setSkillValues(updated);
+    if (columnId === 'skills') {
+      const next = bump(skillValues, setSkillValues);
       saveDataToApi(
         characterData.id,
         data,
         talentValues,
-        updated,
+        next,
         knowledgeValues,
       );
       return;
     }
-    const updated = { ...knowledgeValues, [attributeName]: next };
-    setKnowledgeValues(updated);
-    saveDataToApi(characterData.id, data, talentValues, skillValues, updated);
+    const next = bump(knowledgeValues, setKnowledgeValues);
+    saveDataToApi(characterData.id, data, talentValues, skillValues, next);
   };
 
-  const renderRow = (category, name) => (
-    <p key={name}>
-      <StatDots
-        base={Number(category[name]) || 0}
-        bonus={Number(bonuses[name]) || 0}
-        max={5}
-        onBaseClick={(index) => handleBolinhaClick(category, name, index)}
-        label={`${name}: base ${category[name] || 0}${
-          bonuses[name] ? ` + chrome ${bonuses[name]}` : ''
-        }`}
-      />{' '}
-      {name}
-    </p>
-  );
-
-  return (
-    <center>
-      <table className={styles.abilitiestable}>
-        <tbody>
-          <tr>
-            <td valign="top" width="30%">
-              <p
-                style={{
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  color: '#ff1111',
-                }}
-              >
-                Talents
-              </p>
-              {Object.keys(data.talents || defaultAbilities.talents).map(
-                (name) => renderRow(talentValues, name),
-              )}
-            </td>
-            <td valign="top" width="30%">
-              <p
-                style={{
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  color: '#ff1111',
-                }}
-              >
-                Skills
-              </p>
-              {Object.keys(data.skills || defaultAbilities.skills).map((name) =>
-                renderRow(skillValues, name),
-              )}
-            </td>
-            <td valign="top" width="30%">
-              <p
-                style={{
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  color: '#ff1111',
-                }}
-              >
-                Knowledges
-              </p>
-              {Object.keys(data.knowledges || defaultAbilities.knowledges).map(
-                (name) => renderRow(knowledgeValues, name),
-              )}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p
-        style={{
-          marginTop: '0.5rem',
-          fontSize: '0.7rem',
-          color: '#02d7f2',
-          fontFamily: 'monospace',
-        }}
-      >
-        Ciano = ficha · Vermelho = chrome instalado
-      </p>
-    </center>
-  );
+  return <StatPanel columns={columns} bonuses={bonuses} onDotClick={onDotClick} />;
 };
 
 export default Abilities;
