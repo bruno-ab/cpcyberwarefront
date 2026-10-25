@@ -14,6 +14,7 @@ import RoleAbilities from './RoleAbilities';
 import SheetAmbientGlitches from './SheetAmbientGlitches';
 import SheetPhone from './SheetPhone';
 import SheetRoster from './SheetRoster';
+import { CyberpsychosisMeter } from '../../components/sheet/CyberpsychosisMeter';
 import styles from './page.module.css';
 import { apiUrl, authHeaders } from '../../lib/api';
 
@@ -176,6 +177,11 @@ const Sheet = () => {
                 </strong>
               </div>
             </div>
+
+            <CyberpsychosisMeter
+              capacity={characterData.cyberwareCapacity}
+              installedCount={characterData.cyberwares?.length || 0}
+            />
 
             <div className={styles.glitchRole}>
               <h3 className={styles.attributesSection}>Role Ability</h3>
