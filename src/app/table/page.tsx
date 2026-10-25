@@ -40,7 +40,14 @@ import {
   type NetMenuPayload,
 } from '../../components/vtt/QuickhackMenu';
 import { DroneHud } from '../../components/vtt/DroneHud';
+import { AimOverlay } from '../../components/vtt/AimOverlay';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
+import {
+  buildAimPreview,
+  chebyshev,
+  rangeBandLabel,
+  type AimPreview,
+} from '../../lib/vttAim';
 import { useCampaign } from '../../lib/campaign';
 import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
 import {
@@ -331,6 +338,8 @@ const TablePage = () => {
   const [handoutFrom, setHandoutFrom] = useState('Rogue');
   const [uploadingBg, setUploadingBg] = useState(false);
   const [importingUvtt, setImportingUvtt] = useState(false);
+  const [aimMode, setAimMode] = useState(false);
+  const [aimHoverId, setAimHoverId] = useState<string | null>(null);
   const [safeVision, setSafeVision] = useState(false);
   const [localViewMode, setLocalViewMode] = useState<ViewMode | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
@@ -601,6 +610,8 @@ const TablePage = () => {
         setCtxMenu(null);
         setSelectedTokenId(null);
         setRuler(null);
+        setAimMode(false);
+        setAimHoverId(null);
       }
     };
     const onClick = () => setCtxMenu(null);
@@ -886,13 +897,7 @@ const TablePage = () => {
 
   const distance = useMemo(() => {
     if (!ruler) return 0;
-    const dx = Math.abs(ruler.x2 - ruler.x1);
-    const dy = Math.abs(ruler.y2 - ruler.y1);
-    const diag = Math.min(dx, dy);
-    const straight = Math.abs(dx - dy);
-    let cost = straight;
-    for (let i = 0; i < diag; i++) cost += i % 2 === 0 ? 1 : 2;
-    return cost;
+    return chebyshev(ruler.x1, ruler.y1, ruler.x2, ruler.y2);
   }, [ruler]);
 
   const sendChat = () => {
@@ -1281,15 +1286,75 @@ const TablePage = () => {
     .map((t) => t.id);
 
   const myHumanity = selectedToken?.bars?.humanity;
+  const attackerToken = useMemo(() => {
+    const tid =
+      state?.turnEconomy?.tokenId ||
+      (selectedTokenId && myTokenIds.includes(selectedTokenId)
+        ? selectedTokenId
+        : null) ||
+      myTokenIds[0] ||
+      null;
+    return (state?.tokens || []).find((t) => t.id === tid) || null;
+  }, [state?.turnEconomy?.tokenId, state?.tokens, selectedTokenId, myTokenIds]);
+
+  const aimTargetId =
+    aimHoverId ||
+    (selectedTokenId &&
+    attackerToken &&
+    selectedTokenId !== attackerToken.id
+      ? selectedTokenId
+      : null);
+  const aimTarget = useMemo(
+    () =>
+      (state?.tokens || []).find((t) => t.id === aimTargetId) || null,
+    [state?.tokens, aimTargetId],
+  );
+
+  const aimPreview: AimPreview | null = useMemo(() => {
+    if (!aimMode || !attackerToken || !aimTarget) return null;
+    return buildAimPreview(
+      state?.walls || [],
+      attackerToken.x,
+      attackerToken.y,
+      aimTarget.x,
+      aimTarget.y,
+    );
+  }, [aimMode, attackerToken, aimTarget, state?.walls]);
+
+  const fireAttack = useCallback(() => {
+    if (!attackerToken) return;
+    const targetId = aimTarget?.id || selectedTokenId;
+    if (!targetId || targetId === attackerToken.id) return;
+    if (aimPreview && !aimPreview.canShoot) {
+      setScanToast('Fora de alcance');
+      window.setTimeout(() => setScanToast(null), 2200);
+      playCyberSound('deny', { volume: 0.4 });
+      return;
+    }
+    intent('attack:macro', {
+      attackerTokenId: attackerToken.id,
+      targetTokenId: targetId,
+      skill: 'firearms',
+      label: 'Firearms',
+    });
+    playCyberSound('ui', { volume: 0.35 });
+    setAimMode(false);
+    setAimHoverId(null);
+  }, [
+    attackerToken,
+    aimTarget,
+    selectedTokenId,
+    aimPreview,
+    intent,
+  ]);
+
   const rangeLabel = !ruler
     ? ''
-    : distance <= 3
-      ? 'curto'
-      : distance <= 8
-        ? 'médio (−1)'
-        : distance <= 15
-          ? 'longo (−2)'
-          : 'fora';
+    : (() => {
+        const rb = buildAimPreview([], ruler!.x1, ruler!.y1, ruler!.x2, ruler!.y2)
+          .range;
+        return rangeBandLabel(rb.band, rb.penalty);
+      })();
 
   return (
     <PageFrame>
@@ -1297,6 +1362,7 @@ const TablePage = () => {
         className={styles.layout}
         data-view={viewMode}
         data-sandy={sandyFx ? '1' : '0'}
+        data-aim={aimMode ? '1' : '0'}
         data-humanity={
           myHumanity == null
             ? undefined
@@ -1433,18 +1499,21 @@ const TablePage = () => {
             onHold={() => intent('initiative:hold', {})}
             onEnd={() => intent('combat:end', {})}
             onAction={(kind) => intent('turn:action', { kind })}
+            aimMode={aimMode}
+            aimSummary={aimPreview?.summary || null}
+            aimReady={!!aimPreview?.canShoot}
+            onToggleAim={() => {
+              setAimMode((v) => !v);
+              setAimHoverId(null);
+              playCyberSound('ui', { volume: 0.25 });
+            }}
             onAttack={() => {
-              const attackerId =
-                state?.turnEconomy?.tokenId ||
-                myTokenIds[0] ||
-                selectedTokenId;
-              if (!attackerId || !selectedTokenId) return;
-              intent('attack:macro', {
-                attackerTokenId: attackerId,
-                targetTokenId: selectedTokenId,
-                skill: 'firearms',
-                label: 'Firearms',
-              });
+              if (!aimMode) {
+                setAimMode(true);
+                playCyberSound('ui', { volume: 0.25 });
+                return;
+              }
+              fireAttack();
             }}
             onSandy={() => {
               const tid =
@@ -1924,6 +1993,15 @@ const TablePage = () => {
                       className={styles.ruler}
                     />
                   )}
+                  {aimMode && attackerToken && (
+                    <AimOverlay
+                      grid={GRID}
+                      attacker={attackerToken}
+                      target={aimTarget}
+                      preview={aimPreview}
+                      showRings
+                    />
+                  )}
                 </svg>
                 <FogCanvas
                   width={mapW}
@@ -2065,11 +2143,31 @@ const TablePage = () => {
                           height: GRID,
                           ['--token-color' as string]: t.color,
                         }}
+                        onMouseEnter={() => {
+                          if (aimMode) setAimHoverId(t.id);
+                        }}
+                        onMouseLeave={() => {
+                          if (aimMode && aimHoverId === t.id) {
+                            setAimHoverId(null);
+                          }
+                        }}
                         onMouseDown={(e) => {
                           e.stopPropagation();
                           if (e.button !== 0) return;
                           setSelectedTokenId(t.id);
                           setCtxMenu(null);
+                          if (aimMode) {
+                            if (
+                              attackerToken &&
+                              t.id !== attackerToken.id
+                            ) {
+                              setAimHoverId(t.id);
+                              if (e.detail >= 2) {
+                                window.setTimeout(() => fireAttack(), 0);
+                              }
+                            }
+                            return;
+                          }
                           if (
                             viewMode === 'net' &&
                             t.kind === 'drone' &&
@@ -2172,6 +2270,9 @@ const TablePage = () => {
               {tool === 'fog' ? ` · fog:${fogMode} r${fogRadius}` : ''}
               {state?.radioStation ? ` · ${state.radioStation}` : ''}
               {mapBgSrc ? ' · bg' : ''}
+              {aimMode
+                ? ` · MIRA${aimPreview ? ` · ${aimPreview.summary}` : ''}`
+                : ''}
             </div>
           </div>
         </HudPanel>

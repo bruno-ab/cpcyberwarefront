@@ -167,6 +167,14 @@
   pointer-events: none;
 }
 
+.layout[data-aim='1'] .tokenLayer .token {
+  cursor: crosshair;
+}
+
+.layout[data-aim='1'] .token[data-selected='1'] {
+  box-shadow: 0 0 0 2px var(--cp-magenta, #ff2a6d);
+}
+
 .token {
   position: absolute;
   appearance: none;

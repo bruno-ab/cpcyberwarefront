@@ -33,6 +33,10 @@ type CombatHudProps = {
   onHold: () => void;
   onEnd: () => void;
   onAction: (kind: 'main' | 'move' | 'reaction' | 'extra') => void;
+  aimMode?: boolean;
+  aimSummary?: string | null;
+  aimReady?: boolean;
+  onToggleAim: () => void;
   onAttack: () => void;
   onSandy: () => void;
 };
@@ -52,6 +56,10 @@ export const CombatHud = ({
   onHold,
   onEnd,
   onAction,
+  aimMode,
+  aimSummary,
+  aimReady,
+  onToggleAim,
   onAttack,
   onSandy,
 }: CombatHudProps) => {
@@ -135,7 +143,22 @@ export const CombatHud = ({
               >
                 Extra ({turnEconomy.extraActions})
               </HudButton>
-              <HudButton onClick={onAttack}>Atacar alvo</HudButton>
+              <HudButton
+                variant={aimMode ? 'primary' : 'ghost'}
+                onClick={onToggleAim}
+              >
+                {aimMode ? 'Cancelar mira' : 'Mirar'}
+              </HudButton>
+              <HudButton
+                onClick={onAttack}
+                disabled={aimMode ? !aimReady : false}
+                title={aimSummary || 'Atacar token selecionado'}
+              >
+                {aimMode ? 'Confirmar tiro' : 'Atacar alvo'}
+              </HudButton>
+              {aimMode && aimSummary && (
+                <span className={styles.aimHint}>{aimSummary}</span>
+              )}
               <HudButton variant="ghost" onClick={onSandy}>
                 Sandevistan
               </HudButton>
