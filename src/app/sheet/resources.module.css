@@ -105,6 +105,17 @@
   text-transform: lowercase;
 }
 
+.numberField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.numberField .input {
+  max-width: 7rem;
+}
+
 .addBlock {
   display: flex;
   flex-direction: column;

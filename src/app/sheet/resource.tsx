@@ -234,14 +234,74 @@ const Resources = ({ characterData }: ResourcesProps) => {
 
         <section className={styles.col}>
           <h4 className={styles.colTitle}>Resources</h4>
-          {Object.entries(otherTraitsValues).map(([name]) => (
-            <div key={name} className={styles.row}>
-              <span className={styles.dots}>
-                {renderDots('other', name, otherTraitsValues)}
-              </span>
-              <span className={styles.label}>{labelOf(name)}</span>
-            </div>
-          ))}
+          {Object.entries(otherTraitsValues)
+            .filter(([name]) => name !== 'edges' && name !== 'implant_capacity')
+            .map(([name]) => (
+              <div key={name} className={styles.row}>
+                <span className={styles.dots}>
+                  {renderDots('other', name, otherTraitsValues)}
+                </span>
+                <span className={styles.label}>{labelOf(name)}</span>
+              </div>
+            ))}
+          <div className={styles.row}>
+            <label className={styles.numberField}>
+              <span className={styles.label}>Edges (E)</span>
+              <input
+                type="number"
+                min={0}
+                className={styles.input}
+                value={otherTraitsValues.edges ?? 0}
+                onChange={(e) => {
+                  const next = {
+                    ...otherTraitsValues,
+                    edges: Math.max(0, Number(e.target.value) || 0),
+                  };
+                  setOtherTraitsValues(next);
+                }}
+                onBlur={(e) => {
+                  const next = {
+                    ...otherTraitsValues,
+                    edges: Math.max(0, Number(e.target.value) || 0),
+                  };
+                  setOtherTraitsValues(next);
+                  persist({ other: next });
+                }}
+              />
+            </label>
+          </div>
+          <div className={styles.row}>
+            <label className={styles.numberField}>
+              <span className={styles.label}>Implant capacity</span>
+              <input
+                type="number"
+                min={0}
+                className={styles.input}
+                value={otherTraitsValues.implant_capacity ?? 10}
+                onChange={(e) => {
+                  const next = {
+                    ...otherTraitsValues,
+                    implant_capacity: Math.max(
+                      0,
+                      Number(e.target.value) || 0,
+                    ),
+                  };
+                  setOtherTraitsValues(next);
+                }}
+                onBlur={(e) => {
+                  const next = {
+                    ...otherTraitsValues,
+                    implant_capacity: Math.max(
+                      0,
+                      Number(e.target.value) || 0,
+                    ),
+                  };
+                  setOtherTraitsValues(next);
+                  persist({ other: next });
+                }}
+              />
+            </label>
+          </div>
         </section>
 
         <section className={styles.col}>
