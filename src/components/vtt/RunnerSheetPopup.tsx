@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { HudButton } from '../ui/HudButton';
 import { formatStatOption, sheetStatValue } from '../../lib/sheetPool';
 import { characterImageSrc } from '../../lib/media';
 import { ROLE_RULES } from '../../data/roleRules';
+import { defaultAbilities } from '../../app/sheet/defaultSheet';
 import type { RunnerChar } from './RunnerPanel';
 import styles from './runnerSheetPopup.module.css';
+
+type PopupTab = 'atributos' | 'habilidades';
 
 type RunnerSheetPopupProps = {
   character: RunnerChar;
@@ -36,12 +40,12 @@ const STAT_GROUPS: Array<{
 ];
 
 const ABILITY_GROUPS: Array<{
-  id: string;
+  id: keyof typeof defaultAbilities;
   title: string;
 }> = [
-  { id: 'talents', title: 'Talents' },
-  { id: 'skills', title: 'Skills' },
-  { id: 'knowledges', title: 'Knowledges' },
+  { id: 'talents', title: 'Talentos' },
+  { id: 'skills', title: 'Perícias' },
+  { id: 'knowledges', title: 'Conhecimentos' },
 ];
 
 const findRoleRule = (role?: string) => {
@@ -62,11 +66,28 @@ const entriesOf = (block: Record<string, any> | undefined) =>
     .filter((r) => r.value > 0)
     .sort((a, b) => b.value - a.value);
 
+const abilityRows = (
+  id: keyof typeof defaultAbilities,
+  block: Record<string, any> | undefined,
+) => {
+  const defaults = defaultAbilities[id] as Record<string, number>;
+  const keys = Array.from(
+    new Set([...Object.keys(defaults), ...Object.keys(block || {})]),
+  );
+  return keys
+    .map((key) => ({
+      key,
+      value: Number(block?.[key] ?? defaults[key]) || 0,
+    }))
+    .sort((a, b) => b.value - a.value || a.key.localeCompare(b.key));
+};
+
 export const RunnerSheetPopup = ({
   character,
   onClose,
   onRoll,
 }: RunnerSheetPopupProps) => {
+  const [tab, setTab] = useState<PopupTab>('atributos');
   const sheet = character.sheetSummary || {};
   const ot = sheet.other_traits || {};
   const header = sheet.header || {};
@@ -107,114 +128,139 @@ export const RunnerSheetPopup = ({
           </HudButton>
         </header>
 
-        <div className={styles.grid}>
-          {STAT_GROUPS.map((g) => (
-            <section key={g.id} className={styles.block}>
-              <h3>{g.title}</h3>
-              <ul>
-                {g.keys.map((key) => {
-                  const value = sheetStatValue(sheet, key);
-                  return (
-                    <li key={key}>
-                      <button
-                        type="button"
-                        disabled={value <= 0}
-                        onClick={() =>
-                          onRoll({
-                            attr: key,
-                            skill: 'alertness',
-                            label: formatStatOption(key),
-                          })
-                        }
-                      >
-                        <span>{formatStatOption(key)}</span>
-                        <b>{value}</b>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ))}
+        <nav className={styles.tabs} aria-label="Seções da ficha">
+          <button
+            type="button"
+            className={tab === 'atributos' ? styles.tabActive : undefined}
+            aria-selected={tab === 'atributos'}
+            onClick={() => setTab('atributos')}
+          >
+            Atributos
+          </button>
+          <button
+            type="button"
+            className={tab === 'habilidades' ? styles.tabActive : undefined}
+            aria-selected={tab === 'habilidades'}
+            onClick={() => setTab('habilidades')}
+          >
+            Habilidades
+          </button>
+        </nav>
 
-          {ABILITY_GROUPS.map((g) => {
-            const rows = entriesOf(sheet[g.id]);
-            if (!rows.length) return null;
-            return (
+        {tab === 'atributos' && (
+          <div className={styles.grid}>
+            {STAT_GROUPS.map((g) => (
               <section key={g.id} className={styles.block}>
                 <h3>{g.title}</h3>
                 <ul>
-                  {rows.map((r) => (
+                  {g.keys.map((key) => {
+                    const value = sheetStatValue(sheet, key);
+                    return (
+                      <li key={key}>
+                        <button
+                          type="button"
+                          disabled={value <= 0}
+                          onClick={() =>
+                            onRoll({
+                              attr: key,
+                              skill: 'alertness',
+                              label: formatStatOption(key),
+                            })
+                          }
+                        >
+                          <span>{formatStatOption(key)}</span>
+                          <b>{value}</b>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
+
+            {roleRule && (
+              <section className={styles.blockWide}>
+                <h3>Role · {roleRule.roleAbility.name}</h3>
+                <p>{roleRule.roleAbility.effect}</p>
+              </section>
+            )}
+
+            {Array.isArray(sheet.chrome) && sheet.chrome.length > 0 && (
+              <section className={styles.blockWide}>
+                <h3>Chrome</h3>
+                <p className={styles.flat}>{sheet.chrome.join(' · ')}</p>
+              </section>
+            )}
+
+            {Array.isArray(sheet.weapons) && sheet.weapons.length > 0 && (
+              <section className={styles.blockWide}>
+                <h3>Armas</h3>
+                <p className={styles.flat}>{sheet.weapons.join(' · ')}</p>
+              </section>
+            )}
+          </div>
+        )}
+
+        {tab === 'habilidades' && (
+          <div className={styles.grid}>
+            {ABILITY_GROUPS.map((g) => {
+              const rows = abilityRows(g.id, sheet[g.id]);
+              return (
+                <section key={g.id} className={styles.block}>
+                  <h3>{g.title}</h3>
+                  <ul>
+                    {rows.map((r) => (
+                      <li key={r.key}>
+                        <button
+                          type="button"
+                          disabled={r.value <= 0}
+                          onClick={() =>
+                            onRoll({
+                              attr: 'dexterity',
+                              skill: r.key,
+                              label: formatStatOption(r.key),
+                            })
+                          }
+                        >
+                          <span>{formatStatOption(r.key)}</span>
+                          <b>{r.value}</b>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              );
+            })}
+
+            {sheet.virtues && Object.keys(sheet.virtues).length > 0 && (
+              <section className={styles.block}>
+                <h3>Virtudes</h3>
+                <ul>
+                  {entriesOf(sheet.virtues).map((r) => (
                     <li key={r.key}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onRoll({
-                            attr: 'dexterity',
-                            skill: r.key,
-                            label: formatStatOption(r.key),
-                          })
-                        }
-                      >
-                        <span>{formatStatOption(r.key)}</span>
-                        <b>{r.value}</b>
-                      </button>
+                      <span>{formatStatOption(r.key)}</span>
+                      <b>{r.value}</b>
                     </li>
                   ))}
                 </ul>
               </section>
-            );
-          })}
+            )}
 
-          {roleRule && (
-            <section className={styles.blockWide}>
-              <h3>Role · {roleRule.roleAbility.name}</h3>
-              <p>{roleRule.roleAbility.effect}</p>
-            </section>
-          )}
-
-          {Array.isArray(sheet.chrome) && sheet.chrome.length > 0 && (
-            <section className={styles.blockWide}>
-              <h3>Chrome</h3>
-              <p className={styles.flat}>{sheet.chrome.join(' · ')}</p>
-            </section>
-          )}
-
-          {Array.isArray(sheet.weapons) && sheet.weapons.length > 0 && (
-            <section className={styles.blockWide}>
-              <h3>Armas</h3>
-              <p className={styles.flat}>{sheet.weapons.join(' · ')}</p>
-            </section>
-          )}
-
-          {sheet.virtues && Object.keys(sheet.virtues).length > 0 && (
-            <section className={styles.block}>
-              <h3>Virtues</h3>
-              <ul>
-                {entriesOf(sheet.virtues).map((r) => (
-                  <li key={r.key}>
-                    <span>{formatStatOption(r.key)}</span>
-                    <b>{r.value}</b>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {sheet.backgrounds && Object.keys(sheet.backgrounds).length > 0 && (
-            <section className={styles.block}>
-              <h3>Backgrounds</h3>
-              <ul>
-                {entriesOf(sheet.backgrounds).map((r) => (
-                  <li key={r.key}>
-                    <span>{formatStatOption(r.key)}</span>
-                    <b>{r.value}</b>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
+            {sheet.backgrounds && Object.keys(sheet.backgrounds).length > 0 && (
+              <section className={styles.block}>
+                <h3>Antecedentes</h3>
+                <ul>
+                  {entriesOf(sheet.backgrounds).map((r) => (
+                    <li key={r.key}>
+                      <span>{formatStatOption(r.key)}</span>
+                      <b>{r.value}</b>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

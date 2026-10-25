@@ -65,6 +65,35 @@
   color: var(--cp-text-dim, #8a9aa8);
 }
 
+.tabs {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.tabs button {
+  flex: 1;
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cp-border, #333);
+  color: var(--cp-text-dim, #8a9aa8);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+}
+
+.tabs button:hover {
+  color: var(--cp-cyan, #02d7f2);
+  border-color: color-mix(in srgb, var(--cp-cyan, #02d7f2) 35%, transparent);
+}
+
+.tabActive {
+  color: var(--cp-cyan, #02d7f2) !important;
+  border-color: color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent) !important;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
