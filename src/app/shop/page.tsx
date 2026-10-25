@@ -11,6 +11,7 @@ import {
   itemEddiePrice,
   streetCredPrice,
 } from '../../lib/shopPricing';
+import styles from './shop.module.css';
 
 type Gear = { id: string; name: string; price: number; rarity?: string; category?: string };
 type Vehicle = { id: string; name: string; price: number };
@@ -126,178 +127,138 @@ const ShopPage = () => {
   return (
     <PageFrame>
       <HudPanel title="Ripperdoc / Loja">
-        {campaign && (
-          <p>
-            Eddies campanha {formatEddies(campaign.eddies)} · Street Cred{' '}
-            {campaign.streetCred} (desconto até 30%)
-          </p>
-        )}
+        <div className={styles.stack}>
+          {campaign && (
+            <p className={styles.ledger}>
+              Eddies campanha {formatEddies(campaign.eddies)} · Street Cred{' '}
+              {campaign.streetCred} (desconto até 30%)
+            </p>
+          )}
 
-        <label
-          style={{
-            display: 'grid',
-            gap: '0.25rem',
-            maxWidth: '20rem',
-            marginBottom: '0.85rem',
-            fontFamily: 'var(--cp-font-mono)',
-            fontSize: '0.75rem',
-            color: 'var(--cp-cyan)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-          }}
-        >
-          Comprar para
-          <select
-            value={characterId}
-            onChange={(e) => setCharacterId(e.target.value)}
-            style={{
-              background: '#0a0a12',
-              border: '1px solid var(--cp-border-strong)',
-              color: '#fff',
-              padding: '0.4rem',
-            }}
-          >
-            {characters.length === 0 && (
-              <option value="">Nenhum personagem</option>
+          <label className={styles.buyer}>
+            Comprar para
+            <select
+              value={characterId}
+              onChange={(e) => setCharacterId(e.target.value)}
+            >
+              {characters.length === 0 && (
+                <option value="">Nenhum personagem</option>
+              )}
+              {characters.map((c) => (
+                <option key={c.id} value={String(c.id)}>
+                  {c.name} · {formatEddies(Number(c.credits) || 0)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {msg && <p className={styles.msg}>{msg}</p>}
+
+          {ownedChrome.length > 0 && (
+            <div className={styles.pending}>
+              <div className={styles.pendingTitle}>
+                Chrome comprado — aguardando instalação
+              </div>
+              {ownedChrome.map((c) => (
+                <div key={`own-${c.id}-${c.name}`} className={styles.row}>
+                  <span className={styles.rowName}>{c.name}</span>
+                  <HudButton
+                    onClick={() =>
+                      router.push(
+                        `/cyberware?id=${encodeURIComponent(characterId)}`,
+                      )
+                    }
+                  >
+                    Instalar
+                  </HudButton>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <section className={styles.section}>
+            <h3>Armas & gear</h3>
+            <div className={styles.list}>
+              {gear.map((g) => (
+                <div key={g.id} className={styles.row}>
+                  <div className={styles.rowMeta}>
+                    <span className={styles.rowName}>{g.name}</span>
+                    <span className={styles.rowPrice}>{priceLabel(g)}</span>
+                  </div>
+                  <HudButton
+                    disabled={busy || !characterId}
+                    onClick={() => buy(g.id, 'gear')}
+                  >
+                    Comprar
+                  </HudButton>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className={styles.section}>
+            <h3>Chrome (instalável)</h3>
+            <p className={styles.hint}>
+              Comprar coloca o chrome no inventário da ficha. Instalar abre o
+              ripperdoc do personagem.
+            </p>
+            <div className={styles.list}>
+              {cyberware.map((c) => (
+                <div key={c.id} className={styles.row}>
+                  <div className={styles.rowMeta}>
+                    <span className={styles.rowName}>{c.name}</span>
+                    <span className={styles.rowPrice}>{priceLabel(c)}</span>
+                  </div>
+                  <div className={styles.rowActions}>
+                    <HudButton
+                      disabled={busy || !characterId}
+                      onClick={() => buy(String(c.id), 'cyberware')}
+                    >
+                      Comprar
+                    </HudButton>
+                    <HudButton
+                      variant="ghost"
+                      disabled={!characterId}
+                      onClick={() =>
+                        router.push(
+                          `/cyberware?id=${encodeURIComponent(characterId)}`,
+                        )
+                      }
+                    >
+                      Instalar
+                    </HudButton>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className={styles.section}>
+            <h3>Veículos / hideout</h3>
+            {campaign?.hideout && (
+              <p className={styles.hint}>
+                Hideout nv.{campaign.hideout.level} · slots veículo{' '}
+                {campaign.hideout.vehicleSlots} ·{' '}
+                {(campaign.hideout.upgrades || []).join(', ')}
+              </p>
             )}
-            {characters.map((c) => (
-              <option key={c.id} value={String(c.id)}>
-                {c.name} · {formatEddies(Number(c.credits) || 0)}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {msg && <p style={{ color: 'var(--cp-cyan)' }}>{msg}</p>}
-
-        {ownedChrome.length > 0 && (
-          <div
-            style={{
-              marginBottom: '1rem',
-              padding: '0.75rem',
-              border: '1px solid var(--cp-yellow)',
-              display: 'grid',
-              gap: '0.45rem',
-            }}
-          >
-            <strong style={{ color: 'var(--cp-yellow)' }}>
-              Chrome comprado (não instalado)
-            </strong>
-            {ownedChrome.map((c) => (
-              <div
-                key={`own-${c.id}-${c.name}`}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                  alignItems: 'center',
-                }}
-              >
-                <span>{c.name}</span>
-                <HudButton
-                  onClick={() =>
-                    router.push(`/cyberware?id=${encodeURIComponent(characterId)}`)
-                  }
-                >
-                  Instalar
-                </HudButton>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <h3>Armas & gear</h3>
-        <div style={{ display: 'grid', gap: '0.5rem' }}>
-          {gear.map((g) => (
-            <div
-              key={g.id}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: '1rem',
-              }}
-            >
-              <span>
-                {g.name} · {priceLabel(g)}
-              </span>
-              <HudButton disabled={busy || !characterId} onClick={() => buy(g.id, 'gear')}>
-                Comprar
-              </HudButton>
+            <div className={styles.list}>
+              {vehicles.map((v) => (
+                <div key={v.id} className={styles.row}>
+                  <div className={styles.rowMeta}>
+                    <span className={styles.rowName}>{v.name}</span>
+                    <span className={styles.rowPrice}>{priceLabel(v)}</span>
+                  </div>
+                  <HudButton
+                    disabled={busy || !characterId}
+                    onClick={() => buy(v.id, 'vehicle')}
+                  >
+                    Comprar
+                  </HudButton>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <h3 style={{ marginTop: '1.25rem' }}>Chrome (instalável)</h3>
-        <p style={{ color: 'var(--cp-text-dim)', fontSize: '0.85rem' }}>
-          Comprar coloca o chrome no inventário da ficha. Instalar abre o
-          ripperdoc do personagem.
-        </p>
-        <div style={{ display: 'grid', gap: '0.5rem' }}>
-          {cyberware.map((c) => (
-            <div
-              key={c.id}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: '1rem',
-                alignItems: 'center',
-              }}
-            >
-              <span>
-                {c.name} · {priceLabel(c)}
-              </span>
-              <div style={{ display: 'flex', gap: '0.35rem' }}>
-                <HudButton
-                  disabled={busy || !characterId}
-                  onClick={() => buy(String(c.id), 'cyberware')}
-                >
-                  Comprar
-                </HudButton>
-                <HudButton
-                  variant="ghost"
-                  disabled={!characterId}
-                  onClick={() =>
-                    router.push(
-                      `/cyberware?id=${encodeURIComponent(characterId)}`,
-                    )
-                  }
-                >
-                  Instalar
-                </HudButton>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <h3 style={{ marginTop: '1.25rem' }}>Veículos / hideout</h3>
-        {campaign?.hideout && (
-          <p>
-            Hideout nv.{campaign.hideout.level} · slots veículo{' '}
-            {campaign.hideout.vehicleSlots} ·{' '}
-            {(campaign.hideout.upgrades || []).join(', ')}
-          </p>
-        )}
-        <div style={{ display: 'grid', gap: '0.5rem' }}>
-          {vehicles.map((v) => (
-            <div
-              key={v.id}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: '1rem',
-              }}
-            >
-              <span>
-                {v.name} · {priceLabel(v)}
-              </span>
-              <HudButton
-                disabled={busy || !characterId}
-                onClick={() => buy(v.id, 'vehicle')}
-              >
-                Comprar
-              </HudButton>
-            </div>
-          ))}
+          </section>
         </div>
       </HudPanel>
     </PageFrame>
