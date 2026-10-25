@@ -8,29 +8,30 @@ export const MotionToggle = () => {
   const { animationsOn, toggleMotion, mounted } = useMotion();
   const { t } = useTranslations('common');
 
-  if (!mounted) {
-    return <div className={styles.motionSlot} aria-hidden />;
-  }
-
+  // Sempre o mesmo nó raiz (div) no SSR e no 1º paint — evita hydration mismatch.
   return (
-    <button
-      type="button"
-      className={styles.motionToggle}
-      data-active={animationsOn ? 'true' : 'false'}
-      onClick={toggleMotion}
-      aria-pressed={animationsOn}
-      aria-label={
-        animationsOn ? t('motion.disable') : t('motion.enable')
-      }
-      title={animationsOn ? t('motion.disable') : t('motion.enable')}
-    >
-      <span className={styles.motionIcon} aria-hidden>
-        {animationsOn ? '✦' : '○'}
-      </span>
-      <span className={styles.motionLabel}>
-        {animationsOn ? t('motion.on') : t('motion.off')}
-      </span>
-    </button>
+    <div className={styles.motionSlot} suppressHydrationWarning>
+      {mounted ? (
+        <button
+          type="button"
+          className={styles.motionToggle}
+          data-active={animationsOn ? 'true' : 'false'}
+          onClick={toggleMotion}
+          aria-pressed={animationsOn}
+          aria-label={
+            animationsOn ? t('motion.disable') : t('motion.enable')
+          }
+          title={animationsOn ? t('motion.disable') : t('motion.enable')}
+        >
+          <span className={styles.motionIcon} aria-hidden>
+            {animationsOn ? '✦' : '○'}
+          </span>
+          <span className={styles.motionLabel}>
+            {animationsOn ? t('motion.on') : t('motion.off')}
+          </span>
+        </button>
+      ) : null}
+    </div>
   );
 };
 
