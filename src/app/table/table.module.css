@@ -231,6 +231,15 @@
   pointer-events: none;
 }
 
+.layerHint {
+  margin: 0.45rem 0 0;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  color: var(--cp-text-dim, #8a9aa8);
+  line-height: 1.35;
+}
+
 .selectionBar {
   display: flex;
   flex-wrap: wrap;

@@ -12,6 +12,11 @@ import {
   type DiceReveal,
 } from '../../components/vtt/DiceGlitchOverlay';
 import { FogCanvas } from '../../components/vtt/FogCanvas';
+import {
+  LayersPanel,
+  type VttLayer,
+  type VttLayerId,
+} from '../../components/vtt/LayersPanel';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
 import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
@@ -65,6 +70,8 @@ type VttState = {
   handouts: Handout[];
   breach?: BreachState | null;
   radioStation?: string | null;
+  layers?: VttLayer[];
+  activeLayer?: VttLayerId;
 };
 
 type RosterChar = {
@@ -97,6 +104,27 @@ const TOKEN_COLORS = [
   '#c77dff',
   '#ff9f1c',
 ];
+
+const DEFAULT_LAYERS: VttLayer[] = [
+  { id: 'background', name: 'Background', visible: true, locked: false },
+  { id: 'grid', name: 'Grid', visible: true, locked: true },
+  { id: 'walls', name: 'Walls', visible: true, locked: false },
+  { id: 'tokens', name: 'Tokens', visible: true, locked: false },
+  { id: 'fog', name: 'Fog', visible: true, locked: false },
+];
+
+const normalizeLayers = (input?: VttLayer[] | null): VttLayer[] => {
+  const byId = new Map((input || []).map((l) => [l.id, l]));
+  return DEFAULT_LAYERS.map((def) => {
+    const row = byId.get(def.id);
+    if (!row) return { ...def };
+    return {
+      ...def,
+      visible: row.visible != null ? !!row.visible : def.visible,
+      locked: row.locked != null ? !!row.locked : def.locked,
+    };
+  });
+};
 
 const parseJwt = (token: string) => {
   try {
@@ -377,12 +405,39 @@ const TablePage = () => {
     playCyberSound('confirm', { volume: 0.4 });
   };
 
+  const layers = useMemo(
+    () => normalizeLayers(state?.layers),
+    [state?.layers],
+  );
+  const activeLayer: VttLayerId = state?.activeLayer || 'tokens';
+
+  const layerVisible = useCallback(
+    (id: VttLayerId) => layers.find((l) => l.id === id)?.visible !== false,
+    [layers],
+  );
+  const layerLocked = useCallback(
+    (id: VttLayerId) => !!layers.find((l) => l.id === id)?.locked,
+    [layers],
+  );
+
+  const activateLayer = (id: VttLayerId) => {
+    intent('layer:active', { id });
+    if (id === 'fog' && isGm && !layerLocked('fog')) setTool('fog');
+    else if (id === 'walls' && isGm && !layerLocked('walls')) setTool('wall');
+    else if (id === 'background') setTool('pan');
+    else setTool('select');
+    playCyberSound('ui', { volume: 0.25 });
+  };
+
   const canDragToken = (t: Token) => {
+    if (layerLocked('tokens')) return false;
+    if (!layerVisible('tokens')) return false;
     if (isGm) return true;
     return Number(t.ownerPlayerId) === Number(myPlayerId);
   };
 
-  const fogActive = (state?.fog?.length || 0) > 0;
+  const fogActive =
+    (state?.fog?.length || 0) > 0 && layerVisible('fog');
 
   const mapBgSrc = useMemo(() => {
     const url = state?.map?.backgroundUrl;
@@ -426,7 +481,7 @@ const TablePage = () => {
   };
 
   const paintFog = (e: React.MouseEvent) => {
-    if (!isGm || tool !== 'fog') return;
+    if (!isGm || tool !== 'fog' || layerLocked('fog')) return;
     const c = cellFromEvent(e);
     const key = `${c.x},${c.y}`;
     if (lastFogCell.current === key) return;
@@ -744,7 +799,7 @@ const TablePage = () => {
                   paintFog(e);
                   return;
                 }
-                if (isGm && tool === 'wall') {
+                if (isGm && tool === 'wall' && !layerLocked('walls')) {
                   const c = cellFromEvent(e);
                   if (!wallDraft) setWallDraft(c);
                   else {
@@ -811,7 +866,7 @@ const TablePage = () => {
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                 }}
               >
-                {mapBgSrc && (
+                {mapBgSrc && layerVisible('background') && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={mapBgSrc}
@@ -826,30 +881,34 @@ const TablePage = () => {
                   height={stageH}
                   data-layer="board"
                 >
-                  {Array.from({ length: mapH }).map((_, y) =>
-                    Array.from({ length: mapW }).map((__, x) => (
-                      <rect
-                        key={`${x}-${y}`}
-                        x={x * GRID}
-                        y={y * GRID}
-                        width={GRID}
-                        height={GRID}
-                        className={
-                          mapBgSrc ? styles.cellOverBg : styles.cell
-                        }
+                  {layerVisible('grid') &&
+                    Array.from({ length: mapH }).map((_, y) =>
+                      Array.from({ length: mapW }).map((__, x) => (
+                        <rect
+                          key={`${x}-${y}`}
+                          x={x * GRID}
+                          y={y * GRID}
+                          width={GRID}
+                          height={GRID}
+                          className={
+                            mapBgSrc && layerVisible('background')
+                              ? styles.cellOverBg
+                              : styles.cell
+                          }
+                        />
+                      )),
+                    )}
+                  {layerVisible('walls') &&
+                    (state?.walls || []).map((w) => (
+                      <line
+                        key={w.id}
+                        x1={w.x1 * GRID + GRID / 2}
+                        y1={w.y1 * GRID + GRID / 2}
+                        x2={w.x2 * GRID + GRID / 2}
+                        y2={w.y2 * GRID + GRID / 2}
+                        className={styles.wall}
                       />
-                    )),
-                  )}
-                  {(state?.walls || []).map((w) => (
-                    <line
-                      key={w.id}
-                      x1={w.x1 * GRID + GRID / 2}
-                      y1={w.y1 * GRID + GRID / 2}
-                      x2={w.x2 * GRID + GRID / 2}
-                      y2={w.y2 * GRID + GRID / 2}
-                      className={styles.wall}
-                    />
-                  ))}
+                    ))}
                   {ruler && (
                     <line
                       x1={ruler.x1 * GRID + GRID / 2}
@@ -868,7 +927,12 @@ const TablePage = () => {
                   active={fogActive}
                   gmView={isGm}
                 />
-                <div className={styles.tokenLayer}>
+                <div
+                  className={styles.tokenLayer}
+                  style={{
+                    display: layerVisible('tokens') ? undefined : 'none',
+                  }}
+                >
                   {(state?.tokens || []).map((t) => {
                     const turn =
                       state?.initiative?.[state.turnIndex || 0]?.tokenId ===
@@ -940,6 +1004,7 @@ const TablePage = () => {
             </div>
             <div className={styles.hudOverlay}>
               zoom {zoom.toFixed(2)} · shift+drag régua · {distance}u
+              {` · layer:${activeLayer}`}
               {tool !== 'select' ? ` · tool:${tool}` : ''}
               {tool === 'fog' ? ` · fog:${fogMode} r${fogRadius}` : ''}
               {state?.radioStation ? ` · ${state.radioStation}` : ''}
@@ -949,6 +1014,23 @@ const TablePage = () => {
         </HudPanel>
 
         <aside className={styles.side}>
+          <HudPanel title="Camadas">
+            <LayersPanel
+              layers={layers}
+              activeLayer={activeLayer}
+              isGm={isGm}
+              onActivate={activateLayer}
+              onToggleVisible={(id, visible) =>
+                intent('layer:update', { id, visible })
+              }
+              onToggleLocked={(id, locked) =>
+                intent('layer:update', { id, locked })
+              }
+            />
+            <p className={styles.layerHint}>
+              Clique no nome para ativar · VIS mostra/oculta · LCK trava edição
+            </p>
+          </HudPanel>
           <HudPanel title="Presença">
             <ul className={styles.plainList}>
               {(state?.presence || []).map((p, i) => (
