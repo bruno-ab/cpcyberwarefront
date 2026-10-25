@@ -637,12 +637,10 @@
 
 .chatPanel {
   flex: 1 1 auto;
-  min-height: 280px;
-  max-height: min(58vh, 480px);
+  min-height: 360px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .chatPanelBody {
@@ -650,7 +648,6 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .chatStack {
@@ -659,13 +656,12 @@
   gap: 0.45rem;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
 }
 
 .chat {
   flex: 1 1 auto;
-  min-height: 64px;
-  max-height: 120px;
+  min-height: 3.5rem;
+  max-height: 10rem;
   overflow: auto;
   font-size: 0.82rem;
   padding: 0.35rem 0.25rem;
