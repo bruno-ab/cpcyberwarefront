@@ -23,6 +23,7 @@
       "shop": "Ripperdoc",
       "wiki": "Wiki",
       "achievements": "Achievements",
+      "memorial": "Memorial",
       "idCard": "ID Card"
     },
     "cta": {
@@ -110,5 +111,39 @@
   "book": {
     "title": "Rulebook",
     "search": "Search the book…"
+  },
+  "memorial": {
+    "title": "Memorial Wall",
+    "intro": "Fallen runners — epitaphs and dice the table won't forget.",
+    "gmPanelTitle": "Register flatline",
+    "pickCharacter": "Character",
+    "selectPlaceholder": "Choose…",
+    "sessionLabel": "Session / context",
+    "sessionPlaceholder": "Session 12, Watson gig…",
+    "epitaphLabel": "Epitaph",
+    "epitaphPlaceholder": "Optional — Night City default if empty.",
+    "register": "Add to wall",
+    "registered": "Added to the memorial wall.",
+    "saved": "Epitaph saved.",
+    "error": "Sync failed.",
+    "loading": "Loading wall…",
+    "emptyTitle": "Empty wall",
+    "empty": "No flatlines yet — or the crew is still breathing.",
+    "fallen": "Flatline",
+    "notableRolls": "Notable rolls",
+    "noRolls": "No highlighted rolls captured yet.",
+    "editEpitaph": "Edit epitaph",
+    "saveEpitaph": "Save",
+    "cancel": "Cancel",
+    "successes": "successes",
+    "botch": "BOTCH",
+    "pool": "pool",
+    "highlight": {
+      "botch": "Botch",
+      "critical": "Critical",
+      "legendary": "Legendary",
+      "pool": "Epic pool",
+      "roll": "Mark"
+    }
   }
 }

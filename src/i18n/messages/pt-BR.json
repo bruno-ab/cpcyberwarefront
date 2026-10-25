@@ -23,6 +23,7 @@
       "shop": "Ripperdoc",
       "wiki": "Wiki",
       "achievements": "Conquistas",
+      "memorial": "Mural",
       "idCard": "ID Card"
     },
     "cta": {
@@ -110,5 +111,39 @@
   "book": {
     "title": "Livro de Regras",
     "search": "Buscar no livro…"
+  },
+  "memorial": {
+    "title": "Mural de Memorial",
+    "intro": "Flatlines da crônica — epitáfios e rolagens que a mesa não esquece.",
+    "gmPanelTitle": "Registrar flatline",
+    "pickCharacter": "Personagem",
+    "selectPlaceholder": "Escolha…",
+    "sessionLabel": "Sessão / contexto",
+    "sessionPlaceholder": "Sessão 12, gig Watson…",
+    "epitaphLabel": "Epitáfio",
+    "epitaphPlaceholder": "Opcional — padrão Night City se vazio.",
+    "register": "Inscrever no mural",
+    "registered": "Registrado no mural.",
+    "saved": "Epitáfio salvo.",
+    "error": "Falha ao sincronizar.",
+    "loading": "Carregando mural…",
+    "emptyTitle": "Mural vazio",
+    "empty": "Ninguém flatlined ainda — ou a crew ainda está de pé.",
+    "fallen": "Flatline",
+    "notableRolls": "Rolagens marcantes",
+    "noRolls": "Sem rolagens destacadas capturadas ainda.",
+    "editEpitaph": "Editar epitáfio",
+    "saveEpitaph": "Salvar",
+    "cancel": "Cancelar",
+    "successes": "sucessos",
+    "botch": "BOTCH",
+    "pool": "pool",
+    "highlight": {
+      "botch": "Botch",
+      "critical": "Crítico",
+      "legendary": "Lendário",
+      "pool": "Pool épico",
+      "roll": "Marca"
+    }
   }
 }

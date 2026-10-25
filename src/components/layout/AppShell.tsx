@@ -24,6 +24,7 @@ const NAV = [
   { href: '/shop', key: 'shop' },
   { href: '/wiki', key: 'wiki' },
   { href: '/achievements', key: 'achievements' },
+  { href: '/memorial', key: 'memorial' },
   { href: '/id-card', key: 'idCard' },
   { href: '/sheet', key: 'sheet' },
   { href: '/narrator', key: 'narrator' },
