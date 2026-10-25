@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './PacketSnifferGame.module.css';
 
 type Status = 'menu' | 'playing' | 'won' | 'lost';
@@ -81,6 +82,7 @@ export const PacketSnifferGame = () => {
     setRemaining(d.timeSec);
     setLog([`sniffer --iface eth0 --profile ${d.id}`]);
     setFlash(null);
+    playCyberSound('jack');
     setPlayStatus('playing');
   };
 
@@ -91,8 +93,10 @@ export const PacketSnifferGame = () => {
       livesRef.current = left;
       setLives(left);
       pushLog(reason);
+      playCyberSound(reason.startsWith('leak') ? 'leak' : 'wrong');
       if (left <= 0) {
         setPlayStatus('lost');
+        playCyberSound('lose');
         pushLog('ICE dump — link flooded.');
       }
     },
@@ -118,9 +122,11 @@ export const PacketSnifferGame = () => {
         const nextScore = scoreRef.current + 1;
         scoreRef.current = nextScore;
         setScore(nextScore);
+        playCyberSound('correct');
         pushLog(`ok  ${type}  +1  (${nextScore}/${goalRef.current})`);
         if (nextScore >= goalRef.current) {
           setPlayStatus('won');
+          playCyberSound('win');
           pushLog('BREACH — filter chain clean.');
         }
       } else {
@@ -175,6 +181,7 @@ export const PacketSnifferGame = () => {
       const next = [...packetsRef.current, pkt].slice(-10);
       packetsRef.current = next;
       setPackets(next);
+      if (Math.random() < 0.35) playCyberSound('scan', { volume: 0.35 });
     }, diff.spawnMs);
 
     const tick = window.setInterval(() => {

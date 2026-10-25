@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import shell from './MinigameShell.module.css';
 import styles from './RipperSurgeryGame.module.css';
 
@@ -37,6 +38,7 @@ export const RipperSurgeryGame = () => {
     drift.current = { x: 0, y: 0 };
     setHolding(false);
     setStatus('playing');
+    playCyberSound('install');
   };
 
   useEffect(() => {
@@ -68,7 +70,12 @@ export const RipperSurgeryGame = () => {
       if (dist < 8) {
         setProgress((p) => {
           const next = Math.min(100, p + 2.2);
-          if (next >= 100) setStatus('won');
+          if (next >= 100) {
+            setStatus('won');
+            playCyberSound('reboot');
+          } else if (Math.random() < 0.2) {
+            playCyberSound('scan', { volume: 0.25 });
+          }
           return next;
         });
       } else {
@@ -78,8 +85,12 @@ export const RipperSurgeryGame = () => {
         setHumanityCost((h) => h + 1);
         setRecoveryHours((r) => r + 2);
         setGlitch(true);
+        playCyberSound('wrong', { volume: 0.55 });
         setTimeout(() => setGlitch(false), 280);
-        if (nextErr >= 12) setStatus('lost');
+        if (nextErr >= 12) {
+          setStatus('lost');
+          playCyberSound('lose');
+        }
       }
     }, 120);
     return () => clearInterval(id);

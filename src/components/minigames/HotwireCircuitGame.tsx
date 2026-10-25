@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './HotwireCircuitGame.module.css';
 
 type Status = 'menu' | 'playing' | 'won' | 'lost';
@@ -84,12 +85,14 @@ export const HotwireCircuitGame = () => {
     setStatus('playing');
     setGlitch(false);
     setMsg('Circuito aberto — trace o fio.');
+    playCyberSound('jack');
   };
 
   useEffect(() => {
     if (status !== 'playing') return;
     if (remaining <= 0) {
       setStatus('lost');
+      playCyberSound('alarm');
       setMsg('Timeout — maglock travou e alertou a NetWatch.');
       setGlitch(true);
       return;
@@ -137,14 +140,17 @@ export const HotwireCircuitGame = () => {
     if (kind === 'hot') {
       setStatus('lost');
       setGlitch(true);
+      playCyberSound('surge');
       setMsg('CHOQUE — fio vivo. Alarme disparado.');
       setPath((p) => [...p, i]);
       return;
     }
     const next = [...path, i];
     setPath(next);
+    playCyberSound('pick', { volume: 0.6 });
     if (i === endPos) {
       setStatus('won');
+      playCyberSound('lock');
       setMsg('Circuito fechado. Maglock liberado.');
       return;
     }

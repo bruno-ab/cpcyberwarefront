@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { HudButton } from '../ui/HudButton';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './breach.module.css';
 
 export type BreachState = {
@@ -50,12 +51,36 @@ const statusLabel = (status: string) => {
 
 export const BreachProtocol = ({ state, onPick, onClose, onRetry }: Props) => {
   const [now, setNow] = useState(Date.now());
+  const lastStatus = useRef(state.status);
+  const lastBuf = useRef(state.buffer?.length || 0);
 
   useEffect(() => {
     if (!state.timeLimitSec || state.status !== 'active') return;
     const t = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(t);
   }, [state.timeLimitSec, state.status, state.id]);
+
+  useEffect(() => {
+    if (state.status === 'active' && lastStatus.current !== 'active') {
+      playCyberSound('jack');
+    }
+    if (state.status !== lastStatus.current) {
+      if (state.status === 'success' || state.status === 'partial') {
+        playCyberSound('win');
+      } else if (state.status === 'fail') {
+        playCyberSound('lose');
+      }
+      lastStatus.current = state.status;
+    }
+  }, [state.status]);
+
+  useEffect(() => {
+    const len = state.buffer?.length || 0;
+    if (state.status === 'active' && len > lastBuf.current) {
+      playCyberSound('pick');
+    }
+    lastBuf.current = len;
+  }, [state.buffer, state.status]);
 
   const remainingSec = useMemo(() => {
     if (!state.timeLimitSec || !state.startedAt) return null;

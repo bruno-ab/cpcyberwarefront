@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import shell from './MinigameShell.module.css';
 import styles from './CyberpsychosisSurgeGame.module.css';
 
@@ -28,12 +29,14 @@ export const CyberpsychosisSurgeGame = () => {
     setTargets([]);
     setRemaining(20);
     setStatus('playing');
+    playCyberSound('surge');
   };
 
   useEffect(() => {
     if (status !== 'playing') return;
     const spawn = setInterval(() => {
       setGlitch(true);
+      playCyberSound('glitch', { volume: 0.35 });
       setTimeout(() => setGlitch(false), 180);
       const id = ++seq.current;
       setTargets((prev) => [
@@ -67,13 +70,20 @@ export const CyberpsychosisSurgeGame = () => {
 
   useEffect(() => {
     if (status !== 'playing') return;
-    if (misses >= maxMiss) setStatus('lost');
-    if (score >= goal) setStatus('won');
+    if (misses >= maxMiss) {
+      setStatus('lost');
+      playCyberSound('lose');
+    }
+    if (score >= goal) {
+      setStatus('won');
+      playCyberSound('win');
+    }
   }, [misses, score, status, maxMiss, goal]);
 
   const hit = (id: number) => {
     setTargets((prev) => prev.filter((t) => t.id !== id));
     setScore((s) => s + 1);
+    playCyberSound('correct', { volume: 0.7 });
   };
 
   return (

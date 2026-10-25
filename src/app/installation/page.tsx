@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './installation.module.css';
 
 /**
@@ -16,19 +17,28 @@ const InstallationPage = () => {
   const characterId = searchParams.get('id');
   const pieceName = searchParams.get('name') || 'CYBERWARE';
 
+  const beepAt = useRef(0);
+
   useEffect(() => {
     if (!characterId) {
       router.replace('/cyberware');
       return;
     }
 
+    playCyberSound('install');
     const started = Date.now();
     const durationMs = 4200;
+    beepAt.current = 0;
 
     const tick = () => {
       const elapsed = Date.now() - started;
       const next = Math.min(100, (elapsed / durationMs) * 100);
       setProgress(next);
+      const step = Math.floor(next / 20);
+      if (step > beepAt.current && next < 100) {
+        beepAt.current = step;
+        playCyberSound('scan', { volume: 0.4 });
+      }
       if (next < 100) {
         frame = requestAnimationFrame(tick);
       } else {
@@ -43,6 +53,7 @@ const InstallationPage = () => {
   useEffect(() => {
     if (!done || redirected.current || !characterId) return;
     redirected.current = true;
+    playCyberSound('reboot');
     const t = setTimeout(() => {
       router.push(`/cyberware?id=${characterId}`);
     }, 900);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './SignalTraceGame.module.css';
 
 type Status = 'menu' | 'playing' | 'won';
@@ -87,6 +88,7 @@ export const SignalTraceGame = () => {
     setActive(null);
     setStatus('playing');
     setMsg('Conecte pares da mesma cor sem cruzar sinais.');
+    playCyberSound('jack');
   };
 
   const checkWin = (next: Record<string, Array<[number, number]>>) => {
@@ -100,6 +102,7 @@ export const SignalTraceGame = () => {
     });
     if (ok) {
       setStatus('won');
+      playCyberSound('win');
       setMsg('Trace completo — sinal estabilizado.');
       setActive(null);
     }
@@ -118,6 +121,7 @@ export const SignalTraceGame = () => {
       setActive(term.id);
       setPaths((prev) => ({ ...prev, [term.id]: [[x, y]] }));
       setMsg(`Traçando canal ${term.id}…`);
+      playCyberSound('pick', { volume: 0.55 });
       return;
     }
 
@@ -160,9 +164,11 @@ export const SignalTraceGame = () => {
     const nextPath: Array<[number, number]> = [...path, [x, y]];
     const next = { ...paths, [active]: nextPath };
     setPaths(next);
+    playCyberSound('ui', { volume: 0.35 });
 
     if (term && term.id === active) {
       setMsg(`Canal ${active} fechado.`);
+      playCyberSound('confirm');
       setActive(null);
       checkWin(next);
       return;

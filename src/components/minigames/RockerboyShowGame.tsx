@@ -5,6 +5,7 @@ import shell from './MinigameShell.module.css';
 import styles from './RockerboyShowGame.module.css';
 import { useCampaign } from '../../lib/campaign';
 import { reportMinigameResult } from '../../lib/minigameResult';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 
 type Status = 'menu' | 'playing' | 'won' | 'lost';
 type Note = { id: number; lane: number; y: number };
@@ -33,6 +34,7 @@ export const RockerboyShowGame = () => {
     setRemaining(30);
     reported.current = false;
     setStatus('playing');
+    playCyberSound('jack');
   };
 
   useEffect(() => {
@@ -80,7 +82,9 @@ export const RockerboyShowGame = () => {
   useEffect(() => {
     if (status !== 'playing') return;
     if (remaining <= 0) {
-      setStatus(crowd >= 50 ? 'won' : 'lost');
+      const next = crowd >= 50 ? 'won' : 'lost';
+      setStatus(next);
+      playCyberSound(next === 'won' ? 'win' : 'lose');
       return;
     }
     const t = setTimeout(() => setRemaining((r) => r - 1), 1000);
@@ -88,7 +92,10 @@ export const RockerboyShowGame = () => {
   }, [status, remaining, crowd]);
 
   useEffect(() => {
-    if (status === 'playing' && crowd <= 0) setStatus('lost');
+    if (status === 'playing' && crowd <= 0) {
+      setStatus('lost');
+      playCyberSound('lose');
+    }
   }, [crowd, status]);
 
   const hitLane = useCallback(
@@ -101,6 +108,7 @@ export const RockerboyShowGame = () => {
         if (idx < 0) {
           setCombo(0);
           setCrowd((c) => Math.max(0, c - 3));
+          playCyberSound('wrong', { volume: 0.5 });
           return prev;
         }
         const copy = [...prev];
@@ -108,6 +116,7 @@ export const RockerboyShowGame = () => {
         setCombo((c) => c + 1);
         setCrowd((c) => Math.min(100, c + 5));
         setFame((f) => f + 1 + Math.floor(combo / 4));
+        playCyberSound('correct', { volume: 0.65 });
         return copy;
       });
     },

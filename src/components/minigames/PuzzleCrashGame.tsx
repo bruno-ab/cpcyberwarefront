@@ -17,6 +17,7 @@ import {
   SPEED_LABELS,
   SPEED_MS,
 } from './puzzleColors';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './PuzzleCrashGame.module.css';
 
 const COLS = 6;
@@ -312,11 +313,13 @@ export const PuzzleCrashGame = () => {
     setGlitchColor(color);
     setGlitch(true);
     setTermGlitch(true);
+    playCyberSound(hard ? 'crash' : 'glitch', { volume: hard ? 1 : 0.7 });
     setTimeout(() => setGlitch(false), hard ? 620 : 420);
     setTimeout(() => setTermGlitch(false), hard ? 700 : 480);
   };
 
   const start = () => {
+    playCyberSound('jack');
     setGrid(emptyGrid());
     scoreRef.current = 0;
     combosRef.current = 0;
@@ -489,6 +492,7 @@ export const PuzzleCrashGame = () => {
         color: GEM_HEX[boomColor],
       });
       if (pct >= 100) {
+        playCyberSound('win');
         pushTerm('sys', 'PERIMETER COLLAPSED — full system breach.');
       } else if (pct >= 66) {
         pushTerm('warn', 'firewall segment unstable…');
@@ -506,6 +510,7 @@ export const PuzzleCrashGame = () => {
 
     if (next[0].some(Boolean)) {
       setStatus('lost');
+      playCyberSound('lose');
       setPiece(null);
       setNextPiece(null);
       lock.current = false;

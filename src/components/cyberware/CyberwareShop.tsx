@@ -16,6 +16,7 @@ import {
   itemEddiePrice,
   heatAwarePrice,
 } from '../../lib/shopPricing';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './CyberwareShop.module.css';
 
 type CatalogItem = {
@@ -210,6 +211,7 @@ export const CyberwareShop = ({
   const buyOnly = async (item: CatalogItem) => {
     const price = displayPrice(item);
     if (campaignEddies < price) {
+      playCyberSound('deny');
       setMsg(
         `Eddies insuficientes (tem ${formatEddies(campaignEddies)}, precisa ${formatEddies(price)}).`,
       );
@@ -234,6 +236,7 @@ export const CyberwareShop = ({
       if (!res.ok) {
         throw new Error(data.message || 'Falha na compra');
       }
+      playCyberSound('coin');
       const paid = Number(data.price ?? price);
       if (data.campaign?.eddies != null) {
         setCampaignEddies(Number(data.campaign.eddies));
@@ -264,6 +267,7 @@ export const CyberwareShop = ({
       );
       await refreshAll();
     } catch (e: any) {
+      playCyberSound('deny');
       setMsg(e.message || 'Falha na compra');
     } finally {
       setBusy(false);
@@ -277,6 +281,7 @@ export const CyberwareShop = ({
       catalogItem?.edge_cost ?? catalogItem?.edgeCost ?? 0,
     );
     if (edges < edgeCost) {
+      playCyberSound('deny');
       setMsg(`Edges insuficientes para instalar (precisa ${edgeCost} E).`);
       return;
     }
@@ -297,6 +302,7 @@ export const CyberwareShop = ({
           err.message || 'Não foi possível instalar (capacidade/slot).',
         );
       }
+      playCyberSound('install');
       const nextEdges = Math.max(0, edges - edgeCost);
       setEdges(nextEdges);
       setLocalSheet((prev) => {
@@ -322,6 +328,7 @@ export const CyberwareShop = ({
       });
       router.push(`/installation?${q.toString()}`);
     } catch (e: any) {
+      playCyberSound('deny');
       setMsg(e.message || 'Falha ao instalar');
       setBusy(false);
     }

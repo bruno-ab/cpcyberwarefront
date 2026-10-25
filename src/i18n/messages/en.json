@@ -55,6 +55,12 @@
       "off": "FX off",
       "disable": "Disable animations",
       "enable": "Enable animations"
+    },
+    "sound": {
+      "on": "SFX on",
+      "off": "SFX off",
+      "disable": "Mute SFX",
+      "enable": "Enable SFX"
     }
   },
   "home": {

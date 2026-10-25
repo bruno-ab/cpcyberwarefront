@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import shell from './MinigameShell.module.css';
 import styles from './ElectronicLockGame.module.css';
 
@@ -29,6 +30,7 @@ export const ElectronicLockGame = () => {
     setAttempts(0);
     setMsg('');
     setStatus('playing');
+    playCyberSound('jack');
   };
 
   const diff = (a: number, b: number) => {
@@ -42,12 +44,14 @@ export const ElectronicLockGame = () => {
     if (status !== 'playing') return;
     if (aligned) {
       setStatus('won');
+      playCyberSound('lock');
       setMsg('Fechadura aberta — maglock liberado.');
     }
   }, [aligned, status]);
 
   const rotate = (i: number, delta: number) => {
     if (status !== 'playing') return;
+    playCyberSound('ui', { volume: 0.45 });
     setAngles((prev) => {
       const next = [...prev];
       next[i] = (((next[i] + delta) % 360) + 360) % 360;
@@ -59,13 +63,16 @@ export const ElectronicLockGame = () => {
     if (status !== 'playing') return;
     if (aligned) {
       setStatus('won');
+      playCyberSound('lock');
       setMsg('Fechadura aberta — maglock liberado.');
       return;
     }
     const next = attempts + 1;
     setAttempts(next);
+    playCyberSound('deny');
     if (next >= maxAttempts) {
       setStatus('lost');
+      playCyberSound('alarm');
       setMsg('Alarme! Tentativas esgotadas.');
     } else {
       setMsg(`Fora do alinhamento (±${tolerance}°). Restam ${maxAttempts - next}.`);

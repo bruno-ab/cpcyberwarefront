@@ -5,6 +5,7 @@ import {
   TERMINAL_MISSIONS,
   TerminalMission,
 } from './terminalCommands';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './TerminalTypingGame.module.css';
 
 type Status = 'menu' | 'playing' | 'won' | 'lost';
@@ -73,6 +74,7 @@ export const TerminalTypingGame = () => {
     setStatus('playing');
     setGlitch(false);
     setErrorFlash(false);
+    playCyberSound('jack');
     setTimeout(() => inputRef.current?.focus(), 40);
   };
 
@@ -80,6 +82,7 @@ export const TerminalTypingGame = () => {
     if (status !== 'playing') return;
     if (remaining <= 0) {
       setStatus('lost');
+      playCyberSound('lose');
       setLog((l) => [
         ...l,
         { text: '[alert] TRACE / ICE — link severed', kind: 'err' },
@@ -120,8 +123,10 @@ export const TerminalTypingGame = () => {
       ]);
       const next = index + 1;
       setInput('');
+      playCyberSound('correct');
       if (next >= mission.commands.length) {
         setStatus('won');
+        playCyberSound('win');
         setLog((l) => [
           ...l,
           { text: '[done] ALL PACKETS DELIVERED', kind: 'ok' },
@@ -135,6 +140,7 @@ export const TerminalTypingGame = () => {
     setErrors((e) => e + 1);
     setErrorFlash(true);
     setGlitch(true);
+    playCyberSound('glitch');
     setLog((l) => [
       ...l,
       { text: `netrunner@nightcity:~$ ${input || '^C'}`, kind: 'err' },
@@ -313,7 +319,12 @@ export const TerminalTypingGame = () => {
                       spellCheck={false}
                       autoComplete="off"
                       autoCapitalize="off"
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={(e) => {
+                        setInput(e.target.value);
+                        if (e.target.value.length > input.length) {
+                          playCyberSound('key', { volume: 0.55 });
+                        }
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') submit();
                       }}

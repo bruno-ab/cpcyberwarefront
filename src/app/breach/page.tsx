@@ -25,6 +25,7 @@ import { CyberdeckMemoryGame } from '../../components/minigames/CyberdeckMemoryG
 import { apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
 import { reportMinigameResult } from '../../lib/minigameResult';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './breach.module.css';
 
 type Challenge = {
@@ -179,9 +180,11 @@ const BreachPage = () => {
       });
       if (!res.ok) throw new Error('Falha ao iniciar breach');
       const next = await res.json();
+      playCyberSound('jack');
       setState(next);
       setSelectedId(challengeId);
     } catch (e: any) {
+      playCyberSound('deny');
       setMsg(e.message || 'Erro ao jackar o protocolo');
     } finally {
       setBusy(false);
@@ -207,6 +210,7 @@ const BreachPage = () => {
   };
 
   const selectGroup = (id: GroupId) => {
+    playCyberSound('ui');
     setGroup(id);
     const g = GROUPS.find((x) => x.id === id);
     if (g?.modes[0]) setMode(g.modes[0].id);
@@ -247,7 +251,10 @@ const BreachPage = () => {
                 aria-selected={mode === m.id}
                 className={styles.tab}
                 data-active={mode === m.id}
-                onClick={() => setMode(m.id)}
+                onClick={() => {
+                  playCyberSound('ui', { volume: 0.5 });
+                  setMode(m.id);
+                }}
               >
                 {m.label}
               </button>

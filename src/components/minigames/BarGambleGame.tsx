@@ -5,6 +5,7 @@ import shell from './MinigameShell.module.css';
 import styles from './BarGambleGame.module.css';
 import { useCampaign } from '../../lib/campaign';
 import { reportMinigameResult } from '../../lib/minigameResult';
+import { playCyberSound } from '../../lib/sound/cyberSounds';
 
 type Status = 'menu' | 'playing' | 'round' | 'done';
 type Choice = 'high' | 'low' | 'bluff';
@@ -32,6 +33,7 @@ export const BarGambleGame = () => {
     setRounds(0);
     setMsg('Aposte eddies. High / Low vs NPC, ou Blefe.');
     setStatus('playing');
+    playCyberSound('coin');
   };
 
   useEffect(() => {
@@ -78,8 +80,12 @@ export const BarGambleGame = () => {
     const next = eddies + delta;
     setEddies(next);
     setStatus('round');
+    playCyberSound(delta >= 0 ? 'coin' : 'deny');
     if (next <= 0 || rounds + 1 >= 8) {
-      setTimeout(() => setStatus('done'), 600);
+      setTimeout(() => {
+        setStatus('done');
+        playCyberSound(next > startBank.current ? 'win' : 'lose');
+      }, 600);
     }
   };
 

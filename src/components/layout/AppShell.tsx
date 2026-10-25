@@ -5,6 +5,7 @@ import { ReactNode } from 'react';
 import { useTranslations } from '../../i18n/useTranslations';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { MotionToggle } from './MotionToggle';
+import { SoundToggle } from './SoundToggle';
 import { HeatStrip } from './HeatStrip';
 import styles from './AppShell.module.css';
 
@@ -56,6 +57,7 @@ export const AppNav = () => {
         <HeatStrip />
         <ThemeSwitcher />
         <MotionToggle />
+        <SoundToggle />
         <div className={styles.locale}>
           <button
             type="button"
