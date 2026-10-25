@@ -56,6 +56,9 @@ type OwnedChrome = {
   price?: number;
   installed?: boolean;
   installable?: boolean;
+  /** Edges já pagos nesta unidade (reinstalação gratuita se removeu sem reembolso). */
+  edgesPaid?: boolean;
+  edgesSpent?: boolean;
 };
 
 type Props = {
@@ -187,7 +190,7 @@ export const CyberwareShop = ({
     return heatAwarePrice(base, streetCred, heat);
   };
 
-  const edgeCostOf = (item: CatalogItem | OwnedChrome) => {
+  const catalogEdgeCostOf = (item: CatalogItem | OwnedChrome) => {
     const catalogItem =
       catalog.find((c) => Number(c.id) === Number(item.id)) || null;
     if (catalogItem) {
@@ -205,6 +208,17 @@ export const CyberwareShop = ({
     );
     return Math.max(0, Number(byName?.edgeCost ?? 0) || 0);
   };
+
+  const edgesAlreadyPaid = (item: CatalogItem | OwnedChrome) => {
+    const owned = (localSheet?.inventory?.cyberware || []).find(
+      (row: OwnedChrome) => Number(row.id) === Number(item.id),
+    ) as OwnedChrome | undefined;
+    return Boolean(owned?.edgesPaid || owned?.edgesSpent);
+  };
+
+  /** Custo real a debitar agora (0 se Edges já foram pagos nesta peça). */
+  const edgeCostOf = (item: CatalogItem | OwnedChrome) =>
+    edgesAlreadyPaid(item) ? 0 : catalogEdgeCostOf(item);
 
   const refreshAll = async () => {
     await Promise.all([
@@ -316,7 +330,7 @@ export const CyberwareShop = ({
         const list = (prev?.inventory?.cyberware || []) as OwnedChrome[];
         const cyberware = list.map((row) =>
           Number(row.id) === Number(item.id)
-            ? { ...row, installed: true }
+            ? { ...row, installed: true, edgesPaid: true }
             : row,
         );
         return {
@@ -385,7 +399,7 @@ export const CyberwareShop = ({
         0,
         Number(
           removeTarget.edgeCost ??
-            edgeCostOf(removeTarget) ??
+            catalogEdgeCostOf(removeTarget) ??
             0,
         ) || 0,
       )
@@ -510,7 +524,9 @@ export const CyberwareShop = ({
           <div className={styles.grid}>
             {ownedPending.map((item) => {
               const cat = catalog.find((c) => Number(c.id) === Number(item.id));
-              const cost = edgeCostOf(item);
+              const catalogCost = catalogEdgeCostOf(item);
+              const prepaid = edgesAlreadyPaid(item);
+              const cost = prepaid ? 0 : catalogCost;
               const canInstall = edges >= cost;
               return (
                 <article
@@ -530,7 +546,11 @@ export const CyberwareShop = ({
                         : item.type || 'chrome'}
                       {' · pago '}
                       {formatEddies(Number(item.price) || 0)}
-                      {cost > 0 ? ` · inst. ${cost} E` : ''}
+                      {prepaid
+                        ? ' · Edges já pagos'
+                        : catalogCost > 0
+                          ? ` · inst. ${catalogCost} E`
+                          : ''}
                     </span>
                     <p>{cat?.effect || cat?.description || 'Pronto para instalar.'}</p>
                   </div>
@@ -539,12 +559,18 @@ export const CyberwareShop = ({
                     disabled={busy || !canInstall}
                     title={
                       canInstall
-                        ? undefined
+                        ? prepaid
+                          ? 'Reinstalação sem custo de Edges'
+                          : undefined
                         : `Precisa ${cost} E (ficha tem ${edges} E)`
                     }
                     onClick={() => installOwned(item)}
                   >
-                    {canInstall ? `Instalar (${cost} E)` : `Sem E (${cost})`}
+                    {canInstall
+                      ? prepaid
+                        ? 'Reinstalar (0 E)'
+                        : `Instalar (${cost} E)`
+                      : `Sem E (${cost})`}
                   </button>
                 </article>
               );
@@ -628,7 +654,9 @@ export const CyberwareShop = ({
         ) : (
           <div className={styles.grid}>
             {available.map((item) => {
-              const edgeCost = edgeCostOf(item);
+              const catalogCost = catalogEdgeCostOf(item);
+              const prepaid = edgesAlreadyPaid(item);
+              const edgeCost = prepaid ? 0 : catalogCost;
               const eddiePrice = displayPrice(item);
               const alreadyOwned = ownedIds.has(Number(item.id));
               const canAfford = campaignEddies >= eddiePrice;
@@ -645,8 +673,12 @@ export const CyberwareShop = ({
                     <span>
                       {SLOT_LABELS[item.type as CyberWareSlot] || item.type} ·{' '}
                       {item.rarity || '—'} · {formatEddies(eddiePrice)}
-                      {edgeCost > 0 ? ` · inst. ${edgeCost} E` : ''} · carga{' '}
-                      {item.implant_cost ?? item.implantCost ?? '—'}
+                      {prepaid
+                        ? ' · Edges já pagos'
+                        : catalogCost > 0
+                          ? ` · inst. ${catalogCost} E`
+                          : ''}{' '}
+                      · carga {item.implant_cost ?? item.implantCost ?? '—'}
                     </span>
                     <p>{item.effect || item.description}</p>
                   </div>
@@ -657,13 +689,17 @@ export const CyberwareShop = ({
                         disabled={busy || !canInstall}
                         title={
                           canInstall
-                            ? undefined
+                            ? prepaid
+                              ? 'Reinstalação sem custo de Edges'
+                              : undefined
                             : `Precisa ${edgeCost} E (ficha tem ${edges} E)`
                         }
                         onClick={() => installOwned(item)}
                       >
                         {canInstall
-                          ? `Instalar (${edgeCost} E)`
+                          ? prepaid
+                            ? 'Reinstalar (0 E)'
+                            : `Instalar (${edgeCost} E)`
                           : `Sem E (${edgeCost})`}
                       </button>
                     ) : (
