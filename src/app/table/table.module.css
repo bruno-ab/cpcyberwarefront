@@ -10,6 +10,9 @@
   height: calc(100dvh - 7.5rem);
   overflow: hidden;
   background: #030508;
+  /* Clearance for floating SceneBar vs retractable HUD tabs/panels */
+  --vtt-scene-dock-right: 0.65rem;
+  --vtt-scene-dock-max-w: min(520px, 90vw);
 }
 
 .boardRoot[data-panels='both'] .boardLayer {
@@ -28,6 +31,19 @@
   .boardRoot[data-panels='both'] .boardLayer {
     padding-left: 2.75rem;
     padding-right: 2.75rem;
+  }
+
+  /* Right HUD open (320px panel + edge margin) */
+  .boardRoot[data-panels='right'],
+  .boardRoot[data-panels='both'] {
+    --vtt-scene-dock-right: calc(320px + 1.15rem);
+    --vtt-scene-dock-max-w: min(520px, calc(100vw - 320px - 2.5rem));
+  }
+
+  /* Right HUD collapsed — leave room for the vertical tab strip */
+  .boardRoot[data-panels='left'],
+  .boardRoot[data-panels='none'] {
+    --vtt-scene-dock-right: calc(10rem + 0.5rem);
   }
 }
 
@@ -90,13 +106,14 @@
 .sceneDock {
   position: absolute;
   top: 3.1rem;
-  right: 0.65rem;
+  right: var(--vtt-scene-dock-right, 0.65rem);
   left: auto;
   transform: none;
-  z-index: 22;
-  max-width: min(520px, 90vw);
+  z-index: 23;
+  max-width: var(--vtt-scene-dock-max-w, min(520px, 90vw));
   pointer-events: auto;
   opacity: 0.92;
+  transition: right 0.22s ease, max-width 0.22s ease;
 }
 
 .sceneDock:hover {
@@ -967,10 +984,21 @@
     height: calc(100dvh - 6.5rem);
   }
 
+  .boardRoot[data-panels='right'],
+  .boardRoot[data-panels='both'] {
+    --vtt-scene-dock-right: calc(min(280px, 88vw) + 0.85rem);
+    --vtt-scene-dock-max-w: min(480px, calc(100vw - min(280px, 88vw) - 1.5rem));
+  }
+
+  .boardRoot[data-panels='left'],
+  .boardRoot[data-panels='none'] {
+    --vtt-scene-dock-right: calc(9rem + 0.45rem);
+  }
+
   .sceneDock {
     top: auto;
     bottom: 7.5rem;
-    right: 0.45rem;
+    right: var(--vtt-scene-dock-right, 0.45rem);
     transform: scale(0.92);
   }
 }
