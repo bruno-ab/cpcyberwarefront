@@ -1,0 +1,135 @@
+.panel {
+  position: absolute;
+  top: 3.25rem;
+  bottom: 5.5rem;
+  z-index: 24;
+  display: flex;
+  flex-direction: column;
+  width: min(320px, 92vw);
+  max-width: 320px;
+  pointer-events: none;
+  transition:
+    transform 0.22s ease,
+    opacity 0.18s ease;
+}
+
+.left {
+  left: 0.5rem;
+}
+
+.right {
+  right: 0.5rem;
+}
+
+.panel[data-collapsed='1'] {
+  width: auto;
+  max-width: none;
+}
+
+.panel[data-collapsed='1'] .body {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(var(--slide, -12px));
+  max-height: 0;
+  overflow: hidden;
+  padding: 0;
+  border-width: 0;
+}
+
+.left[data-collapsed='1'] {
+  --slide: -12px;
+}
+
+.right[data-collapsed='1'] {
+  --slide: 12px;
+}
+
+.left[data-collapsed='1'] .tab {
+  border-radius: 0 4px 4px 0;
+}
+
+.right[data-collapsed='1'] .tab {
+  border-radius: 4px 0 0 4px;
+}
+
+.tab {
+  pointer-events: auto;
+  appearance: none;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-cyan, #02d7f2);
+  background: rgba(8, 12, 18, 0.72);
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(2, 215, 242, 0.15);
+}
+
+.right .tab {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.tabChevron {
+  width: 0.45rem;
+  height: 0.45rem;
+  border: solid var(--cp-cyan, #02d7f2);
+  border-width: 0 2px 2px 0;
+  transform: rotate(135deg);
+  transition: transform 0.2s ease;
+}
+
+.left[data-collapsed='1'] .tabChevron {
+  transform: rotate(-45deg);
+}
+
+.right .tabChevron {
+  transform: rotate(-45deg);
+}
+
+.right[data-collapsed='1'] .tabChevron {
+  transform: rotate(135deg);
+}
+
+.tabLabel {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body {
+  pointer-events: auto;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.55rem;
+  background: rgba(6, 8, 14, 0.78);
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 35%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s ease;
+}
+
+@media (max-width: 720px) {
+  .panel {
+    top: 2.75rem;
+    bottom: 6.25rem;
+    width: min(280px, 88vw);
+  }
+}

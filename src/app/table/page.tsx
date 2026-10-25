@@ -24,10 +24,17 @@ import {
   type VttSceneSummary,
 } from '../../components/vtt/SceneBar';
 import { CombatHud } from '../../components/vtt/CombatHud';
+import { type ViewMode } from '../../components/vtt/NightCityBar';
 import {
-  NightCityBar,
-  type ViewMode,
-} from '../../components/vtt/NightCityBar';
+  FloatingHudPanel,
+  readHudPanelPref,
+  writeHudPanelPref,
+  HUD_PREF_LEFT,
+  HUD_PREF_RIGHT,
+} from '../../components/vtt/FloatingHudPanel';
+import { TableTopHud } from '../../components/vtt/TableTopHud';
+import { GmToolBar } from '../../components/vtt/GmToolBar';
+import { CombatHotbar } from '../../components/vtt/CombatHotbar';
 import {
   ReactionBar,
   type ReactionId,
@@ -369,6 +376,10 @@ const TablePage = () => {
     null,
   );
   const [gmTab, setGmTab] = useState<'tokens' | 'map' | 'scene'>('tokens');
+  const canvasWrapRef = useRef<HTMLDivElement>(null);
+  const [boardSize, setBoardSize] = useState({ w: 900, h: 560 });
+  const [leftHudCollapsed, setLeftHudCollapsed] = useState(false);
+  const [rightHudCollapsed, setRightHudCollapsed] = useState(false);
   const [handoutBody, setHandoutBody] = useState('');
   const [handoutFrom, setHandoutFrom] = useState('Rogue');
   const [uploadingBg, setUploadingBg] = useState(false);
@@ -1540,6 +1551,145 @@ const TablePage = () => {
 
   const runnerForPanel = myRosterChar;
 
+  useEffect(() => {
+    setLeftHudCollapsed(readHudPanelPref(HUD_PREF_LEFT, false));
+    setRightHudCollapsed(readHudPanelPref(HUD_PREF_RIGHT, false));
+  }, []);
+
+  const toggleLeftHud = useCallback(() => {
+    setLeftHudCollapsed((v) => {
+      const next = !v;
+      writeHudPanelPref(HUD_PREF_LEFT, next);
+      return next;
+    });
+  }, []);
+
+  const toggleRightHud = useCallback(() => {
+    setRightHudCollapsed((v) => {
+      const next = !v;
+      writeHudPanelPref(HUD_PREF_RIGHT, next);
+      return next;
+    });
+  }, []);
+
+  const toggleBothHuds = useCallback(() => {
+    setLeftHudCollapsed((v) => {
+      const next = !v;
+      writeHudPanelPref(HUD_PREF_LEFT, next);
+      return next;
+    });
+    setRightHudCollapsed((v) => {
+      const next = !v;
+      writeHudPanelPref(HUD_PREF_RIGHT, next);
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    const el = canvasWrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setBoardSize({
+        w: Math.max(280, entry.contentRect.width),
+        h: Math.max(200, entry.contentRect.height),
+      });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const sceneTitle = useMemo(() => {
+    const sceneName =
+      scenes.find((s) => s.id === sceneId)?.name ||
+      state?.map?.name ||
+      '…';
+    const camp = campaign?.name || `Campanha ${campaignId}`;
+    return `${sceneName} · ${camp}`;
+  }, [scenes, sceneId, state?.map?.name, campaign?.name, campaignId]);
+
+  const hudPanelsMode = useMemo(() => {
+    if (!leftHudCollapsed && !rightHudCollapsed) return 'both';
+    if (!leftHudCollapsed) return 'left';
+    if (!rightHudCollapsed) return 'right';
+    return 'none';
+  }, [leftHudCollapsed, rightHudCollapsed]);
+
+  const combatCurrent = state?.initiative?.[state?.turnIndex ?? 0];
+  const combatMyTurn = useMemo(() => {
+    if (!combatCurrent) return false;
+    return isGm || myTokenIds.includes(combatCurrent.tokenId);
+  }, [combatCurrent, isGm, myTokenIds]);
+
+  const boardViewW = boardSize.w;
+  const boardViewH = boardSize.h;
+
+  const setViewModeShortcut = useCallback(
+    (m: ViewMode) => {
+      if (m !== 'scan') setScanResult(null);
+      if (m !== 'net') setNetMenu(null);
+      setLocalViewMode(m);
+      intent('view:mode', { mode: m, force: isGm });
+    },
+    [intent, isGm],
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        el?.isContentEditable
+      ) {
+        return;
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        toggleBothHuds();
+        return;
+      }
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        if (isGm) intent('initiative:next', {});
+        else if (combatMyTurn) intent('initiative:delay', {});
+        return;
+      }
+      if (e.key === '1') {
+        setViewModeShortcut('normal');
+        return;
+      }
+      if (e.key === '2') {
+        if (isGm || (myTokenIds.length > 0 && hasOptics)) {
+          activateKiroshi(isGm ? { bypass: true } : undefined);
+        }
+        return;
+      }
+      if (e.key === '3') {
+        if (isGm || (myTokenIds.length > 0 && hasNetDeck)) {
+          setViewModeShortcut('net');
+        }
+        return;
+      }
+      if (e.key === '4') {
+        if (isGm || myTokenIds.length > 0) setSafeVision((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [
+    isGm,
+    combatMyTurn,
+    intent,
+    setViewModeShortcut,
+    myTokenIds.length,
+    hasOptics,
+    hasNetDeck,
+    activateKiroshi,
+    toggleBothHuds,
+  ]);
+
   const chromeBootCharacter = useMemo(() => {
     if (!myRosterChar) return null;
     return {
@@ -1550,6 +1700,341 @@ const TablePage = () => {
     };
   }, [myRosterChar]);
 
+  const requestDodgeRoll = () => {
+    const target =
+      Number(state?.presence?.find((p) => p.role === 'player')?.playerId) ||
+      myPlayerId;
+    intent('roll:request', {
+      toPlayerId: target,
+      attr: 'dexterity',
+      skill: 'athletics',
+      label: 'Reflexos + Esquiva',
+    });
+  };
+
+  const gmVisaoTools = isGm ? (
+    <>
+      <HudButton
+        variant={state?.published !== false ? 'primary' : 'ghost'}
+        onClick={() =>
+          intent('scene:publish', { published: state?.published === false })
+        }
+      >
+        {state?.published !== false ? 'Publicada' : 'Prep (oculta)'}
+      </HudButton>
+      <HudButton
+        variant="ghost"
+        onClick={() => intent('radio:jam', { jammed: !state?.radioJammed })}
+      >
+        {state?.radioJammed ? 'Rádio OK' : 'Jammer'}
+      </HudButton>
+    </>
+  ) : null;
+
+  const gmSpawnTools = (
+    <>
+      <HudButton onClick={spawnRoster}>Spawn roster</HudButton>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('token:add', {
+            name: 'NPC',
+            kind: 'npc',
+            affiliation: 'Unknown',
+            arThreat: 'med',
+            visibleWeapons: ['Sidearm (visible)'],
+            x: 8,
+            y: 8,
+            color: '#ff2a6d',
+          })
+        }
+      >
+        + NPC
+      </HudButton>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('token:add', {
+            name: 'ICE',
+            x: 12,
+            y: 8,
+            hidden: true,
+            color: '#FF2A6D',
+          })
+        }
+      >
+        + Hidden
+      </HudButton>
+    </>
+  );
+
+  const gmDeviceTools = (
+    <>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('device:add', {
+            kind: 'camera',
+            x: 6,
+            y: 6,
+            name: 'camera',
+            floor: currentFloor,
+          })
+        }
+      >
+        + Câmera
+      </HudButton>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('device:add', {
+            kind: 'terminal',
+            x: 6,
+            y: 6,
+            name: 'terminal',
+            floor: currentFloor,
+          })
+        }
+      >
+        + Terminal
+      </HudButton>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('device:add', {
+            kind: 'turret',
+            x: 6,
+            y: 6,
+            name: 'turret',
+            floor: currentFloor,
+          })
+        }
+      >
+        + Torreta
+      </HudButton>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('device:add', {
+            kind: 'door',
+            x: 6,
+            y: 6,
+            name: 'door',
+            floor: currentFloor,
+          })
+        }
+      >
+        + Porta
+      </HudButton>
+      <HudButton variant="ghost" onClick={() => intent('breach:start', {})}>
+        Breach
+      </HudButton>
+      {canSpawnDrone && (
+        <>
+          {(
+            [
+              ['watcher', 'Watcher'],
+              ['scout', 'Scout'],
+              ['combat', 'Combat'],
+              ['tech-bot', 'Tech-bot'],
+              ['summon-ice', 'ICE summon'],
+            ] as const
+          ).map(([id, label]) => (
+            <HudButton
+              key={id}
+              variant="ghost"
+              onClick={() => spawnDrone(id)}
+            >
+              {label}
+            </HudButton>
+          ))}
+        </>
+      )}
+    </>
+  );
+
+  const gmAlertTools = (
+    <>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('clock:set', {
+            label: 'Patrulha',
+            value: 0,
+            max: 4,
+          })
+        }
+      >
+        + Relógio
+      </HudButton>
+      <HudButton
+        variant="ghost"
+        onClick={() => intent('objective:set', { text: 'Novo objetivo' })}
+      >
+        + Objetivo
+      </HudButton>
+      <HudButton variant="ghost" onClick={requestDodgeRoll}>
+        Pedir rolagem
+      </HudButton>
+    </>
+  );
+
+  const gmMapTools = (
+    <>
+      <HudButton
+        variant={tool === 'fog' ? 'primary' : 'ghost'}
+        onClick={() => setTool(tool === 'fog' ? 'select' : 'fog')}
+      >
+        Fog brush
+      </HudButton>
+      <label className={styles.inlineLabel}>
+        Raio
+        <input
+          type="number"
+          min={0}
+          max={5}
+          value={fogRadius}
+          onChange={(e) =>
+            setFogRadius(Math.min(5, Math.max(0, Number(e.target.value) || 0)))
+          }
+          aria-label="Raio do fog"
+        />
+      </label>
+      <HudButton
+        variant={fogMode === 'reveal' ? 'primary' : 'ghost'}
+        onClick={() => setFogMode('reveal')}
+      >
+        Reveal
+      </HudButton>
+      <HudButton
+        variant={fogMode === 'hide' ? 'primary' : 'ghost'}
+        onClick={() => setFogMode('hide')}
+      >
+        Hide
+      </HudButton>
+      <HudButton variant="ghost" onClick={() => intent('fog:blank', {})}>
+        Fog fill
+      </HudButton>
+      <HudButton
+        variant={tool === 'wall' ? 'primary' : 'ghost'}
+        onClick={() => setTool(tool === 'wall' ? 'select' : 'wall')}
+      >
+        Wall
+      </HudButton>
+      <HudButton
+        variant={tool === 'pan' ? 'primary' : 'ghost'}
+        onClick={() => setTool(tool === 'pan' ? 'select' : 'pan')}
+      >
+        Pan
+      </HudButton>
+      <HudButton
+        variant="ghost"
+        disabled={uploadingBg}
+        onClick={() => bgInputRef.current?.click()}
+      >
+        {uploadingBg ? 'Upload…' : 'Background'}
+      </HudButton>
+      <input
+        ref={bgInputRef}
+        type="file"
+        accept="image/*"
+        className={styles.hiddenInput}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void uploadBackground(f);
+        }}
+      />
+      <HudButton
+        variant="ghost"
+        disabled={importingUvtt}
+        onClick={() => uvttInputRef.current?.click()}
+        title="Universal VTT (.dd2vtt / .uvtt / .df2vtt)"
+      >
+        {importingUvtt ? 'UVTT…' : 'Import UVTT'}
+      </HudButton>
+      <input
+        ref={uvttInputRef}
+        type="file"
+        accept=".dd2vtt,.df2vtt,.uvtt,application/json"
+        className={styles.hiddenInput}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void importUvtt(f);
+        }}
+      />
+      {mapBgSrc && (
+        <HudButton
+          variant="ghost"
+          onClick={() => intent('map:background', { url: null })}
+        >
+          Limpar BG
+        </HudButton>
+      )}
+    </>
+  );
+
+  const gmSceneTabTools = (
+    <>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('initiative:set', {
+            order: (state?.tokens || []).map((t, i) => ({
+              tokenId: t.id,
+              name: t.name,
+              score: 10 - i,
+            })),
+          })
+        }
+      >
+        Iniciativa
+      </HudButton>
+      <HudButton variant="ghost" onClick={() => intent('initiative:next', {})}>
+        Próximo turno
+      </HudButton>
+      <HudButton
+        variant="ghost"
+        onClick={() => intent('radio:set', { station: 'watson-fm' })}
+      >
+        Rádio
+      </HudButton>
+    </>
+  );
+
+  const gmHandoutRow =
+    isGm && gmTab === 'scene' ? (
+      <div className={styles.handoutRow}>
+        <input
+          value={handoutFrom}
+          onChange={(e) => setHandoutFrom(e.target.value)}
+          placeholder="De"
+          aria-label="Remetente"
+        />
+        <input
+          value={handoutBody}
+          onChange={(e) => setHandoutBody(e.target.value)}
+          placeholder="Texto do SMS…"
+          aria-label="Corpo do handout"
+        />
+        <HudButton
+          onClick={() => {
+            const body = handoutBody.trim();
+            if (!body) return;
+            intent('handout:push', {
+              channel: 'sms',
+              from: handoutFrom || 'Fixer',
+              title: 'SMS',
+              body,
+              toPlayerId: myPlayerId || 1,
+            });
+            setHandoutBody('');
+          }}
+        >
+          Push SMS
+        </HudButton>
+      </div>
+    ) : null;
+
   return (
     <PageFrame>
       <ChromeBootSequence
@@ -1558,8 +2043,9 @@ const TablePage = () => {
         onDone={() => setChromeBootOpen(false)}
       />
       <div
-        className={styles.layout}
+        className={styles.boardRoot}
         data-view={viewMode}
+        data-panels={hudPanelsMode}
         data-sandy={sandyFx ? '1' : '0'}
         data-aim={aimMode ? '1' : '0'}
         data-humanity={
@@ -1572,126 +2058,93 @@ const TablePage = () => {
                 : 'ok'
         }
       >
-        <div className={styles.runnerCol}>
-          <RunnerPanel
-            character={runnerForPanel}
-            difficulty={difficulty}
-            onOpenSheet={() => setSheetPopupOpen(true)}
-            onRoll={(opts) => {
-              if (runnerForPanel) setSelectedCharId(runnerForPanel.id);
-              rollDice(opts);
-            }}
-            onChrome={(name) => {
-              const tid =
-                state?.tokens?.find(
-                  (t) =>
-                    Number(t.ownerPlayerId) === Number(myPlayerId) ||
-                    Number(t.controllerPlayerId) === Number(myPlayerId),
-                )?.id || selectedTokenId;
-              if (!tid) return;
-              intent('chrome:activate', {
-                tokenId: tid,
-                chrome: name,
-              });
-              playCyberSound('ui', { volume: 0.3 });
-            }}
-          />
-        </div>
+        <TableTopHud
+          sceneTitle={sceneTitle}
+          roleLabel={`${isGm ? 'GM' : 'Player'} · ${myName}`}
+          isGm={isGm}
+          viewMode={viewMode}
+          floor={currentFloor}
+          jammed={!!state?.radioJammed}
+          published={state?.published !== false}
+          clocks={state?.threatClocks || []}
+          objectives={state?.objectives || []}
+          safeVision={safeVision}
+          hasOptics={hasOptics}
+          hasNetDeck={hasNetDeck}
+          hasTokenOnTable={myTokenIds.length > 0}
+          scanTier={scanResult?.ok ? scanResult.tier : null}
+          scanBusy={scanBusy}
+          radioStation={state?.radioStation}
+          onViewMode={setViewModeShortcut}
+          onFloor={(f) => intent('floor:set', { floor: f })}
+          onSafeVision={setSafeVision}
+          onKiroshiScan={activateKiroshi}
+          onClearScan={clearScan}
+          onToggleObjective={(id, done) =>
+            intent('objective:set', { id, done })
+          }
+        />
 
-        <HudPanel
-          title={`Mesa — ${
-            scenes.find((s) => s.id === sceneId)?.name ||
-            state?.map?.name ||
-            '…'
-          } · ${campaign?.name || `Campanha ${campaignId}`}${
-            state?.published === false ? ' · PREP' : ''
-          }${state?.radioJammed ? ' · JAM' : ''}`}
-          className={styles.stage}
+        <FloatingHudPanel
+          side="left"
+          title="Runner"
+          collapsed={leftHudCollapsed}
+          onToggle={toggleLeftHud}
         >
-          <SceneBar
-            scenes={scenes}
-            activeSceneId={activeSceneId}
-            currentSceneId={sceneId}
-            isGm={isGm}
-            busy={scenesBusy}
-            onSelect={(id) => switchToScene(id)}
-            onCreate={(name, copy) => void createScene(name, !!copy)}
-            onRename={(id, name) => void renameScene(id, name)}
-            onActivate={(id) => void activateScene(id)}
-            onDelete={(id) => void deleteScene(id)}
-          />
+          <div className={styles.floatPanelInner}>
+            <RunnerPanel
+              character={runnerForPanel}
+              difficulty={difficulty}
+              onOpenSheet={() => setSheetPopupOpen(true)}
+              onRoll={(opts) => {
+                if (runnerForPanel) setSelectedCharId(runnerForPanel.id);
+                rollDice(opts);
+              }}
+              onChrome={(name) => {
+                const tid =
+                  state?.tokens?.find(
+                    (t) =>
+                      Number(t.ownerPlayerId) === Number(myPlayerId) ||
+                      Number(t.controllerPlayerId) === Number(myPlayerId),
+                  )?.id || selectedTokenId;
+                if (!tid) return;
+                intent('chrome:activate', {
+                  tokenId: tid,
+                  chrome: name,
+                });
+                playCyberSound('ui', { volume: 0.3 });
+              }}
+            />
+            <div className={styles.diceHints}>
+              <HudButton variant="ghost" onClick={() => setPhoneOpen(true)}>
+                Celular
+                {(state?.handouts?.length || 0) > 0
+                  ? ` (${state?.handouts.length})`
+                  : ''}
+              </HudButton>
+              <HudButton variant="ghost" onClick={loadReplay}>
+                Braindance
+              </HudButton>
+            </div>
+          </div>
+        </FloatingHudPanel>
 
-          <ReactionBar
-            onReact={(id: ReactionId) => {
-              intent('chat:emote', { emote: id });
-              playCyberSound('ui', { volume: 0.3 });
-            }}
-          />
-
-          <NightCityBar
-            isGm={isGm}
-            viewMode={viewMode}
-            floor={currentFloor}
-            published={state?.published !== false}
-            jammed={!!state?.radioJammed}
-            clocks={state?.threatClocks || []}
-            objectives={state?.objectives || []}
-            safeVision={safeVision}
-            hasOptics={hasOptics}
-            hasNetDeck={hasNetDeck}
-            hasTokenOnTable={myTokenIds.length > 0}
-            scanTier={scanResult?.ok ? scanResult.tier : null}
-            scanBusy={scanBusy}
-            onViewMode={(m) => {
-              if (m !== 'scan') setScanResult(null);
-              if (m !== 'net') setNetMenu(null);
-              setLocalViewMode(m);
-              intent('view:mode', { mode: m, force: isGm });
-            }}
-            onFloor={(f) => intent('floor:set', { floor: f })}
-            onPublish={(p) => intent('scene:publish', { published: p })}
-            onJam={(j) => intent('radio:jam', { jammed: j })}
-            onAddClock={() =>
-              intent('clock:set', {
-                label: 'Patrulha',
-                value: 0,
-                max: 4,
-              })
-            }
-            onAddObjective={() =>
-              intent('objective:set', { text: 'Novo objetivo' })
-            }
-            onToggleObjective={(id, done) =>
-              intent('objective:set', { id, done })
-            }
-            onAddDevice={(kind) =>
-              intent('device:add', {
-                kind,
-                x: 6,
-                y: 6,
-                name: kind,
-                floor: currentFloor,
-              })
-            }
-            onSafeVision={setSafeVision}
-            onRequestRoll={() => {
-              const target =
-                Number(
-                  state?.presence?.find((p) => p.role === 'player')
-                    ?.playerId,
-                ) || myPlayerId;
-              intent('roll:request', {
-                toPlayerId: target,
-                attr: 'dexterity',
-                skill: 'athletics',
-                label: 'Reflexos + Esquiva',
-              });
-            }}
-            onKiroshiScan={activateKiroshi}
-            onClearScan={clearScan}
-            canSpawnDrone={canSpawnDrone}
-            onSpawnDrone={spawnDrone}
-          />
+        <div className={styles.boardLayer}>
+          <div className={styles.stageBody}>
+            <div className={styles.sceneDock}>
+              <SceneBar
+                scenes={scenes}
+                activeSceneId={activeSceneId}
+                currentSceneId={sceneId}
+                isGm={isGm}
+                busy={scenesBusy}
+                onSelect={(id) => switchToScene(id)}
+                onCreate={(name, copy) => void createScene(name, !!copy)}
+                onRename={(id, name) => void renameScene(id, name)}
+                onActivate={(id) => void activateScene(id)}
+                onDelete={(id) => void deleteScene(id)}
+              />
+            </div>
           {scanToast && (
             <div className={styles.scanToast} role="status">
               {scanToast}
@@ -1711,287 +2164,62 @@ const TablePage = () => {
             />
           )}
 
-          <CombatHud
-            isGm={isGm}
-            combatActive={!!state?.combat?.active}
-            round={state?.combat?.round || 1}
-            turnIndex={state?.turnIndex || 0}
-            initiative={state?.initiative || []}
-            turnEconomy={state?.turnEconomy}
-            myTokenIds={myTokenIds}
-            onStart={() => intent('combat:start', {})}
-            onRollAll={() => intent('initiative:roll-all', { floor: currentFloor })}
-            onNext={() => intent('initiative:next', {})}
-            onDelay={() => intent('initiative:delay', {})}
-            onHold={() => intent('initiative:hold', {})}
-            onEnd={() => intent('combat:end', {})}
-            onAction={(kind) => intent('turn:action', { kind })}
-            aimMode={aimMode}
-            aimSummary={aimPreview?.summary || null}
-            aimReady={!!aimPreview?.canShoot}
-            onToggleAim={() => {
-              setAimMode((v) => !v);
-              setAimHoverId(null);
-              playCyberSound('ui', { volume: 0.25 });
-            }}
-            onAttack={() => {
-              if (!aimMode) {
-                setAimMode(true);
-                playCyberSound('ui', { volume: 0.25 });
-                return;
+            <CombatHotbar
+              combatActive={!!state?.combat?.active}
+              round={state?.combat?.round || 1}
+              currentTurnName={combatCurrent?.name}
+              myTurn={combatMyTurn}
+              isGm={isGm}
+              aimMode={aimMode}
+              aimReady={!!aimPreview?.canShoot}
+              aimSummary={aimPreview?.summary || null}
+              canNet={
+                isGm || (myTokenIds.length > 0 && hasNetDeck)
               }
-              fireAttack();
-            }}
-            onSandy={() => {
-              const tid =
-                state?.turnEconomy?.tokenId ||
-                selectedTokenId ||
-                myTokenIds[0];
-              if (!tid) return;
-              intent('chrome:activate', {
-                tokenId: tid,
-                chrome: 'sandevistan',
-              });
-            }}
-          />
+              canShoot={
+                !!state?.combat?.active &&
+                (combatMyTurn || isGm) &&
+                (!!selectedTokenId || !!aimTarget)
+              }
+              onShoot={() => {
+                if (!aimMode) {
+                  setAimMode(true);
+                  setAimHoverId(null);
+                  playCyberSound('ui', { volume: 0.25 });
+                  return;
+                }
+                fireAttack();
+              }}
+              onQuickhack={() => setViewModeShortcut('net')}
+              onDodge={() =>
+                rollDice({
+                  attr: 'dexterity',
+                  skill: 'athletics',
+                  label: 'Reflexos + Esquiva',
+                })
+              }
+              onUseItem={() => {}}
+              onPassTurn={() => {
+                if (isGm) intent('initiative:next', {});
+                else if (combatMyTurn) intent('initiative:delay', {});
+              }}
+            />
 
-          <div className={styles.toolbar}>
-            <span className={styles.roleBadge} data-role={myRole}>
-              {isGm ? 'GM' : 'Player'} · {myName}
-            </span>
-            {isGm && (
-              <div className={styles.gmTabs}>
-                {(['tokens', 'map', 'scene'] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    className={styles.gmTab}
-                    data-active={gmTab === tab ? '1' : '0'}
-                    onClick={() => setGmTab(tab)}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-            )}
-            {isGm && gmTab === 'tokens' && (
-              <>
-                <HudButton onClick={spawnRoster}>Spawn roster</HudButton>
-                <HudButton
-                  variant="ghost"
-                  onClick={() =>
-                    intent('token:add', {
-                      name: 'NPC',
-                      kind: 'npc',
-                      affiliation: 'Unknown',
-                      arThreat: 'med',
-                      visibleWeapons: ['Sidearm (visible)'],
-                      x: 8,
-                      y: 8,
-                      color: '#ff2a6d',
-                    })
-                  }
-                >
-                  + NPC
-                </HudButton>
-                <HudButton
-                  variant="ghost"
-                  onClick={() =>
-                    intent('token:add', {
-                      name: 'ICE',
-                      x: 12,
-                      y: 8,
-                      hidden: true,
-                      color: '#FF2A6D',
-                    })
-                  }
-                >
-                  + Hidden
-                </HudButton>
-              </>
-            )}
-            {isGm && gmTab === 'map' && (
-              <>
-                <HudButton
-                  variant={tool === 'fog' ? 'primary' : 'ghost'}
-                  onClick={() => setTool(tool === 'fog' ? 'select' : 'fog')}
-                >
-                  Fog brush
-                </HudButton>
-                <label className={styles.inlineLabel}>
-                  Raio
-                  <input
-                    type="number"
-                    min={0}
-                    max={5}
-                    value={fogRadius}
-                    onChange={(e) =>
-                      setFogRadius(
-                        Math.min(5, Math.max(0, Number(e.target.value) || 0)),
-                      )
-                    }
-                    aria-label="Raio do fog"
-                  />
-                </label>
-                <HudButton
-                  variant={fogMode === 'reveal' ? 'primary' : 'ghost'}
-                  onClick={() => setFogMode('reveal')}
-                >
-                  Reveal
-                </HudButton>
-                <HudButton
-                  variant={fogMode === 'hide' ? 'primary' : 'ghost'}
-                  onClick={() => setFogMode('hide')}
-                >
-                  Hide
-                </HudButton>
-                <HudButton
-                  variant="ghost"
-                  onClick={() => intent('fog:blank', {})}
-                >
-                  Fog fill
-                </HudButton>
-                <HudButton
-                  variant={tool === 'wall' ? 'primary' : 'ghost'}
-                  onClick={() => setTool(tool === 'wall' ? 'select' : 'wall')}
-                >
-                  Wall
-                </HudButton>
-                <HudButton
-                  variant={tool === 'pan' ? 'primary' : 'ghost'}
-                  onClick={() => setTool(tool === 'pan' ? 'select' : 'pan')}
-                >
-                  Pan
-                </HudButton>
-                <HudButton
-                  variant="ghost"
-                  disabled={uploadingBg}
-                  onClick={() => bgInputRef.current?.click()}
-                >
-                  {uploadingBg ? 'Upload…' : 'Background'}
-                </HudButton>
-                <input
-                  ref={bgInputRef}
-                  type="file"
-                  accept="image/*"
-                  className={styles.hiddenInput}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void uploadBackground(f);
-                  }}
-                />
-                <HudButton
-                  variant="ghost"
-                  disabled={importingUvtt}
-                  onClick={() => uvttInputRef.current?.click()}
-                  title="Universal VTT (.dd2vtt / .uvtt / .df2vtt)"
-                >
-                  {importingUvtt ? 'UVTT…' : 'Import UVTT'}
-                </HudButton>
-                <input
-                  ref={uvttInputRef}
-                  type="file"
-                  accept=".dd2vtt,.df2vtt,.uvtt,application/json"
-                  className={styles.hiddenInput}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void importUvtt(f);
-                  }}
-                />
-                {mapBgSrc && (
-                  <HudButton
-                    variant="ghost"
-                    onClick={() => intent('map:background', { url: null })}
-                  >
-                    Limpar BG
-                  </HudButton>
-                )}
-              </>
-            )}
-            {isGm && gmTab === 'scene' && (
-              <>
-                <HudButton
-                  variant="ghost"
-                  onClick={() => intent('breach:start', {})}
-                >
-                  Breach
-                </HudButton>
-                <HudButton
-                  variant="ghost"
-                  onClick={() =>
-                    intent('initiative:set', {
-                      order: (state?.tokens || []).map((t, i) => ({
-                        tokenId: t.id,
-                        name: t.name,
-                        score: 10 - i,
-                      })),
-                    })
-                  }
-                >
-                  Iniciativa
-                </HudButton>
-                <HudButton
-                  variant="ghost"
-                  onClick={() => intent('initiative:next')}
-                >
-                  Próximo turno
-                </HudButton>
-                <HudButton
-                  variant="ghost"
-                  onClick={() =>
-                    intent('radio:set', { station: 'watson-fm' })
-                  }
-                >
-                  Rádio
-                </HudButton>
-              </>
-            )}
-            <HudButton variant="ghost" onClick={() => setPhoneOpen(true)}>
-              Celular
-              {(state?.handouts?.length || 0) > 0
-                ? ` (${state?.handouts.length})`
-                : ''}
-            </HudButton>
-            <HudButton variant="ghost" onClick={loadReplay}>
-              Braindance
-            </HudButton>
-          </div>
-
-          {isGm && gmTab === 'scene' && (
-            <div className={styles.handoutRow}>
-              <input
-                value={handoutFrom}
-                onChange={(e) => setHandoutFrom(e.target.value)}
-                placeholder="De"
-                aria-label="Remetente"
-              />
-              <input
-                value={handoutBody}
-                onChange={(e) => setHandoutBody(e.target.value)}
-                placeholder="Texto do SMS…"
-                aria-label="Corpo do handout"
-              />
-              <HudButton
-                onClick={() => {
-                  const body = handoutBody.trim();
-                  if (!body) return;
-                  intent('handout:push', {
-                    channel: 'sms',
-                    from: handoutFrom || 'Fixer',
-                    title: 'SMS',
-                    body,
-                    toPlayerId: myPlayerId || 1,
-                  });
-                  setHandoutBody('');
-                }}
-              >
-                Push SMS
-              </HudButton>
-            </div>
-          )}
+            <GmToolBar
+              isGm={isGm}
+              gmTab={gmTab}
+              onGmTab={setGmTab}
+              visaoTools={gmVisaoTools}
+              spawnTools={gmSpawnTools}
+              deviceTools={gmDeviceTools}
+              alertTools={gmAlertTools}
+              mapTools={gmMapTools}
+              sceneTabTools={gmSceneTabTools}
+              handoutRow={gmHandoutRow}
+            />
 
           {selectedToken && (
-            <div className={styles.selectionBar}>
+            <div className={`${styles.selectionBar} ${styles.boardTools}`}>
               Selecionado: <strong>{selectedToken.name}</strong>
               {selectedToken.kind ? ` · ${selectedToken.kind}` : ''}
               {selectedToken.bars?.battery != null
@@ -2034,7 +2262,11 @@ const TablePage = () => {
             </div>
           )}
 
-          <div className={styles.canvasWrap} onWheel={onWheel}>
+          <div
+            ref={canvasWrapRef}
+            className={styles.canvasWrap}
+            onWheel={onWheel}
+          >
             <DiceGlitchOverlay
               active={diceOverlay.active}
               reveal={diceOverlay.reveal}
@@ -2053,8 +2285,8 @@ const TablePage = () => {
               ref={stageRef}
               className={styles.mapStage}
               style={{
-                width: Math.min(900, stageW),
-                height: Math.min(560, stageH),
+                width: boardViewW,
+                height: boardViewH,
               }}
               onContextMenu={(e) => e.preventDefault()}
               onMouseDown={(e) => {
@@ -2545,9 +2777,69 @@ const TablePage = () => {
                 : ''}
             </div>
           </div>
-        </HudPanel>
+          </div>
+        </div>
 
-        <aside className={styles.side}>
+        <FloatingHudPanel
+          side="right"
+          title="Mesa / Chat"
+          collapsed={rightHudCollapsed}
+          onToggle={toggleRightHud}
+        >
+          <div className={`${styles.side} ${styles.sideStack}`}>
+            <ReactionBar
+              onReact={(id: ReactionId) => {
+                intent('chat:emote', { emote: id });
+                playCyberSound('ui', { volume: 0.3 });
+              }}
+            />
+            <HudPanel title="Combate" className={styles.combatDock}>
+              <CombatHud
+                isGm={isGm}
+                combatActive={!!state?.combat?.active}
+                round={state?.combat?.round || 1}
+                turnIndex={state?.turnIndex || 0}
+                initiative={state?.initiative || []}
+                turnEconomy={state?.turnEconomy}
+                myTokenIds={myTokenIds}
+                onStart={() => intent('combat:start', {})}
+                onRollAll={() =>
+                  intent('initiative:roll-all', { floor: currentFloor })
+                }
+                onNext={() => intent('initiative:next', {})}
+                onDelay={() => intent('initiative:delay', {})}
+                onHold={() => intent('initiative:hold', {})}
+                onEnd={() => intent('combat:end', {})}
+                onAction={(kind) => intent('turn:action', { kind })}
+                aimMode={aimMode}
+                aimSummary={aimPreview?.summary || null}
+                aimReady={!!aimPreview?.canShoot}
+                onToggleAim={() => {
+                  setAimMode((v) => !v);
+                  setAimHoverId(null);
+                  playCyberSound('ui', { volume: 0.25 });
+                }}
+                onAttack={() => {
+                  if (!aimMode) {
+                    setAimMode(true);
+                    playCyberSound('ui', { volume: 0.25 });
+                    return;
+                  }
+                  fireAttack();
+                }}
+                onSandy={() => {
+                  const tid =
+                    state?.turnEconomy?.tokenId ||
+                    selectedTokenId ||
+                    myTokenIds[0];
+                  if (!tid) return;
+                  intent('chrome:activate', {
+                    tokenId: tid,
+                    chrome: 'sandevistan',
+                  });
+                }}
+              />
+            </HudPanel>
           {selectedToken &&
             (selectedToken.kind === 'drone' ||
               selectedToken.kind === 'summon') && (
@@ -2862,7 +3154,8 @@ const TablePage = () => {
               }
             />
           )}
-        </aside>
+          </div>
+        </FloatingHudPanel>
       </div>
 
       <EmoteToasts items={emoteToasts} />

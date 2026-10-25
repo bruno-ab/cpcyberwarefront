@@ -14,6 +14,7 @@ html[data-font='lg'] body {
 }
 
 /* Mesa VTT: keep grid/panel geometry in px — rem scaling is for copy only. */
+html[data-font='lg'] [class*='table_boardRoot'],
 html[data-font='lg'] [class*='table_layout'],
 html[data-font='lg'] [class*='table_canvasWrap'],
 html[data-font='lg'] [class*='table_mapStage'],

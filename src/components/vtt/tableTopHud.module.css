@@ -1,0 +1,129 @@
+.wrap {
+  position: absolute;
+  top: 0.35rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  z-index: 26;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.45rem 0.75rem;
+  padding: 0.45rem 0.65rem;
+  background: rgba(6, 8, 14, 0.72);
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 40%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  min-width: 0;
+}
+
+.kicker {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cp-yellow, #fed33f);
+}
+
+.title {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--cp-text, #e8eef5);
+  max-width: min(28rem, 40vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  color: var(--cp-text-dim, #8a9aa8);
+  letter-spacing: 0.06em;
+}
+
+.visionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.floor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.floor input {
+  width: 2.2rem;
+  background: #12141a;
+  border: 1px solid var(--cp-border, #333);
+  color: var(--cp-cyan, #02d7f2);
+  padding: 0.15rem 0.25rem;
+  font-family: inherit;
+  font-size: 0.72rem;
+}
+
+.clock {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.clockTrack {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.clockTrack i {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--cp-magenta, #ff2a6d);
+  background: transparent;
+}
+
+.clockTrack i[data-on='1'] {
+  background: var(--cp-magenta, #ff2a6d);
+  box-shadow: 0 0 6px rgba(255, 42, 109, 0.55);
+}
+
+.objective {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  color: var(--cp-text, #e8eef5);
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .wrap {
+    top: 0.25rem;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .title {
+    max-width: 12rem;
+  }
+}
