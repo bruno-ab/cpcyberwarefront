@@ -1,11 +1,12 @@
 .layout {
   display: grid;
-  grid-template-columns: 1fr minmax(260px, 320px);
+  grid-template-columns: 1fr minmax(280px, 340px);
   gap: 1rem;
 }
 
 .stage {
   min-height: 560px;
+  position: relative;
 }
 
 .toolbar {
@@ -13,6 +14,63 @@
   flex-wrap: wrap;
   gap: 0.35rem;
   margin-bottom: 0.5rem;
+  align-items: center;
+}
+
+.roleBadge {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.5rem;
+  border: 1px solid var(--cp-border-strong, #444);
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.roleBadge[data-role='gm'] {
+  border-color: var(--cp-yellow, #fed33f);
+  color: var(--cp-yellow, #fed33f);
+}
+
+.gmTabs {
+  display: inline-flex;
+  gap: 0.2rem;
+}
+
+.gmTab {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cp-border, #333);
+  color: var(--cp-text-dim, #8a9aa8);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.45rem;
+  cursor: pointer;
+}
+
+.gmTab[data-active='1'] {
+  border-color: var(--cp-cyan, #02d7f2);
+  color: var(--cp-cyan, #02d7f2);
+}
+
+.handoutRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.55rem;
+}
+
+.handoutRow input {
+  flex: 1;
+  min-width: 6rem;
+  background: #12141a;
+  border: 1px solid var(--cp-border);
+  color: var(--cp-text);
+  padding: 0.35rem 0.45rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.78rem;
 }
 
 .canvasWrap {
@@ -20,7 +78,7 @@
   overflow: auto;
   border: 1px solid var(--cp-border);
   background: #050608;
-  max-height: 520px;
+  max-height: 560px;
 }
 
 .canvas {
@@ -34,8 +92,8 @@
   stroke-width: 1;
 }
 
-.fog {
-  fill: rgba(43, 228, 234, 0.12);
+.fogDark {
+  fill: rgba(0, 0, 0, 0.72);
   pointer-events: none;
 }
 
@@ -56,6 +114,12 @@
   font-family: var(--font-share-mono), monospace;
 }
 
+.tokenTurn {
+  stroke: var(--cp-yellow, #fed33f);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px rgba(254, 211, 63, 0.65));
+}
+
 .hudOverlay {
   position: absolute;
   left: 8px;
@@ -63,6 +127,7 @@
   font-size: 0.75rem;
   color: var(--cp-cyan);
   font-family: var(--font-share-mono), monospace;
+  pointer-events: none;
 }
 
 .side {
@@ -73,20 +138,77 @@
   overflow: auto;
 }
 
-.chat {
-  max-height: 180px;
-  overflow: auto;
+.plainList {
+  margin: 0;
+  padding-left: 1.1rem;
   font-size: 0.85rem;
 }
 
-.chat p[data-kind='dice'] {
-  color: var(--cp-yellow);
+.chatPanel {
+  flex: 1;
+  min-height: 280px;
+}
+
+.chatStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 260px;
+}
+
+.chat {
+  flex: 1;
+  min-height: 140px;
+  max-height: 220px;
+  overflow: auto;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 22%, transparent);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.chatEmpty {
+  margin: 0.5rem;
+  color: var(--cp-text-dim, #8a9aa8);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.72rem;
+}
+
+.chat p {
+  margin: 0 0 0.45rem;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.chatMeta {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--cp-text-dim, #8a9aa8);
+  text-transform: uppercase;
+}
+
+.chatBody {
+  color: var(--cp-text);
+  word-break: break-word;
+}
+
+.chat p[data-kind='dice'] .chatBody {
+  color: var(--cp-yellow, #fed33f);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.78rem;
+}
+
+.composer {
+  display: grid;
+  gap: 0.35rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--cp-yellow, #fed33f) 28%, transparent);
 }
 
 .chatRow {
   display: flex;
   gap: 0.35rem;
-  margin-top: 0.35rem;
 }
 
 .chatRow input {
@@ -94,7 +216,51 @@
   background: #12141a;
   border: 1px solid var(--cp-border);
   color: var(--cp-text);
-  padding: 0.35rem;
+  padding: 0.4rem 0.5rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.8rem;
+}
+
+.charCount {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--cp-text-dim, #8a9aa8);
+  text-align: right;
+}
+
+.diceControls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  align-items: end;
+}
+
+.diceLabel {
+  display: grid;
+  gap: 0.15rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.diceLabel select,
+.diceLabel input {
+  width: 100%;
+  background: #12141a;
+  border: 1px solid var(--cp-border);
+  color: var(--cp-cyan, #02d7f2);
+  padding: 0.3rem 0.35rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.75rem;
+}
+
+.diceHints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
 }
 
 .replay {
