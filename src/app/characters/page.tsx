@@ -41,12 +41,40 @@ const CharactersPage = () => {
   const [data, setData] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [showWizard, setShowWizard] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [msg, setMsg] = useState('');
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setData(await loadCharacters());
     setLoading(false);
   }, []);
+
+  const deleteCharacter = async (character: Character) => {
+    const ok = window.confirm(
+      `Apagar “${character.name}”? Isso remove a ficha, chrome e mensagens desse runner.`,
+    );
+    if (!ok) return;
+    setBusyId(String(character.id));
+    setMsg('');
+    try {
+      const res = await fetch(apiUrl(`/api/characters/${character.id}`), {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsg(body.message || 'Não foi possível apagar o personagem.');
+        return;
+      }
+      setMsg(`Apagado: ${character.name}`);
+      await refresh();
+    } catch {
+      setMsg('Falha de rede ao apagar personagem.');
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -101,6 +129,7 @@ const CharactersPage = () => {
           </div>
         )}
 
+        {msg && <p className={styles.status}>{msg}</p>}
         {loading && <p className={styles.status}>Carregando personagens…</p>}
 
         {!loading && data.length === 0 && (
@@ -166,6 +195,16 @@ const CharactersPage = () => {
                       }
                     >
                       ID
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.danger}
+                      disabled={busyId === String(character.id)}
+                      onClick={() => deleteCharacter(character)}
+                    >
+                      {busyId === String(character.id)
+                        ? 'Apagando…'
+                        : 'Apagar'}
                     </button>
                   </div>
                 </div>

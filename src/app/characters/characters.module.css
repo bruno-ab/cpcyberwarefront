@@ -162,6 +162,22 @@
   color: var(--cp-yellow);
 }
 
+.cardActions button.danger {
+  border-color: color-mix(in srgb, #ff4d6d 55%, transparent);
+  color: #ff4d6d;
+}
+
+.cardActions button.danger:hover {
+  border-color: #ff4d6d;
+  color: #ff4d6d;
+  box-shadow: 0 0 10px #ff4d6d55;
+}
+
+.cardActions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .empty {
   border: 1px dashed var(--cp-border-strong);
   padding: 1.5rem;
