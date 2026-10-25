@@ -79,7 +79,7 @@ import { DroneHud } from '../../components/vtt/DroneHud';
 import { AimOverlay } from '../../components/vtt/AimOverlay';
 import { RunnerPanel } from '../../components/vtt/RunnerPanel';
 import { RunnerSheetPopup } from '../../components/vtt/RunnerSheetPopup';
-import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
+import { apiUrl, authHeaders, getApiBaseUrl } from '../../lib/api';
 import {
   buildAimPreview,
   chebyshev,
@@ -418,6 +418,7 @@ const TablePage = () => {
   const [handoutBody, setHandoutBody] = useState('');
   const [handoutFrom, setHandoutFrom] = useState('Rogue');
   const [uploadingBg, setUploadingBg] = useState(false);
+  const [bgLoadError, setBgLoadError] = useState<string | null>(null);
   const [importingUvtt, setImportingUvtt] = useState(false);
   const [aimMode, setAimMode] = useState(false);
   const [aimHoverId, setAimHoverId] = useState<string | null>(null);
@@ -808,7 +809,7 @@ const TablePage = () => {
     setMyPlayerId(playerId);
     setMyName(name);
 
-    const socket = io(`${API_BASE_URL}/vtt`, {
+    const socket = io(`${getApiBaseUrl()}/vtt`, {
       auth: { token },
       query: { name, playerId: String(playerId) },
       transports: ['websocket', 'polling'],
@@ -1290,18 +1291,50 @@ const TablePage = () => {
     return resolveMediaSrc(url) || url;
   }, [state?.map?.backgroundUrl]);
 
+  useEffect(() => {
+    setBgLoadError(null);
+  }, [mapBgSrc]);
+
+  const readImageDimensions = (file: File) =>
+    new Promise<{ w: number; h: number } | null>((resolve) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
+    });
+
   const uploadBackground = async (file: File) => {
     if (!isGm || !file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const allowed = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
+    if (ext && !allowed.has(ext)) {
+      setScanToast('Formato não suportado — use JPG, PNG ou WebP');
+      window.setTimeout(() => setScanToast(null), 3200);
+      playCyberSound('deny', { volume: 0.4 });
+      if (bgInputRef.current) bgInputRef.current.value = '';
+      return;
+    }
     setUploadingBg(true);
+    setBgLoadError(null);
     try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
+      const [dataUrl, dims] = await Promise.all([
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ''));
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(file);
+        }),
+        readImageDimensions(file),
+      ]);
       const key = `maps/campaign-${campaignId}-${Date.now()}.${
-        file.name.split('.').pop()?.toLowerCase() || 'jpg'
+        ext || 'jpg'
       }`;
       const res = await fetch(apiUrl('/api/media/upload'), {
         method: 'POST',
@@ -1313,14 +1346,48 @@ const TablePage = () => {
           credit: `map:${campaignId}`,
         }),
       });
-      const json = await res.json();
-      if (!res.ok || !json?.url) throw new Error(json?.error || 'upload failed');
-      intent('map:background', { url: json.url });
+      let json: { url?: string; error?: string; message?: string } = {};
+      try {
+        json = await res.json();
+      } catch {
+        /* 413/HTML from proxy */
+      }
+      if (!res.ok || !json?.url) {
+        const msg =
+          json?.message ||
+          json?.error ||
+          (res.status === 413
+            ? 'Imagem grande demais (máx. ~40MB) — comprima ou use PNG/WebP'
+            : `Upload falhou (${res.status || 'rede'})`);
+        throw new Error(msg);
+      }
+      const payload: {
+        url: string;
+        width?: number;
+        height?: number;
+      } = { url: json.url };
+      if (dims && dims.w > 0 && dims.h > 0) {
+        payload.width = Math.min(
+          200,
+          Math.max(5, Math.round(dims.w / GRID)),
+        );
+        payload.height = Math.min(
+          200,
+          Math.max(5, Math.round(dims.h / GRID)),
+        );
+      }
+      intent('map:background', payload);
       intent('layer:update', { id: 'background', visible: true });
       intent('layer:active', { id: 'background' });
       setTool('pan');
+      setScanToast('Background aplicado');
+      window.setTimeout(() => setScanToast(null), 2400);
       playCyberSound('confirm', { volume: 0.4 });
-    } catch {
+    } catch (e: unknown) {
+      const msg =
+        e instanceof Error ? e.message : 'Falha ao enviar background';
+      setScanToast(msg);
+      window.setTimeout(() => setScanToast(null), 4200);
       playCyberSound('deny', { volume: 0.4 });
     } finally {
       setUploadingBg(false);
@@ -2676,6 +2743,7 @@ const TablePage = () => {
                 {mapBgSrc && layerVisible('background') && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
+                    key={mapBgSrc}
                     src={mapBgSrc}
                     alt=""
                     className={styles.mapBackground}
@@ -2684,7 +2752,18 @@ const TablePage = () => {
                       transformOrigin: '0 0',
                     }}
                     draggable={false}
+                    onLoad={() => setBgLoadError(null)}
+                    onError={() =>
+                      setBgLoadError(
+                        'Background não carregou — reenvie a imagem ou confira se a API (:4444) está no ar.',
+                      )
+                    }
                   />
+                )}
+                {bgLoadError && layerVisible('background') && (
+                  <div className={styles.bgLoadError} role="status">
+                    {bgLoadError}
+                  </div>
                 )}
                 <svg
                   className={styles.gridSvg}
@@ -3114,7 +3193,9 @@ const TablePage = () => {
               {state?.radioStation ? ` · ${state.radioStation}` : ''}
               {mapBgSrc
                 ? layerVisible('background')
-                  ? ' · bg'
+                  ? bgLoadError
+                    ? ' · bg(erro)'
+                    : ' · bg'
                   : ' · bg(off)'
                 : ''}
               {aimMode
