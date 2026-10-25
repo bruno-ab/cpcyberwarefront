@@ -32,6 +32,8 @@ type CombatHudProps = {
   onDelay: () => void;
   onHold: () => void;
   onEnd: () => void;
+  lockMoveToTurn?: boolean;
+  onToggleLockMoveToTurn?: (enabled: boolean) => void;
   onAction: (kind: 'main' | 'move' | 'reaction' | 'extra') => void;
   aimMode?: boolean;
   aimSummary?: string | null;
@@ -55,6 +57,8 @@ export const CombatHud = ({
   onDelay,
   onHold,
   onEnd,
+  lockMoveToTurn,
+  onToggleLockMoveToTurn,
   onAction,
   aimMode,
   aimSummary,
@@ -87,6 +91,17 @@ export const CombatHud = ({
             <HudButton variant="ghost" onClick={onNext}>
               Próximo
             </HudButton>
+            {onToggleLockMoveToTurn && (
+              <HudButton
+                variant={lockMoveToTurn ? 'primary' : 'ghost'}
+                onClick={() => onToggleLockMoveToTurn(!lockMoveToTurn)}
+                title="Jogadores só movem o token do turno atual; narrador sempre pode mover"
+              >
+                {lockMoveToTurn
+                  ? 'Só move no turno: ON'
+                  : 'Só move no turno'}
+              </HudButton>
+            )}
           </div>
         )}
       </div>

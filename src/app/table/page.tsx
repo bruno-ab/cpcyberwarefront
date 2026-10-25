@@ -53,6 +53,10 @@ import {
 import { GmEditShortcutsLegend } from '../../components/vtt/GmEditShortcutsLegend';
 import { useTableEditHotkeys } from '../../lib/vtt/useTableEditHotkeys';
 import {
+  canMoveTokenForRole,
+  tokenMoveBlockedHint,
+} from '../../lib/vtt/turnMoveLock';
+import {
   ReactionBar,
   type ReactionId,
 } from '../../components/vtt/ReactionBar';
@@ -230,6 +234,7 @@ type VttState = {
     label: string;
     roundsLeft: number;
   }>;
+  rules?: { tokenMoveOnTurnOnly?: boolean };
   combat?: { active: boolean; round: number; phase: string } | null;
   turnEconomy?: {
     tokenId: string;
@@ -1309,10 +1314,11 @@ const TablePage = () => {
     if (layerLocked('tokens')) return false;
     if (!layerVisible('tokens')) return false;
     if (isGm) return true;
-    return (
+    const owns =
       Number(t.ownerPlayerId) === Number(myPlayerId) ||
-      Number(t.controllerPlayerId) === Number(myPlayerId)
-    );
+      Number(t.controllerPlayerId) === Number(myPlayerId);
+    if (!owns) return false;
+    return canMoveTokenForRole(state, t.id, false);
   };
 
   const canEmitTokenEmoteOn = (t: Token) =>
@@ -3097,6 +3103,12 @@ const TablePage = () => {
                     const portrait =
                       resolveMediaSrc(t.portraitUrl) || t.portraitUrl || null;
                     const mine = canDragToken(t);
+                    const turnMoveBlock =
+                      !mine &&
+                      !isGm &&
+                      tokenMoveBlockedHint(state) &&
+                      (Number(t.ownerPlayerId) === Number(myPlayerId) ||
+                        Number(t.controllerPlayerId) === Number(myPlayerId));
                     const intel = scanTokenById.get(t.id);
                     const scanHot =
                       viewMode === 'scan' &&
@@ -3196,11 +3208,14 @@ const TablePage = () => {
                         }}
                         aria-label={labelText || tAr('unknownToken')}
                         title={
-                          viewMode === 'net' && t.kind === 'drone'
-                            ? `${t.name} · drone · quickhack`
-                            : arIntel
-                              ? `${arIntel.name}${arIntel.affiliation ? ` · ${arIntel.affiliation}` : ''}`
-                              : intel?.tag || labelText || tAr('unknownToken')
+                          turnMoveBlock
+                            ? tokenMoveBlockedHint(state) ||
+                              'Só move no próprio turno'
+                            : viewMode === 'net' && t.kind === 'drone'
+                              ? `${t.name} · drone · quickhack`
+                              : arIntel
+                                ? `${arIntel.name}${arIntel.affiliation ? ` · ${arIntel.affiliation}` : ''}`
+                                : intel?.tag || labelText || tAr('unknownToken')
                         }
                         data-ar={arIntel ? '1' : '0'}
                         data-net={
@@ -3386,6 +3401,10 @@ const TablePage = () => {
                 onDelay={() => intent('initiative:delay', {})}
                 onHold={() => intent('initiative:hold', {})}
                 onEnd={() => intent('combat:end', {})}
+                lockMoveToTurn={!!state?.rules?.tokenMoveOnTurnOnly}
+                onToggleLockMoveToTurn={(enabled) =>
+                  intent('combat:lock-move', { enabled })
+                }
                 onAction={(kind) => intent('turn:action', { kind })}
                 aimMode={aimMode}
                 aimSummary={aimPreview?.summary || null}
