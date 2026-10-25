@@ -38,7 +38,8 @@ export const ImplantCalibrationGame = () => {
     if (status !== 'playing') return;
     const next = tries + 1;
     setTries(next);
-    if (stress <= psychoThreshold && stress < 35) {
+    // Vitória: stress sob o limiar de psico (e com margem mínima de estabilidade).
+    if (stress <= psychoThreshold && stress <= Math.max(28, psychoThreshold - 5)) {
       setStatus('won');
       return;
     }

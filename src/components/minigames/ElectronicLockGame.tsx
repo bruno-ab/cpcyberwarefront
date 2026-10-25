@@ -17,7 +17,8 @@ export const ElectronicLockGame = () => {
   const [attempts, setAttempts] = useState(0);
   const [msg, setMsg] = useState('');
 
-  const tolerance = useMemo(() => Math.max(6, 18 - tech * 2), [tech]);
+  // Tech alta = mais tolerância (mais fácil) e mais tentativas.
+  const tolerance = useMemo(() => Math.min(28, 10 + tech * 3), [tech]);
   const maxAttempts = useMemo(() => 4 + Math.floor(tech / 2), [tech]);
 
   const start = () => {
@@ -91,7 +92,7 @@ export const ElectronicLockGame = () => {
             >
               {[0, 1, 2, 3, 4, 5].map((n) => (
                 <option key={n} value={n}>
-                  {n} — tolerância ±{Math.max(6, 18 - n * 2)}° / {4 + Math.floor(n / 2)} tries
+                  {n} — tolerância ±{Math.min(28, 10 + n * 3)}° / {4 + Math.floor(n / 2)} tries
                 </option>
               ))}
             </select>

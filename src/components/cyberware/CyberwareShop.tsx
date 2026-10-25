@@ -9,6 +9,7 @@ import {
   BODY_PART_SLOTS,
 } from '../../data/bodyPartSlots';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { useCampaign } from '../../lib/campaign';
 import { cyberwareImageSrc } from '../../lib/media';
 import {
   formatEddies,
@@ -61,10 +62,8 @@ type Props = {
   installed?: InstalledItem[];
   selectedPart?: BodyPart | null;
   onClearPart?: () => void;
-  onUpdated?: () => void;
+  onUpdated?: () => void | Promise<void>;
 };
-
-const CAMPAIGN_ID = 1;
 
 export const CyberwareShop = ({
   characterId,
@@ -75,6 +74,7 @@ export const CyberwareShop = ({
   onUpdated,
 }: Props) => {
   const router = useRouter();
+  const { campaignId, refresh: refreshCampaign } = useCampaign();
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [filter, setFilter] = useState('');
   const [edges, setEdges] = useState(Number(sheet?.other_traits?.edges ?? 0));
@@ -83,27 +83,32 @@ export const CyberwareShop = ({
     null,
   );
   const [campaignEddies, setCampaignEddies] = useState(0);
+  const [localSheet, setLocalSheet] = useState(sheet);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
 
   const slotFilter = selectedPart ? BODY_PART_SLOTS[selectedPart] : null;
   const partLabel = selectedPart ? BODY_PART_LABELS[selectedPart] : null;
 
-  const ownedPending = useMemo(() => {
-    const list = (sheet?.inventory?.cyberware || []) as OwnedChrome[];
-    return list.filter((c) => c.installable !== false && !c.installed);
-  }, [sheet]);
-
   useEffect(() => {
+    setLocalSheet(sheet);
     setEdges(Number(sheet?.other_traits?.edges ?? 0));
   }, [sheet]);
+
+  const ownedPending = useMemo(() => {
+    const list = (localSheet?.inventory?.cyberware || []) as OwnedChrome[];
+    return list.filter((c) => c.installable !== false && !c.installed);
+  }, [localSheet]);
 
   useEffect(() => {
     fetch(apiUrl('/api/cyberware'), { headers: authHeaders() })
       .then((r) => r.json())
       .then((d) => setCatalog(Array.isArray(d) ? d : []))
       .catch(() => setCatalog([]));
-    fetch(apiUrl(`/api/campaigns/${CAMPAIGN_ID}`))
+  }, []);
+
+  useEffect(() => {
+    fetch(apiUrl(`/api/campaigns/${campaignId}`))
       .then((r) => r.json())
       .then((c) => {
         setStreetCred(Number(c?.streetCred || 0));
@@ -111,7 +116,7 @@ export const CyberwareShop = ({
         setHeat(c?.heat || null);
       })
       .catch(() => undefined);
-  }, []);
+  }, [campaignId]);
 
   const installedHere = useMemo(() => {
     if (!slotFilter) return installed;
@@ -159,7 +164,25 @@ export const CyberwareShop = ({
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        throw new Error('Faça login na Conta para salvar Edges / inventário.');
+      }
       throw new Error(err.message || 'Falha ao salvar ficha');
+    }
+    setLocalSheet(nextSheet as Record<string, any>);
+  };
+
+  const refreshAll = async () => {
+    await Promise.all([Promise.resolve(onUpdated?.()), refreshCampaign()]);
+    try {
+      const c = await fetch(apiUrl(`/api/campaigns/${campaignId}`)).then((r) =>
+        r.json(),
+      );
+      setStreetCred(Number(c?.streetCred || 0));
+      setCampaignEddies(Number(c?.eddies || 0));
+      setHeat(c?.heat || null);
+    } catch {
+      /* ignore */
     }
   };
 
@@ -168,14 +191,14 @@ export const CyberwareShop = ({
     setMsg('');
     try {
       await saveSheet({
-        ...sheet,
+        ...localSheet,
         other_traits: {
-          ...(sheet.other_traits || {}),
+          ...(localSheet.other_traits || {}),
           edges: Math.max(0, Number(edges) || 0),
         },
       });
       setMsg('Edges salvos.');
-      onUpdated?.();
+      await refreshAll();
     } catch (e: any) {
       setMsg(e.message || 'Erro ao salvar');
     } finally {
@@ -185,11 +208,18 @@ export const CyberwareShop = ({
 
   /** Compra com o mesmo preço da /shop — vai para inventário da ficha. */
   const buyOnly = async (item: CatalogItem) => {
+    const price = displayPrice(item);
+    if (campaignEddies < price) {
+      setMsg(
+        `Eddies insuficientes (tem ${formatEddies(campaignEddies)}, precisa ${formatEddies(price)}).`,
+      );
+      return;
+    }
     setBusy(true);
     setMsg('');
     try {
       const res = await fetch(
-        apiUrl(`/api/campaigns/${CAMPAIGN_ID}/shop/buy`),
+        apiUrl(`/api/campaigns/${campaignId}/shop/buy`),
         {
           method: 'POST',
           headers: authHeaders(),
@@ -204,31 +234,40 @@ export const CyberwareShop = ({
       if (!res.ok) {
         throw new Error(data.message || 'Falha na compra');
       }
-      setMsg(
-        `Comprado por ${formatEddies(data.price)} — no inventário. Clique em Instalar.`,
-      );
+      const paid = Number(data.price ?? price);
       if (data.campaign?.eddies != null) {
         setCampaignEddies(Number(data.campaign.eddies));
+      } else {
+        setCampaignEddies((e) => Math.max(0, e - paid));
       }
-      onUpdated?.();
+      // Atualiza inventário local na hora (não depende do refresh).
+      setLocalSheet((prev) => {
+        const inv = {
+          gear: [...(prev?.inventory?.gear || [])],
+          vehicles: [...(prev?.inventory?.vehicles || [])],
+          cyberware: [
+            ...(prev?.inventory?.cyberware || []),
+            {
+              id: item.id,
+              name: item.name,
+              type: item.type,
+              price: paid,
+              installable: true,
+              installed: false,
+            },
+          ],
+        };
+        return { ...prev, inventory: inv };
+      });
+      setMsg(
+        `Comprado por ${formatEddies(paid)} — no inventário. Clique em Instalar.`,
+      );
+      await refreshAll();
     } catch (e: any) {
       setMsg(e.message || 'Falha na compra');
     } finally {
       setBusy(false);
     }
-  };
-
-  const markOwnedInstalled = async (cyberwareId: number) => {
-    const inv = {
-      gear: [...(sheet?.inventory?.gear || [])],
-      vehicles: [...(sheet?.inventory?.vehicles || [])],
-      cyberware: (sheet?.inventory?.cyberware || []).map((row: OwnedChrome) =>
-        Number(row.id) === Number(cyberwareId)
-          ? { ...row, installed: true }
-          : row,
-      ),
-    };
-    await saveSheet({ ...sheet, inventory: inv });
   };
 
   const installOwned = async (item: CatalogItem | OwnedChrome) => {
@@ -244,14 +283,6 @@ export const CyberwareShop = ({
     setBusy(true);
     setMsg('');
     try {
-      if (edgeCost > 0) {
-        const nextEdges = edges - edgeCost;
-        await saveSheet({
-          ...sheet,
-          other_traits: { ...(sheet.other_traits || {}), edges: nextEdges },
-        });
-        setEdges(nextEdges);
-      }
       const install = await fetch(
         apiUrl(`/api/characters/${characterId}/cyberware`),
         {
@@ -266,7 +297,25 @@ export const CyberwareShop = ({
           err.message || 'Não foi possível instalar (capacidade/slot).',
         );
       }
-      await markOwnedInstalled(Number(item.id));
+      const nextEdges = Math.max(0, edges - edgeCost);
+      setEdges(nextEdges);
+      setLocalSheet((prev) => {
+        const list = (prev?.inventory?.cyberware || []) as OwnedChrome[];
+        const cyberware = list.map((row) =>
+          Number(row.id) === Number(item.id)
+            ? { ...row, installed: true }
+            : row,
+        );
+        return {
+          ...prev,
+          other_traits: { ...(prev.other_traits || {}), edges: nextEdges },
+          inventory: {
+            gear: [...(prev?.inventory?.gear || [])],
+            vehicles: [...(prev?.inventory?.vehicles || [])],
+            cyberware,
+          },
+        };
+      });
       const q = new URLSearchParams({
         id: String(characterId),
         name: String(item.name || catalogItem?.name || 'chrome'),
@@ -295,7 +344,7 @@ export const CyberwareShop = ({
         throw new Error(err.message || 'Não foi possível remover o chrome.');
       }
       setMsg(`Removido: ${item.name}.`);
-      onUpdated?.();
+      await refreshAll();
     } catch (e: any) {
       setMsg(e.message || 'Falha ao remover');
     } finally {
@@ -475,6 +524,7 @@ export const CyberwareShop = ({
               const edgeCost = Number(item.edge_cost ?? item.edgeCost ?? 0);
               const eddiePrice = displayPrice(item);
               const alreadyOwned = ownedIds.has(Number(item.id));
+              const canAfford = campaignEddies >= eddiePrice;
               return (
                 <article key={item.id} className={styles.card}>
                   <img
@@ -504,10 +554,17 @@ export const CyberwareShop = ({
                     ) : (
                       <button
                         type="button"
-                        disabled={busy || campaignEddies < eddiePrice}
+                        disabled={busy || !canAfford}
+                        title={
+                          canAfford
+                            ? undefined
+                            : `Precisa ${formatEddies(eddiePrice)} (tem ${formatEddies(campaignEddies)})`
+                        }
                         onClick={() => buyOnly(item)}
                       >
-                        Comprar {formatEddies(eddiePrice)}
+                        {canAfford
+                          ? `Comprar ${formatEddies(eddiePrice)}`
+                          : `Sem ¤ (${formatEddies(eddiePrice)})`}
                       </button>
                     )}
                   </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import styles from './SignalTraceGame.module.css';
 
 type Status = 'menu' | 'playing' | 'won';
@@ -62,6 +62,7 @@ export const SignalTraceGame = () => {
   const [active, setActive] = useState<string | null>(null);
   const [paths, setPaths] = useState<Record<string, Array<[number, number]>>>({});
   const [msg, setMsg] = useState('');
+  const dragging = useRef(false);
 
   const terminals = useMemo(() => {
     const map = new Map<string, { id: string; color: string }>();
@@ -185,7 +186,7 @@ export const SignalTraceGame = () => {
         <h3>Signal Trace</h3>
         <p>
           Conecte cada par de terminais sem cruzar linhas (estilo Numberlink /
-          Flow). Clique a letra, arraste célula a célula até o par.
+          Flow). Clique/arraste da letra até o par.
         </p>
       </header>
 
@@ -228,6 +229,15 @@ export const SignalTraceGame = () => {
           <div
             className={styles.grid}
             style={{ gridTemplateColumns: `repeat(${puzzle.size}, 1fr)` }}
+            onPointerUp={() => {
+              dragging.current = false;
+            }}
+            onPointerLeave={() => {
+              dragging.current = false;
+            }}
+            onPointerCancel={() => {
+              dragging.current = false;
+            }}
           >
             {Array.from({ length: puzzle.size * puzzle.size }, (_, i) => {
               const x = i % puzzle.size;
@@ -257,7 +267,14 @@ export const SignalTraceGame = () => {
                       : undefined
                   }
                   disabled={status !== 'playing'}
-                  onClick={() => onCell(x, y)}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    dragging.current = true;
+                    onCell(x, y);
+                  }}
+                  onPointerEnter={() => {
+                    if (dragging.current) onCell(x, y);
+                  }}
                 >
                   {term ? term.id : owner ? '·' : ''}
                 </button>

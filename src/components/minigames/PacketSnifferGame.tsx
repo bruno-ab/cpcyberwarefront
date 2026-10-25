@@ -24,9 +24,9 @@ type Diff = {
 };
 
 const DIFFS: Diff[] = [
-  { id: 'rua', name: 'Rua', spawnMs: 1100, speed: 0.018, goal: 18, lives: 3, timeSec: 60 },
-  { id: 'corpo', name: 'Corpo', spawnMs: 850, speed: 0.026, goal: 25, lives: 3, timeSec: 55 },
-  { id: 'blackwall', name: 'Blackwall', spawnMs: 650, speed: 0.034, goal: 32, lives: 2, timeSec: 50 },
+  { id: 'rua', name: 'Rua', spawnMs: 1400, speed: 0.012, goal: 14, lives: 4, timeSec: 70 },
+  { id: 'corpo', name: 'Corpo', spawnMs: 1100, speed: 0.018, goal: 20, lives: 3, timeSec: 60 },
+  { id: 'blackwall', name: 'Blackwall', spawnMs: 850, speed: 0.024, goal: 28, lives: 3, timeSec: 55 },
 ];
 
 const TYPES: PktType[] = ['SAFE', 'MALWARE', 'BAIT'];
@@ -49,33 +49,60 @@ export const PacketSnifferGame = () => {
   const [status, setStatus] = useState<Status>('menu');
   const [packets, setPackets] = useState<Packet[]>([]);
   const [score, setScore] = useState(0);
-  const [lives, setHits] = useState(3);
+  const [lives, setLives] = useState(3);
   const [remaining, setRemaining] = useState(60);
   const [log, setLog] = useState<string[]>([]);
   const [flash, setFlash] = useState<PktType | null>(null);
   const idRef = useRef(0);
   const packetsRef = useRef<Packet[]>([]);
+  const statusRef = useRef<Status>('menu');
+  const scoreRef = useRef(0);
+  const livesRef = useRef(3);
+  const goalRef = useRef(DIFFS[0].goal);
 
-  const pushLog = (line: string) =>
+  const setPlayStatus = useCallback((next: Status) => {
+    statusRef.current = next;
+    setStatus(next);
+  }, []);
+
+  const pushLog = useCallback((line: string) => {
     setLog((l) => [...l.slice(-10), line]);
+  }, []);
 
   const start = (d: Diff) => {
     setDiff(d);
     setPackets([]);
     packetsRef.current = [];
+    scoreRef.current = 0;
     setScore(0);
-    setHits(d.lives);
+    livesRef.current = d.lives;
+    setLives(d.lives);
+    goalRef.current = d.goal;
     setRemaining(d.timeSec);
     setLog([`sniffer --iface eth0 --profile ${d.id}`]);
-    setStatus('playing');
     setFlash(null);
+    setPlayStatus('playing');
   };
+
+  const loseLife = useCallback(
+    (amount: number, reason: string) => {
+      if (statusRef.current !== 'playing') return;
+      const left = Math.max(0, livesRef.current - amount);
+      livesRef.current = left;
+      setLives(left);
+      pushLog(reason);
+      if (left <= 0) {
+        setPlayStatus('lost');
+        pushLog('ICE dump — link flooded.');
+      }
+    },
+    [pushLog, setPlayStatus],
+  );
 
   const classify = useCallback(
     (type: PktType) => {
-      if (status !== 'playing') return;
+      if (statusRef.current !== 'playing') return;
       const list = packetsRef.current;
-      // lowest packet (closest to bottom / highest y)
       const sorted = [...list].sort((a, b) => b.y - a.y);
       const target = sorted[0];
       if (!target) {
@@ -83,36 +110,25 @@ export const PacketSnifferGame = () => {
         return;
       }
       setFlash(type);
-      setTimeout(() => setFlash(null), 120);
+      window.setTimeout(() => setFlash(null), 120);
+      const next = list.filter((p) => p.id !== target.id);
+      packetsRef.current = next;
+      setPackets(next);
       if (target.type === type) {
-        setScore((s) => {
-          const nextScore = s + 1;
-          pushLog(`ok  ${type}  +1  (${nextScore}/${diff.goal})`);
-          if (nextScore >= diff.goal) {
-            setStatus('won');
-            pushLog('BREACH — filter chain clean.');
-          }
-          return nextScore;
-        });
-        const next = list.filter((p) => p.id !== target.id);
-        packetsRef.current = next;
-        setPackets(next);
+        const nextScore = scoreRef.current + 1;
+        scoreRef.current = nextScore;
+        setScore(nextScore);
+        pushLog(`ok  ${type}  +1  (${nextScore}/${goalRef.current})`);
+        if (nextScore >= goalRef.current) {
+          setPlayStatus('won');
+          pushLog('BREACH — filter chain clean.');
+        }
       } else {
         pushLog(`err misclass ${target.type} as ${type}`);
-        const next = list.filter((p) => p.id !== target.id);
-        packetsRef.current = next;
-        setPackets(next);
-        setHits((h) => {
-          const left = h - 1;
-          if (left <= 0) {
-            setStatus('lost');
-            pushLog('ICE dump — link flooded.');
-          }
-          return left;
-        });
+        loseLife(1, `bad class — HP ${livesRef.current}`);
       }
     },
-    [status, diff.goal],
+    [loseLife, pushLog, setPlayStatus],
   );
 
   useEffect(() => {
@@ -131,35 +147,43 @@ export const PacketSnifferGame = () => {
   useEffect(() => {
     if (status !== 'playing') return;
     if (remaining <= 0) {
-      setStatus(score >= diff.goal ? 'won' : 'lost');
-      pushLog(score >= diff.goal ? 'timer ok' : 'timer fail — incomplete');
+      if (scoreRef.current >= goalRef.current) {
+        setPlayStatus('won');
+        pushLog('timer ok');
+      } else {
+        setPlayStatus('lost');
+        pushLog('timer fail — incomplete');
+      }
       return;
     }
-    const t = setTimeout(() => setRemaining((r) => r - 1), 1000);
-    return () => clearTimeout(t);
-  }, [status, remaining, score, diff.goal]);
+    const t = window.setTimeout(() => setRemaining((r) => r - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [status, remaining, pushLog, setPlayStatus]);
 
   useEffect(() => {
     if (status !== 'playing') return;
-    const spawn = setInterval(() => {
+
+    const spawn = window.setInterval(() => {
+      if (statusRef.current !== 'playing') return;
       idRef.current += 1;
       const pkt: Packet = {
         id: idRef.current,
         type: randType(),
-        y: 0,
+        y: 0.02,
         lane: Math.floor(Math.random() * 3),
       };
-      const next = [...packetsRef.current, pkt].slice(-12);
+      const next = [...packetsRef.current, pkt].slice(-10);
       packetsRef.current = next;
       setPackets(next);
     }, diff.spawnMs);
 
-    const tick = setInterval(() => {
+    const tick = window.setInterval(() => {
+      if (statusRef.current !== 'playing') return;
       let leaked = 0;
       const moved = packetsRef.current
         .map((p) => ({ ...p, y: p.y + diff.speed }))
         .filter((p) => {
-          if (p.y >= 1) {
+          if (p.y >= 0.98) {
             leaked += 1;
             return false;
           }
@@ -168,23 +192,15 @@ export const PacketSnifferGame = () => {
       packetsRef.current = moved;
       setPackets(moved);
       if (leaked > 0) {
-        setHits((h) => {
-          const left = h - leaked;
-          pushLog(`leak ×${leaked} — packet escaped`);
-          if (left <= 0) {
-            setStatus('lost');
-            pushLog('buffer overflow');
-          }
-          return Math.max(0, left);
-        });
+        loseLife(leaked, `leak ×${leaked} — packet escaped`);
       }
     }, 50);
 
     return () => {
-      clearInterval(spawn);
-      clearInterval(tick);
+      window.clearInterval(spawn);
+      window.clearInterval(tick);
     };
-  }, [status, diff]);
+  }, [status, diff, loseLife]);
 
   return (
     <div className={styles.wrap} data-flash={flash || ''}>
@@ -213,7 +229,9 @@ export const PacketSnifferGame = () => {
       {status !== 'menu' && (
         <>
           <div className={styles.hud}>
-            <span>OK {score}/{diff.goal}</span>
+            <span>
+              OK {score}/{diff.goal}
+            </span>
             <span>HP {lives}</span>
             <span className={styles.timer}>{remaining}s</span>
           </div>
@@ -245,13 +263,28 @@ export const PacketSnifferGame = () => {
                 ))}
               </div>
               <div className={styles.keys}>
-                <button type="button" data-type="SAFE" onClick={() => classify('SAFE')}>
+                <button
+                  type="button"
+                  data-type="SAFE"
+                  disabled={status !== 'playing'}
+                  onClick={() => classify('SAFE')}
+                >
                   A SAFE
                 </button>
-                <button type="button" data-type="MALWARE" onClick={() => classify('MALWARE')}>
+                <button
+                  type="button"
+                  data-type="MALWARE"
+                  disabled={status !== 'playing'}
+                  onClick={() => classify('MALWARE')}
+                >
                   S MAL
                 </button>
-                <button type="button" data-type="BAIT" onClick={() => classify('BAIT')}>
+                <button
+                  type="button"
+                  data-type="BAIT"
+                  disabled={status !== 'playing'}
+                  onClick={() => classify('BAIT')}
+                >
                   D BAIT
                 </button>
               </div>
@@ -263,7 +296,7 @@ export const PacketSnifferGame = () => {
               <button type="button" className={styles.start} onClick={() => start(diff)}>
                 De novo
               </button>
-              <button type="button" className={styles.ghost} onClick={() => setStatus('menu')}>
+              <button type="button" className={styles.ghost} onClick={() => setPlayStatus('menu')}>
                 Menu
               </button>
             </div>

@@ -16,20 +16,26 @@ export const RipperSurgeryGame = () => {
   const [cursor, setCursor] = useState({ x: 50, y: 50 });
   const [target, setTarget] = useState({ x: 50, y: 42 });
   const [glitch, setGlitch] = useState(false);
+  const [holding, setHolding] = useState(false);
   const drift = useRef({ x: 0, y: 0 });
-  const holding = useRef(false);
+  const cursorRef = useRef({ x: 50, y: 50 });
+  const errorsRef = useRef(0);
 
   const start = () => {
     setProgress(0);
     setErrors(0);
+    errorsRef.current = 0;
     setHumanityCost(1);
     setRecoveryHours(6);
     setTarget({
       x: 35 + Math.random() * 30,
       y: 30 + Math.random() * 30,
     });
-    setCursor({ x: 50, y: 80 });
+    const startCursor = { x: 50, y: 80 };
+    setCursor(startCursor);
+    cursorRef.current = startCursor;
     drift.current = { x: 0, y: 0 };
+    setHolding(false);
     setStatus('playing');
   };
 
@@ -40,19 +46,24 @@ export const RipperSurgeryGame = () => {
       drift.current.y += (Math.random() - 0.5) * 1.6;
       drift.current.x *= 0.92;
       drift.current.y *= 0.92;
-      setCursor((c) => ({
-        x: Math.max(5, Math.min(95, c.x + drift.current.x * 0.35)),
-        y: Math.max(5, Math.min(95, c.y + drift.current.y * 0.35)),
-      }));
+      setCursor((c) => {
+        const next = {
+          x: Math.max(5, Math.min(95, c.x + drift.current.x * 0.35)),
+          y: Math.max(5, Math.min(95, c.y + drift.current.y * 0.35)),
+        };
+        cursorRef.current = next;
+        return next;
+      });
     }, 50);
     return () => clearInterval(id);
   }, [status]);
 
   useEffect(() => {
-    if (status !== 'playing' || !holding.current) return;
+    if (status !== 'playing' || !holding) return;
     const id = setInterval(() => {
-      const dx = cursor.x - target.x;
-      const dy = cursor.y - target.y;
+      const c = cursorRef.current;
+      const dx = c.x - target.x;
+      const dy = c.y - target.y;
       const dist = Math.hypot(dx, dy);
       if (dist < 8) {
         setProgress((p) => {
@@ -61,24 +72,28 @@ export const RipperSurgeryGame = () => {
           return next;
         });
       } else {
-        setErrors((e) => e + 1);
+        const nextErr = errorsRef.current + 1;
+        errorsRef.current = nextErr;
+        setErrors(nextErr);
         setHumanityCost((h) => h + 1);
         setRecoveryHours((r) => r + 2);
         setGlitch(true);
         setTimeout(() => setGlitch(false), 280);
-        if (errors + 1 >= 12) setStatus('lost');
+        if (nextErr >= 12) setStatus('lost');
       }
     }, 120);
     return () => clearInterval(id);
-  }, [status, cursor, target, errors]);
+  }, [status, holding, target]);
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     if (status !== 'playing') return;
     const rect = e.currentTarget.getBoundingClientRect();
-    setCursor({
+    const next = {
       x: ((e.clientX - rect.left) / rect.width) * 100,
       y: ((e.clientY - rect.top) / rect.height) * 100,
-    });
+    };
+    cursorRef.current = next;
+    setCursor(next);
   };
 
   return (
@@ -110,15 +125,13 @@ export const RipperSurgeryGame = () => {
           <div
             className={styles.table}
             onPointerMove={onMove}
-            onPointerDown={() => {
-              holding.current = true;
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture?.(e.pointerId);
+              setHolding(true);
             }}
-            onPointerUp={() => {
-              holding.current = false;
-            }}
-            onPointerLeave={() => {
-              holding.current = false;
-            }}
+            onPointerUp={() => setHolding(false)}
+            onPointerCancel={() => setHolding(false)}
+            onPointerLeave={() => setHolding(false)}
           >
             <div
               className={styles.target}

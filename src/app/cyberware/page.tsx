@@ -59,12 +59,13 @@ const CyberWare = () => {
         headers: authHeaders(),
       });
       if (response.ok) {
-        setCharacterData(await response.json());
+        const data = await response.json();
+        setCharacterData(data);
         setStatus('');
-      } else {
-        setStatus('Não foi possível carregar o personagem.');
-        setCharacterData(null);
+        return data;
       }
+      setStatus('Não foi possível carregar o personagem.');
+      setCharacterData(null);
     } catch (error) {
       console.error(error);
       setStatus('Falha de rede ao carregar personagem.');

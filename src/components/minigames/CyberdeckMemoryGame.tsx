@@ -98,13 +98,18 @@ export const CyberdeckMemoryGame = () => {
       setMsg('Não cabe / colisão.');
       return;
     }
+    const remaining = daemons.filter((row) => row.id !== d.id);
     setPlaced((p) => [
       ...p,
       { id: d.id, x, y, w: d.w, h: d.h, color: d.color, name: d.name },
     ]);
-    setDaemons((list) => list.filter((x) => x.id !== d.id));
+    setDaemons(remaining);
     setSelected(null);
     setMsg(`${d.name} alocado.`);
+    if (remaining.length === 0) {
+      setStatus('won');
+      setMsg('RAM cheia — daemons empacotados.');
+    }
   };
 
   const checkWin = () => {
