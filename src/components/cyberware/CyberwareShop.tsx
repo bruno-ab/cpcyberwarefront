@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SLOT_LABELS, CyberWareSlot } from '../../data/cyberwareSlots';
+import { CYBERWARE_CATALOG } from '../../data/cyberwareCatalog';
 import {
   BodyPart,
   BODY_PART_LABELS,
@@ -118,22 +119,38 @@ export const CyberwareShop = ({
     });
   }, [localSheet, installedIds]);
 
-  useEffect(() => {
-    fetch(apiUrl('/api/cyberware'), { headers: authHeaders() })
-      .then((r) => r.json())
-      .then((d) => setCatalog(Array.isArray(d) ? d : []))
-      .catch(() => setCatalog([]));
-  }, []);
+  const loadCatalog = async () => {
+    try {
+      const r = await fetch(apiUrl('/api/cyberware'), {
+        headers: authHeaders(),
+      });
+      const d = await r.json();
+      setCatalog(Array.isArray(d) ? d : []);
+    } catch {
+      setCatalog([]);
+    }
+  };
+
+  const loadCampaignWallet = async () => {
+    try {
+      const c = await fetch(apiUrl(`/api/campaigns/${campaignId}`), {
+        headers: authHeaders(),
+      }).then((r) => (r.ok ? r.json() : null));
+      if (!c) return;
+      setStreetCred(Number(c?.streetCred || 0));
+      setCampaignEddies(Number(c?.eddies || 0));
+      setHeat(c?.heat || null);
+    } catch {
+      /* ignore */
+    }
+  };
 
   useEffect(() => {
-    fetch(apiUrl(`/api/campaigns/${campaignId}`))
-      .then((r) => r.json())
-      .then((c) => {
-        setStreetCred(Number(c?.streetCred || 0));
-        setCampaignEddies(Number(c?.eddies || 0));
-        setHeat(c?.heat || null);
-      })
-      .catch(() => undefined);
+    loadCatalog();
+  }, [characterId]);
+
+  useEffect(() => {
+    loadCampaignWallet();
   }, [campaignId]);
 
   const installedHere = useMemo(() => {
@@ -178,25 +195,23 @@ export const CyberwareShop = ({
         Number(catalogItem.edge_cost ?? catalogItem.edgeCost ?? 0) || 0,
       );
     }
-    return Math.max(
-      0,
-      Number((item as CatalogItem).edge_cost ?? (item as any).edgeCost ?? 0) ||
-        0,
+    const fromItem = Number(
+      (item as CatalogItem).edge_cost ?? (item as any).edgeCost ?? 0,
     );
+    if (fromItem > 0) return fromItem;
+    const byName = CYBERWARE_CATALOG.find(
+      (c) => c.name.toLowerCase() === String(item.name || '').toLowerCase(),
+    );
+    return Math.max(0, Number(byName?.edgeCost ?? 0) || 0);
   };
 
   const refreshAll = async () => {
-    await Promise.all([Promise.resolve(onUpdated?.()), refreshCampaign()]);
-    try {
-      const c = await fetch(apiUrl(`/api/campaigns/${campaignId}`)).then((r) =>
-        r.json(),
-      );
-      setStreetCred(Number(c?.streetCred || 0));
-      setCampaignEddies(Number(c?.eddies || 0));
-      setHeat(c?.heat || null);
-    } catch {
-      /* ignore */
-    }
+    await Promise.all([
+      Promise.resolve(onUpdated?.()),
+      refreshCampaign(),
+      loadCatalog(),
+      loadCampaignWallet(),
+    ]);
   };
 
   /** Compra com o mesmo preço da /shop — vai para inventário da ficha. */
