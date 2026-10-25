@@ -59,6 +59,12 @@ const NpcsPage = () => {
                   className={styles.portrait}
                   width={120}
                   height={150}
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    if (el.dataset.fallback === '1') return;
+                    el.dataset.fallback = '1';
+                    el.src = `/images/npcs/${npc.id}.svg`;
+                  }}
                 />
                 <header className={styles.cardHeader}>
                   <h3>{npc.name}</h3>

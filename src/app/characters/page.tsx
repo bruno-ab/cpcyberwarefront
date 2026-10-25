@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudButton } from '../../components/ui/HudButton';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { characterImageSrc } from '../../lib/media';
 import { CharacterWizard } from './CharacterWizard';
 import styles from './characters.module.css';
 
@@ -12,6 +13,7 @@ type Character = {
   id: string;
   name: string;
   role?: string;
+  image?: string | null;
   credits?: number;
   sheet?: {
     header?: Record<string, string>;
@@ -116,7 +118,19 @@ const CharactersPage = () => {
             return (
               <div key={character.id} className={styles.card}>
                 <div className={styles.cardArt} aria-hidden>
-                  {initial}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={characterImageSrc(character)}
+                    alt=""
+                    className={styles.cardPortrait}
+                    onError={(e) => {
+                      const el = e.currentTarget;
+                      el.style.display = 'none';
+                      const sibling = el.nextElementSibling as HTMLElement | null;
+                      if (sibling) sibling.style.display = 'grid';
+                    }}
+                  />
+                  <span className={styles.cardInitial}>{initial}</span>
                 </div>
                 <div className={styles.cardBody}>
                   <h3>{character.name}</h3>

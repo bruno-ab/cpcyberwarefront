@@ -50,6 +50,12 @@ const NpcSheetPage = () => {
           className={styles.portraitLarge}
           width={180}
           height={225}
+          onError={(e) => {
+            const el = e.currentTarget;
+            if (el.dataset.fallback === '1') return;
+            el.dataset.fallback = '1';
+            el.src = `/images/npcs/${npc.id}.svg`;
+          }}
         />
         <div>
           <h2>{npc.name}</h2>

@@ -5,12 +5,14 @@ import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import { HudButton } from '../../components/ui/HudButton';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { characterImageSrc } from '../../lib/media';
 import styles from './id.module.css';
 
 type CharBrief = {
   id: string;
   name: string;
   role?: string;
+  image?: string | null;
   sheet?: { header?: Record<string, string> };
 };
 
@@ -146,7 +148,20 @@ const IdCardPage = () => {
           <div className={styles.stripe}>NCPD / CITIZEN · NIGHT CITY</div>
           <div className={styles.body}>
             <div className={styles.photo} aria-hidden>
-              {(name || '?').slice(0, 1).toUpperCase()}
+              {selected ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={characterImageSrc(selected)}
+                  alt=""
+                  className={styles.photoImg}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : null}
+              <span className={styles.photoFallback}>
+                {(name || '?').slice(0, 1).toUpperCase()}
+              </span>
             </div>
             <div>
               <h2>{name}</h2>
