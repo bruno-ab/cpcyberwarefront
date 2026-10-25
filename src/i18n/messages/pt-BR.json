@@ -249,6 +249,38 @@
         "high": "ALTA"
       }
     },
+    "diceDecode": {
+      "close": "Fechar rolagem",
+      "defaultLabel": "Teste",
+      "eyebrowDecode": "DECODE · pulso {beat}/5",
+      "eyebrowCancel": "CANCEL · uns anulam sucessos",
+      "eyebrowVerdict": "VEREDITO",
+      "eyebrowClear": "CLEAR",
+      "scrambling": "embaralhando buffer…",
+      "queue": "+{count} na fila",
+      "fastOn": "Modo rápido · ON",
+      "fastOff": "Modo rápido · OFF",
+      "skip": "Pular",
+      "skipNext": "Pular · próximo",
+      "verdict": {
+        "botch": {
+          "title": "BOTCH",
+          "detail": "{ones}×1 cancela tudo · 0 sucessos líquidos · dif {diff}"
+        },
+        "exceptional": {
+          "title": "SUCESSO EXCEPCIONAL",
+          "detail": "{successes} sucessos · dif {diff} · margem crítica"
+        },
+        "failure": {
+          "title": "FALHA",
+          "detail": "0 sucessos · {raw} acertos brutos · dif {diff}"
+        },
+        "success": {
+          "title": "SUCESSO",
+          "detail": "{successes} sucessos líquidos · dif {diff}"
+        }
+      }
+    },
     "tokenEmote": {
       "groupLabel": "Emote no token",
       "ctxHeading": "Emote no token",

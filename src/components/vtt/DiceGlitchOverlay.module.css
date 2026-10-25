@@ -14,27 +14,64 @@
   animation: overlayGlitch 0.35s steps(2, end) infinite;
 }
 
+.overlay[data-phase='cancel'] {
+  animation: cancelPulse 0.45s ease-in-out 2;
+}
+
 .overlay[data-phase='fadeout'] {
   opacity: 0;
   background: transparent;
   pointer-events: none;
 }
 
-.overlay[data-botch='1'][data-phase='reveal'] {
+.overlay[data-verdict='botch'][data-phase='verdict'],
+.overlay[data-verdict='botch'][data-phase='cancel'] {
   background: color-mix(in srgb, #ff2a6d 28%, transparent);
+}
+
+.overlay[data-verdict='exceptional'][data-phase='verdict'] {
+  background: color-mix(in srgb, #fed33f 18%, transparent);
 }
 
 .panel {
   position: relative;
   overflow: hidden;
-  width: min(100% - 1rem, 280px);
-  padding: 0.75rem 0.85rem 0.9rem;
-  border: 1px solid var(--cp-cyan, #02d7f2);
+  width: min(100% - 1rem, 300px);
+  padding: 0.75rem 0.85rem 0.75rem;
+  border: 1px solid var(--dice-accent, var(--cp-cyan, #02d7f2));
   background: rgba(6, 10, 16, 0.92);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--cp-cyan, #02d7f2) 25%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--dice-accent, #02d7f2) 25%, transparent);
   clip-path: polygon(0 0, 100% 0, 100% 88%, 94% 100%, 0 100%);
   pointer-events: auto;
   transition: opacity 0.85s ease, transform 0.85s ease;
+}
+
+.overlay[data-roll-kind='initiative'] {
+  --dice-accent: #5dff9a;
+}
+
+.overlay[data-roll-kind='firearms'] {
+  --dice-accent: #ff6b4a;
+}
+
+.overlay[data-roll-kind='hack'] {
+  --dice-accent: #c86bff;
+}
+
+.overlay[data-roll-kind='social'] {
+  --dice-accent: #7aa2ff;
+}
+
+.overlay[data-role-accent='netrunner'] .panel {
+  box-shadow: 0 0 28px color-mix(in srgb, #c86bff 35%, transparent);
+}
+
+.overlay[data-role-accent='solo'] .panel {
+  box-shadow: 0 0 28px color-mix(in srgb, #ff6b4a 30%, transparent);
+}
+
+.overlay[data-role-accent='fixer'] .panel {
+  box-shadow: 0 0 28px color-mix(in srgb, #7aa2ff 28%, transparent);
 }
 
 .overlay[data-phase='fadeout'] .panel {
@@ -53,9 +90,9 @@
   display: grid;
   place-items: center;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dice-accent, #02d7f2) 55%, transparent);
   background: rgba(0, 0, 0, 0.55);
-  color: var(--cp-cyan, #02d7f2);
+  color: var(--dice-accent, #02d7f2);
   font-family: var(--cp-font-mono, monospace);
   font-size: 1rem;
   line-height: 1;
@@ -90,7 +127,7 @@
     90deg,
     transparent,
     color-mix(in srgb, #ff2a6d 35%, transparent),
-    color-mix(in srgb, #02d7f2 35%, transparent),
+    color-mix(in srgb, var(--dice-accent, #02d7f2) 35%, transparent),
     transparent
   );
   mix-blend-mode: screen;
@@ -103,7 +140,8 @@
   z-index: 1;
   display: grid;
   gap: 0.15rem;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.45rem;
+  padding-right: 1.4rem;
 }
 
 .eyebrow {
@@ -120,6 +158,34 @@
   font-weight: 500;
   color: var(--cp-text, #e8f0f5);
   letter-spacing: 0.04em;
+}
+
+.queueBadge {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  color: var(--dice-accent, #02d7f2);
+}
+
+.beatRail {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+  margin-bottom: 0.45rem;
+}
+
+.beatTick {
+  width: 1.35rem;
+  height: 0.18rem;
+  background: color-mix(in srgb, var(--dice-accent, #02d7f2) 22%, #1a2530);
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.beatTick[data-lit='1'] {
+  background: var(--dice-accent, #02d7f2);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--dice-accent, #02d7f2) 55%, transparent);
 }
 
 .diceRow {
@@ -139,9 +205,19 @@
   place-items: center;
   font-family: var(--cp-font-mono, monospace);
   font-size: 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dice-accent, #02d7f2) 45%, transparent);
   background: #0a1018;
-  color: var(--cp-cyan, #02d7f2);
+  color: var(--dice-accent, #02d7f2);
+  transition: color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+
+.die[data-locked='0'] {
+  animation: digitScramble 0.12s steps(2, end) infinite;
+  filter: brightness(1.15);
+}
+
+.die[data-locked='1'] {
+  animation: lockSnap 0.22s ease-out 1;
 }
 
 .die[data-success='1'] {
@@ -155,6 +231,10 @@
   color: #ff2a6d;
 }
 
+.die[data-cancel='1'] {
+  animation: cancelStrike 0.42s ease-in-out 1;
+}
+
 .result {
   position: relative;
   z-index: 1;
@@ -166,15 +246,80 @@
   color: var(--cp-text-dim, #8a9aa8);
 }
 
-.result em {
-  font-style: normal;
-  color: var(--cp-yellow, #fed33f);
-  font-size: 1rem;
+.verdictBlock {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin: 0;
 }
 
-.result[data-botch='1'] em {
+.verdictTitle {
+  margin: 0 0 0.2rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.verdictBlock[data-verdict='botch'] .verdictTitle {
   color: #ff2a6d;
-  text-shadow: 0 0 10px rgba(255, 42, 109, 0.55);
+  text-shadow: 0 0 12px rgba(255, 42, 109, 0.55);
+}
+
+.verdictBlock[data-verdict='exceptional'] .verdictTitle {
+  color: var(--cp-yellow, #fed33f);
+  text-shadow: 0 0 12px rgba(254, 211, 63, 0.45);
+}
+
+.verdictBlock[data-verdict='failure'] .verdictTitle {
+  color: #8a9aa8;
+}
+
+.verdictBlock[data-verdict='success'] .verdictTitle {
+  color: var(--dice-accent, #02d7f2);
+}
+
+.verdictDetail {
+  margin: 0;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  color: var(--cp-text-dim, #8a9aa8);
+  line-height: 1.35;
+}
+
+.footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.35rem;
+  justify-content: space-between;
+  margin-top: 0.55rem;
+}
+
+.fastToggle,
+.skipBtn {
+  appearance: none;
+  flex: 1;
+  padding: 0.28rem 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--dice-accent, #02d7f2) 40%, transparent);
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--cp-text-dim, #8a9aa8);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.fastToggle:hover,
+.skipBtn:hover {
+  color: var(--cp-yellow, #fed33f);
+  border-color: var(--cp-yellow, #fed33f);
+}
+
+.fastToggle[aria-pressed='true'] {
+  color: var(--dice-accent, #02d7f2);
 }
 
 @keyframes overlayGlitch {
@@ -201,14 +346,54 @@
   }
 }
 
+@keyframes digitScramble {
+  50% {
+    opacity: 0.65;
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes lockSnap {
+  0% {
+    transform: scale(1.08);
+    filter: brightness(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes cancelStrike {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 42, 109, 0);
+  }
+  45% {
+    box-shadow: 0 0 14px rgba(255, 42, 109, 0.75);
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes cancelPulse {
+  50% {
+    filter: brightness(1.2);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay[data-phase='scramble'],
-  .overlay[data-phase='scramble'] .panel::after {
+  .overlay[data-phase='scramble'] .panel::after,
+  .die[data-locked='0'],
+  .die[data-cancel='1'] {
     animation: none;
   }
 }
 
 :global(html[data-motion='off']) .overlay[data-phase='scramble'],
-:global(html[data-motion='off']) .overlay[data-phase='scramble'] .panel::after {
+:global(html[data-motion='off']) .overlay[data-phase='scramble'] .panel::after,
+:global(html[data-motion='off']) .die[data-locked='0'],
+:global(html[data-motion='off']) .die[data-cancel='1'] {
   animation: none;
 }

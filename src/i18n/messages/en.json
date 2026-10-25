@@ -249,6 +249,38 @@
         "high": "HIGH"
       }
     },
+    "diceDecode": {
+      "close": "Close roll",
+      "defaultLabel": "Test",
+      "eyebrowDecode": "DECODE · beat {beat}/5",
+      "eyebrowCancel": "CANCEL · ones eat successes",
+      "eyebrowVerdict": "VERDICT",
+      "eyebrowClear": "CLEAR",
+      "scrambling": "scrambling buffer…",
+      "queue": "+{count} queued",
+      "fastOn": "Fast mode · ON",
+      "fastOff": "Fast mode · OFF",
+      "skip": "Skip",
+      "skipNext": "Skip · next",
+      "verdict": {
+        "botch": {
+          "title": "BOTCH",
+          "detail": "{ones}×1 cancels all · 0 net successes · diff {diff}"
+        },
+        "exceptional": {
+          "title": "EXCEPTIONAL",
+          "detail": "{successes} successes · diff {diff} · critical margin"
+        },
+        "failure": {
+          "title": "FAILURE",
+          "detail": "0 successes · {raw} raw hits · diff {diff}"
+        },
+        "success": {
+          "title": "SUCCESS",
+          "detail": "{successes} net successes · diff {diff}"
+        }
+      }
+    },
     "tokenEmote": {
       "groupLabel": "Token emote",
       "ctxHeading": "Token emote",

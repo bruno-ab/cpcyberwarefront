@@ -11,6 +11,8 @@ import {
   DiceGlitchOverlay,
   type DiceReveal,
 } from '../../components/vtt/DiceGlitchOverlay';
+import { parseRollKind } from '../../components/vtt/diceDecodeUtils';
+import { useDiceRollQueue } from '../../components/vtt/useDiceRollQueue';
 import { FogCanvas } from '../../components/vtt/FogCanvas';
 import {
   LayersPanel,
@@ -339,6 +341,8 @@ const TablePage = () => {
   const [attrKey, setAttrKey] = useState<string>('dexterity');
   const [skillKey, setSkillKey] = useState<string>('firearms');
   const [roster, setRoster] = useState<RosterChar[]>([]);
+  const rosterRef = useRef<RosterChar[]>([]);
+  rosterRef.current = roster;
   const [rosterHydrated, setRosterHydrated] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [chromeBootOpen, setChromeBootOpen] = useState(false);
@@ -398,10 +402,11 @@ const TablePage = () => {
   >({});
   const [sceneNotesDraft, setSceneNotesDraft] = useState('');
   const [tokenNotesDraft, setTokenNotesDraft] = useState('');
-  const [diceOverlay, setDiceOverlay] = useState<{
-    active: boolean;
-    reveal: DiceReveal | null;
-  }>({ active: false, reveal: null });
+  const {
+    state: diceOverlay,
+    enqueue: enqueueDiceRoll,
+    completeCurrent: completeDiceRoll,
+  } = useDiceRollQueue();
 
   const socketRef = useRef<Socket | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -795,11 +800,17 @@ const TablePage = () => {
         playCyberSound('ui', { volume: 0.35 });
       },
     );
-    socket.on('vtt:dice', (result: DiceReveal & { rollerName?: string }) => {
-      playCyberSound('glitch', { volume: 0.55 });
-      setDiceOverlay({
-        active: true,
-        reveal: {
+    socket.on(
+      'vtt:dice',
+      (result: DiceReveal & { rollerName?: string; characterId?: number }) => {
+        playCyberSound('glitch', { volume: 0.55 });
+        const rollChar =
+          result.characterId != null
+            ? rosterRef.current.find(
+                (c) => Number(c.id) === Number(result.characterId),
+              )
+            : undefined;
+        enqueueDiceRoll({
           id: result.id,
           pool: result.pool,
           difficulty: result.difficulty,
@@ -809,12 +820,13 @@ const TablePage = () => {
           botch: result.botch,
           label: result.label,
           rollerName: result.rollerName,
-        },
-      });
-      window.setTimeout(() => {
-        playCyberSound(result.botch ? 'deny' : 'confirm', { volume: 0.6 });
-      }, 1000);
-    });
+          characterId: result.characterId,
+          characterRole:
+            rollChar?.role || rollChar?.sheetSummary?.role || undefined,
+          rollKind: parseRollKind(result.label),
+        });
+      },
+    );
     socket.on('vtt:fx', (fx: { type?: string; tokenId?: string }) => {
       if (fx?.type === 'sandevistan') {
         setSandyFx(true);
@@ -978,7 +990,14 @@ const TablePage = () => {
     return () => {
       socket.disconnect();
     };
-  }, [sessionId, campaignId, sceneId, loadScenes, pushTokenEmoteBubble]);
+  }, [
+    sessionId,
+    campaignId,
+    sceneId,
+    loadScenes,
+    pushTokenEmoteBubble,
+    enqueueDiceRoll,
+  ]);
 
   useEffect(() => {
     setSceneNotesDraft(state?.sceneGmNotes || '');
@@ -1994,9 +2013,16 @@ const TablePage = () => {
             <DiceGlitchOverlay
               active={diceOverlay.active}
               reveal={diceOverlay.reveal}
-              onDone={() =>
-                setDiceOverlay({ active: false, reveal: null })
-              }
+              queued={diceOverlay.queued}
+              onDone={completeDiceRoll}
+              onVerdict={(verdict) => {
+                playCyberSound(
+                  verdict === 'botch' || verdict === 'failure'
+                    ? 'deny'
+                    : 'confirm',
+                  { volume: 0.6 },
+                );
+              }}
             />
             <div
               ref={stageRef}
