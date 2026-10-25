@@ -39,6 +39,14 @@ export const RoleAbilities = ({ characterData, compact }: Props) => {
           <p className={styles.eyebrow}>Role Ability</p>
           <h4>{kit.name}</h4>
           {!compact && <p className={styles.blurb}>{kit.blurb}</p>}
+          {!compact && kit.world && (
+            <p className={styles.world}>{kit.world}</p>
+          )}
+          {!compact && kit.focus && (
+            <p className={styles.focus}>
+              <span>Foco</span> {kit.focus}
+            </p>
+          )}
         </div>
         <span className={styles.rank}>Rank {rank}</span>
       </header>

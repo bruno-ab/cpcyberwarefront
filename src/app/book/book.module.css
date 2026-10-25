@@ -104,6 +104,36 @@
   color: var(--cp-cyan);
 }
 
+.h4 {
+  margin: 0.7rem 0 0.3rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  opacity: 0.9;
+}
+
+.list {
+  margin: 0 0 0.75rem;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.list li {
+  padding-left: 0.15rem;
+}
+
+.code {
+  font-family: var(--cp-font-mono);
+  font-size: 0.85em;
+  color: var(--cp-cyan);
+  background: color-mix(in srgb, var(--cp-cyan) 10%, transparent);
+  padding: 0.05rem 0.28rem;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan) 28%, transparent);
+}
+
 .p {
   margin: 0 0 0.55rem;
 }

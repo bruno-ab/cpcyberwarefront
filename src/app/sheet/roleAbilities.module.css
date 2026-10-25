@@ -69,6 +69,30 @@
   max-width: 42rem;
 }
 
+.world {
+  margin: 0.45rem 0 0;
+  color: #c5cdd8;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  max-width: 44rem;
+}
+
+.focus {
+  margin: 0.4rem 0 0;
+  font-family: var(--cp-font-mono), 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: #2be4ea;
+  max-width: 44rem;
+}
+
+.focus span {
+  color: #fed33f;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-right: 0.35rem;
+}
+
 .rank {
   font-family: var(--cp-font-mono), 'Share Tech Mono', monospace;
   font-size: 0.7rem;

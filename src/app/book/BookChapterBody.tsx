@@ -23,43 +23,73 @@ const KIND_LABEL: Record<LoreInsert['kind'], string> = {
   shard: 'Shard',
 };
 
+type Block =
+  | { type: 'h2' | 'h3' | 'h4' | 'p' | 'table' | 'empty'; text: string }
+  | { type: 'ul'; items: string[] };
+
 /** Renders markdown-ish rule body + styled lore inserts. */
 export const BookChapterBody = ({ body, inserts }: Props) => {
   const lines = (body || '').split('\n');
-  const blocks: Array<{ type: 'h2' | 'h3' | 'p' | 'table' | 'empty'; text: string }> =
-    [];
+  const blocks: Block[] = [];
 
   let tableBuf: string[] = [];
+  let listBuf: string[] = [];
+
   const flushTable = () => {
     if (!tableBuf.length) return;
     blocks.push({ type: 'table', text: tableBuf.join('\n') });
     tableBuf = [];
   };
 
+  const flushList = () => {
+    if (!listBuf.length) return;
+    blocks.push({ type: 'ul', items: [...listBuf] });
+    listBuf = [];
+  };
+
   for (const raw of lines) {
     const line = raw;
+    const bullet = line.match(/^\s*[-*]\s+(.+)$/);
+    if (bullet) {
+      flushTable();
+      listBuf.push(bullet[1]);
+      continue;
+    }
+    flushList();
+
     if (line.trim().startsWith('|')) {
       tableBuf.push(line);
       continue;
     }
     flushTable();
-    if (/^##\s+/.test(line)) {
-      blocks.push({ type: 'h2', text: line.replace(/^##\s+/, '') });
+
+    if (/^####\s+/.test(line)) {
+      blocks.push({ type: 'h4', text: line.replace(/^####\s+/, '') });
     } else if (/^###\s+/.test(line)) {
       blocks.push({ type: 'h3', text: line.replace(/^###\s+/, '') });
+    } else if (/^##\s+/.test(line)) {
+      blocks.push({ type: 'h2', text: line.replace(/^##\s+/, '') });
     } else if (!line.trim()) {
       blocks.push({ type: 'empty', text: '' });
     } else {
       blocks.push({ type: 'p', text: line });
     }
   }
+  flushList();
   flushTable();
 
   const formatInline = (text: string) => {
-    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return <strong key={i}>{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return (
+          <code key={i} className={styles.code}>
+            {part.slice(1, -1)}
+          </code>
+        );
       }
       return <span key={i}>{part}</span>;
     });
@@ -81,6 +111,21 @@ export const BookChapterBody = ({ body, inserts }: Props) => {
               {b.text}
             </h3>
           );
+        if (b.type === 'h4')
+          return (
+            <h4 key={i} className={styles.h4}>
+              {b.text}
+            </h4>
+          );
+        if (b.type === 'ul') {
+          return (
+            <ul key={i} className={styles.list}>
+              {b.items.map((item, li) => (
+                <li key={li}>{formatInline(item)}</li>
+              ))}
+            </ul>
+          );
+        }
         if (b.type === 'table') {
           const rows = b.text
             .split('\n')
@@ -128,9 +173,7 @@ export const BookChapterBody = ({ body, inserts }: Props) => {
               <header>
                 <span className={styles.kind}>{KIND_LABEL[ins.kind]}</span>
                 {ins.title && <strong>{ins.title}</strong>}
-                {ins.attribution && (
-                  <em>{ins.attribution}</em>
-                )}
+                {ins.attribution && <em>{ins.attribution}</em>}
               </header>
               <p>{ins.body}</p>
             </article>

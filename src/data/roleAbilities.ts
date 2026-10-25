@@ -10,6 +10,10 @@ export type RoleKit = {
   id: string;
   name: string;
   blurb: string;
+  /** Lugar da Role no mundo Cyberpunk / Night City. */
+  world: string;
+  /** Foco de atributos/habilidades na mesa. */
+  focus: string;
   abilities: RoleAbility[];
 };
 
@@ -19,6 +23,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'solo',
     name: 'Solo',
     blurb: 'Combatente de aluguel. Tiro, lâmina e sangue frio.',
+    world:
+      'Produto mais antigo de Night City: violência profissional. Gangues, corpos e Traumas compram o mesmo serviço — alguém que entra primeiro.',
+    focus: 'Dex/Str/Sta · Firearms, Melee, Brawl, Athletics · chrome de combate',
     abilities: [
       {
         id: 'combat-awareness',
@@ -34,6 +41,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'netrunner',
     name: 'Netrunner',
     blurb: 'Jacka na rede, quebra ICE e some com os dados.',
+    world:
+      'Sistema nervoso paralelo da cidade. NetWatch caça; corpos contratam. Em 2077 a rede é hostil — quickhacks curtos, não maratonas no cyberspace.',
+    focus: 'Int/Wits · Computer, Technology · deck e quickhacks',
     abilities: [
       {
         id: 'interface',
@@ -49,6 +59,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'tech',
     name: 'Tech',
     blurb: 'Ripper de oficina. Conserta chrome, drones e portas.',
+    world:
+      'Mantém Night City funcionando quando a garantia corp acaba. Oficinas ilegais, drones e gambiarras — orgulho de maker, ódio a DRM.',
+    focus: 'Int/Dex · Crafts, Technology, Security · ferramentas e drones',
     abilities: [
       {
         id: 'maker',
@@ -64,6 +77,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'fixer',
     name: 'Fixer',
     blurb: 'Conecta jobs, gente e eddies. Sempre tem um favor.',
+    world:
+      'Mercado negro com sotaque educado. Favores são a moeda real; eddies só lubrificam. Sem Fixer, a crew fica refém do primeiro shard.',
+    focus: 'Cha/Man/Wits · Streetwise, Persuasion · agenda de contatos',
     abilities: [
       {
         id: 'operator',
@@ -79,6 +95,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'nomad',
     name: 'Nomad',
     blurb: 'Família, estrada e metal. A cidade é só mais um posto.',
+    world:
+      'Antídoto à cidade: clã, estrada e dívida coletiva. Nos Badlands, Night City é um tumor brilhante no horizonte. Veículo = parentesco.',
+    focus: 'Dex/Sta/Wits · Drive, Survival, Athletics · veículo de família',
     abilities: [
       {
         id: 'moto',
@@ -94,6 +113,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'media',
     name: 'Media',
     blurb: 'Verdade, spin ou chantagem — a câmera é a arma.',
+    world:
+      'Fabrica a realidade que a cidade consome. N54 mente; undergrounds gritam. Street Cred sobe com escândalo — heat sobe junto.',
+    focus: 'Cha/Per/Int · Expression, Investigation, Streetwise · câmeras',
     abilities: [
       {
         id: 'credibility',
@@ -109,6 +131,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'exec',
     name: 'Exec',
     blurb: 'Corpo corporativo. Agenda cheia e faca no bolso.',
+    world:
+      'Soft power com cartão de acesso. Recursos da firma vêm com asterisco e rastreamento. Mesmo “livre”, ainda cheira a crachá.',
+    focus: 'Man/Int/Cha · Bureaucracy, Persuasion, Finance · recursos corp',
     abilities: [
       {
         id: 'teamwork',
@@ -124,6 +149,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'lawman',
     name: 'Lawman',
     blurb: 'Distintivo ou milícia. Ordem à moda Night City.',
+    world:
+      'Face da ordem numa cidade que vendeu a ordem ao maior lance. Backup policial é poderoso e político — pode salvar a crew e destruir o gig.',
+    focus: 'Wits/Sta/Cha · Intimidation, Investigation, Firearms · distintivo',
     abilities: [
       {
         id: 'backup',
@@ -139,6 +167,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'medtech',
     name: 'Medtech',
     blurb: 'Sangue, trauma e biomonitor. Mantém o crew vivo.',
+    world:
+      'Linha entre ferimento narrativo e novo personagem. Trauma Team cobra; clínicas de rua improvisam. Seu outro paciente é o chrome.',
+    focus: 'Int/Dex/Wits · Medicine, Empathy, Technology · kits de trauma',
     abilities: [
       {
         id: 'medical-tech',
@@ -154,6 +185,9 @@ export const ROLE_KITS: RoleKit[] = [
     id: 'rockerboy',
     name: 'Rockerboy',
     blurb: 'Palco, protesto e charisma. A multidão é o buffer.',
+    world:
+      'Transforma atenção em poder. Corporações compram artistas; quem não se vende vira problema de segurança. Fama = Street Cred com alvo na nuca.',
+    focus: 'Cha/App/Man · Expression, Performance, Streetwise · público',
     abilities: [
       {
         id: 'charismatic-impact',
