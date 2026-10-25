@@ -83,6 +83,22 @@
   box-shadow: var(--cp-glow-cyan);
 }
 
+.owned {
+  border-color: var(--cp-yellow) !important;
+  box-shadow: var(--cp-glow-yellow);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ghostBtn {
+  border-color: var(--cp-border-strong) !important;
+  color: var(--cp-text-dim) !important;
+}
+
 .edgesRow {
   display: flex;
   gap: 0.5rem;

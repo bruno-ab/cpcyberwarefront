@@ -242,13 +242,73 @@ const Sheet = () => {
             </div>
             <div className={styles.inventoryRow} data-band="bruise">
               <span className={styles.cardScan} aria-hidden />
-              <span>Edges (moeda de chrome)</span>
+              <span>Edges (custo de instalação)</span>
               <strong>{Number(edges) || 0} E</strong>
             </div>
+
+            {(characterData.sheet?.inventory?.gear || []).map(
+              (g: { id: string; name: string; price?: number }, i: number) => (
+                <div
+                  key={`gear-${g.id}-${i}`}
+                  className={styles.inventoryRow}
+                  data-band="ok"
+                >
+                  <span className={styles.cardScan} aria-hidden />
+                  <span>Gear · {g.name}</span>
+                  <strong>¤{g.price ?? '—'}</strong>
+                </div>
+              ),
+            )}
+            {(characterData.sheet?.inventory?.vehicles || []).map(
+              (v: { id: string; name: string; price?: number }, i: number) => (
+                <div
+                  key={`veh-${v.id}-${i}`}
+                  className={styles.inventoryRow}
+                  data-band="hurt"
+                >
+                  <span className={styles.cardScan} aria-hidden />
+                  <span>Veículo · {v.name}</span>
+                  <strong>¤{v.price ?? '—'}</strong>
+                </div>
+              ),
+            )}
+            {(characterData.sheet?.inventory?.cyberware || []).map(
+              (
+                c: {
+                  id: string | number;
+                  name: string;
+                  price?: number;
+                  installed?: boolean;
+                  installable?: boolean;
+                },
+                i: number,
+              ) => (
+                <div
+                  key={`cw-${c.id}-${i}`}
+                  className={styles.inventoryRow}
+                  data-band={c.installed ? 'ok' : 'bruise'}
+                >
+                  <span className={styles.cardScan} aria-hidden />
+                  <span>
+                    Chrome · {c.name}
+                    {c.installed ? ' (instalado)' : ' (na bolsa)'}
+                  </span>
+                  <strong>
+                    {c.installable !== false && !c.installed ? (
+                      <Link href={`/cyberware?id=${characterData.id}`}>
+                        Instalar →
+                      </Link>
+                    ) : (
+                      `¤${c.price ?? '—'}`
+                    )}
+                  </strong>
+                </div>
+              ),
+            )}
+
             <p className={styles.hint}>
-              Itens de gear e veículos da campanha ficam no{' '}
-              <Link href="/shop">Ripperdoc / loja</Link> e no quadro de{' '}
-              <Link href="/gigs">gigs</Link>.
+              Compre em <Link href="/shop">/shop</Link>. Chrome instalável abre o{' '}
+              <Link href={`/cyberware?id=${characterData.id}`}>ripperdoc</Link>.
             </p>
           </div>
         )}
