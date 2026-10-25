@@ -39,10 +39,10 @@ Revisão 25-10-2026. Baseline: chat/dice glitch, sessão `campaign-{id}`, GM via
 
 ## Fatia recomendada agora
 
-**P1 entregue (25-10-2026)** — background + tokens UI + persistência + camadas.
+**P1 entregue (25-10-2026)** — background + tokens UI + persistência + camadas + cenas.
 
-- Front: imagem sob o grid; menu no token; FogCanvas; painel Camadas (VIS/LCK/ativa)
-- API: coleção `vtt_sessions`; persist no `save` / load no `getOrCreate`; `layer:*`
+- Front: imagem sob o grid; menu no token; FogCanvas; painel Camadas; SceneBar (criar/ativar/duplicar)
+- API: `vtt_sessions` + `vtt_scenes`; cada cena = mesa isolada; `layer:*` / `vtt:scene-*`
 - Próxima fatia sugerida: **P2** (iniciativa rolada, barras sync, whisper)
 
 ## Fora de escopo

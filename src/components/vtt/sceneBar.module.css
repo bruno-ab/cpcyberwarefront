@@ -1,0 +1,109 @@
+.wrap {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 28%, transparent);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-cyan, #02d7f2);
+}
+
+.createRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.createRow input,
+.renameForm input {
+  min-width: 8rem;
+  background: #12141a;
+  border: 1px solid var(--cp-border, #333);
+  color: var(--cp-text, #e8eef5);
+  padding: 0.3rem 0.4rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.75rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.item {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.3rem 0.35rem;
+  border: 1px solid transparent;
+}
+
+.item[data-viewing='1'] {
+  border-color: color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent);
+  background: rgba(2, 215, 242, 0.07);
+}
+
+.item[data-live='1'] {
+  border-color: color-mix(in srgb, var(--cp-yellow, #fed33f) 55%, transparent);
+}
+
+.sceneBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  display: grid;
+  gap: 0.1rem;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  width: 100%;
+}
+
+.sceneName {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.82rem;
+  color: var(--cp-text, #e8eef5);
+}
+
+.meta {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.item[data-live='1'] .meta {
+  color: var(--cp-yellow, #fed33f);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.renameForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}

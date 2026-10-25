@@ -17,6 +17,10 @@ import {
   type VttLayer,
   type VttLayerId,
 } from '../../components/vtt/LayersPanel';
+import {
+  SceneBar,
+  type VttSceneSummary,
+} from '../../components/vtt/SceneBar';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
 import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
@@ -53,6 +57,7 @@ type ChatMsg = {
 type VttState = {
   version: number;
   campaignId?: number;
+  sceneId?: string | null;
   map: {
     width: number;
     height: number;
@@ -138,7 +143,12 @@ const parseJwt = (token: string) => {
 
 const TablePage = () => {
   const { campaignId, campaign } = useCampaign();
-  const sessionId = `campaign-${campaignId}`;
+
+  const [scenes, setScenes] = useState<VttSceneSummary[]>([]);
+  const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+  const [sceneId, setSceneId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState(`campaign-${campaignId}`);
+  const [scenesBusy, setScenesBusy] = useState(false);
 
   const [state, setState] = useState<VttState | null>(null);
   const [myRole, setMyRole] = useState<'gm' | 'player'>('player');
@@ -215,6 +225,181 @@ const TablePage = () => {
     [sessionId, state?.version],
   );
 
+  const applySceneList = useCallback(
+    (data: {
+      scenes?: VttSceneSummary[];
+      activeSceneId?: string | null;
+    }) => {
+      const list = Array.isArray(data?.scenes) ? data.scenes : [];
+      setScenes(list);
+      const active =
+        data?.activeSceneId || list.find((s) => s.active)?.id || list[0]?.id || null;
+      setActiveSceneId(active);
+      return { list, active };
+    },
+    [],
+  );
+
+  const loadScenes = useCallback(
+    async (opts?: { selectPreferred?: boolean }) => {
+      try {
+        const res = await fetch(
+          apiUrl(`/api/vtt/campaigns/${campaignId}/scenes`),
+          { headers: authHeaders() },
+        );
+        if (!res.ok) return null;
+        const data = await res.json();
+        const { list, active } = applySceneList(data);
+        if (opts?.selectPreferred !== false) {
+          let stored: string | null = null;
+          try {
+            stored = localStorage.getItem(`cp-vtt-scene-${campaignId}`);
+          } catch {
+            stored = null;
+          }
+          const preferred =
+            (stored && list.find((s) => s.id === stored)) ||
+            list.find((s) => s.id === active) ||
+            list[0] ||
+            null;
+          if (preferred) {
+            setSceneId(preferred.id);
+            setSessionId(preferred.sessionId);
+          }
+        }
+        return { list, active };
+      } catch {
+        return null;
+      }
+    },
+    [campaignId, applySceneList],
+  );
+
+  const switchToScene = useCallback(
+    (id: string, opts?: { activate?: boolean }) => {
+      const scene = scenes.find((s) => s.id === id);
+      if (!scene) return;
+      setSceneId(scene.id);
+      setSessionId(scene.sessionId);
+      setState(null);
+      setSelectedTokenId(null);
+      setPan({ x: 0, y: 0 });
+      if (opts?.activate && isGm) {
+        socketRef.current?.emit('vtt:scene-activate', {
+          campaignId,
+          sceneId: scene.id,
+        });
+        setActiveSceneId(scene.id);
+      }
+      try {
+        localStorage.setItem(`cp-vtt-scene-${campaignId}`, scene.id);
+      } catch {
+        /* ignore */
+      }
+    },
+    [scenes, isGm, campaignId],
+  );
+
+  const createScene = async (name: string, copyFrom: boolean) => {
+    if (!isGm) return;
+    setScenesBusy(true);
+    try {
+      const res = await fetch(
+        apiUrl(`/api/vtt/campaigns/${campaignId}/scenes`),
+        {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            name,
+            copyFromSceneId: copyFrom && sceneId ? sceneId : undefined,
+          }),
+        },
+      );
+      if (!res.ok) throw new Error('create failed');
+      const created = await res.json();
+      await loadScenes({ selectPreferred: false });
+      if (created?.id && created?.sessionId) {
+        setSceneId(created.id);
+        setSessionId(created.sessionId);
+        setState(null);
+        try {
+          localStorage.setItem(`cp-vtt-scene-${campaignId}`, created.id);
+        } catch {
+          /* ignore */
+        }
+      }
+      playCyberSound('confirm', { volume: 0.4 });
+    } catch {
+      playCyberSound('deny', { volume: 0.4 });
+    } finally {
+      setScenesBusy(false);
+    }
+  };
+
+  const renameScene = async (id: string, name: string) => {
+    if (!isGm) return;
+    setScenesBusy(true);
+    try {
+      const res = await fetch(
+        apiUrl(`/api/vtt/campaigns/${campaignId}/scenes/${id}`),
+        {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ name }),
+        },
+      );
+      if (!res.ok) throw new Error('rename failed');
+      await loadScenes({ selectPreferred: false });
+    } catch {
+      playCyberSound('deny', { volume: 0.35 });
+    } finally {
+      setScenesBusy(false);
+    }
+  };
+
+  const activateScene = async (id: string) => {
+    if (!isGm) return;
+    setScenesBusy(true);
+    try {
+      const res = await fetch(
+        apiUrl(`/api/vtt/campaigns/${campaignId}/scenes/${id}/activate`),
+        { method: 'POST', headers: authHeaders() },
+      );
+      if (!res.ok) throw new Error('activate failed');
+      switchToScene(id, { activate: true });
+      await loadScenes({ selectPreferred: false });
+      playCyberSound('confirm', { volume: 0.4 });
+    } catch {
+      playCyberSound('deny', { volume: 0.35 });
+    } finally {
+      setScenesBusy(false);
+    }
+  };
+
+  const deleteScene = async (id: string) => {
+    if (!isGm) return;
+    setScenesBusy(true);
+    try {
+      const res = await fetch(
+        apiUrl(`/api/vtt/campaigns/${campaignId}/scenes/${id}`),
+        { method: 'DELETE', headers: authHeaders() },
+      );
+      if (!res.ok) throw new Error('delete failed');
+      const data = await res.json();
+      const { list, active } = applySceneList(data);
+      const next = list.find((s) => s.id === active) || list[0];
+      if (next) {
+        setSceneId(next.id);
+        setSessionId(next.sessionId);
+      }
+      playCyberSound('confirm', { volume: 0.35 });
+    } catch {
+      playCyberSound('deny', { volume: 0.35 });
+    } finally {
+      setScenesBusy(false);
+    }
+  };
+
   const scrollChat = useCallback(() => {
     const el = chatLogRef.current;
     if (!el) return;
@@ -252,6 +437,16 @@ const TablePage = () => {
   }, []);
 
   useEffect(() => {
+    setSceneId(null);
+    setSessionId(`campaign-${campaignId}`);
+    setScenes([]);
+    setActiveSceneId(null);
+    void loadScenes();
+  }, [campaignId, loadScenes]);
+
+  useEffect(() => {
+    if (!sceneId) return;
+
     const token =
       typeof window !== 'undefined'
         ? localStorage.getItem('access_token') || ''
@@ -271,21 +466,54 @@ const TablePage = () => {
     });
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    const join = () => {
       socket.emit(
         'vtt:join',
-        { sessionId, campaignId, name },
-        (ack: { role?: string } | undefined) => {
+        { sessionId, campaignId, sceneId, name },
+        (
+          ack:
+            | { role?: string; sessionId?: string; sceneId?: string }
+            | undefined,
+        ) => {
           if (ack?.role === 'gm' || ack?.role === 'player') {
             setMyRole(ack.role);
           }
+          if (ack?.sessionId) setSessionId(ack.sessionId);
+          if (ack?.sceneId) setSceneId(ack.sceneId);
         },
       );
-    });
+    };
+
+    socket.on('connect', join);
     socket.on('vtt:state', (s: VttState) => setState(s));
     socket.on('vtt:handout', () => setPhoneOpen(true));
     socket.on('vtt:breach', (b: BreachState) =>
       setState((prev) => (prev ? { ...prev, breach: b } : prev)),
+    );
+    socket.on(
+      'vtt:scene-switch',
+      (payload: {
+        sceneId?: string;
+        sessionId?: string;
+        name?: string;
+      }) => {
+        if (!payload?.sceneId || !payload?.sessionId) return;
+        setActiveSceneId(payload.sceneId);
+        setSceneId(payload.sceneId);
+        setSessionId(payload.sessionId);
+        setState(null);
+        setSelectedTokenId(null);
+        try {
+          localStorage.setItem(
+            `cp-vtt-scene-${campaignId}`,
+            payload.sceneId,
+          );
+        } catch {
+          /* ignore */
+        }
+        void loadScenes({ selectPreferred: false });
+        playCyberSound('ui', { volume: 0.35 });
+      },
     );
     socket.on('vtt:dice', (result: DiceReveal & { rollerName?: string }) => {
       playCyberSound('glitch', { volume: 0.55 });
@@ -311,7 +539,7 @@ const TablePage = () => {
     return () => {
       socket.disconnect();
     };
-  }, [sessionId, campaignId]);
+  }, [sessionId, campaignId, sceneId, loadScenes]);
 
   useEffect(() => {
     fetch(apiUrl(`/api/campaigns/${campaignId}/roster`), {
@@ -515,9 +743,26 @@ const TablePage = () => {
     <PageFrame>
       <div className={styles.layout}>
         <HudPanel
-          title={`Mesa — ${state?.map?.name || '…'} · ${campaign?.name || `Campanha ${campaignId}`}`}
+          title={`Mesa — ${
+            scenes.find((s) => s.id === sceneId)?.name ||
+            state?.map?.name ||
+            '…'
+          } · ${campaign?.name || `Campanha ${campaignId}`}`}
           className={styles.stage}
         >
+          <SceneBar
+            scenes={scenes}
+            activeSceneId={activeSceneId}
+            currentSceneId={sceneId}
+            isGm={isGm}
+            busy={scenesBusy}
+            onSelect={(id) => switchToScene(id)}
+            onCreate={(name, copy) => void createScene(name, !!copy)}
+            onRename={(id, name) => void renameScene(id, name)}
+            onActivate={(id) => void activateScene(id)}
+            onDelete={(id) => void deleteScene(id)}
+          />
+
           <div className={styles.toolbar}>
             <span className={styles.roleBadge} data-role={myRole}>
               {isGm ? 'GM' : 'Player'} · {myName}
