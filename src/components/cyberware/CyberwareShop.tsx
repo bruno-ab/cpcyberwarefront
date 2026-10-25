@@ -91,6 +91,7 @@ export const CyberwareShop = ({
   const [localSheet, setLocalSheet] = useState(sheet);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<InstalledItem | null>(null);
 
   const slotFilter = selectedPart ? BODY_PART_SLOTS[selectedPart] : null;
   const partLabel = selectedPart ? BODY_PART_LABELS[selectedPart] : null;
@@ -341,7 +342,7 @@ export const CyberwareShop = ({
     }
   };
 
-  const uninstall = async (item: InstalledItem) => {
+  const uninstall = async (item: InstalledItem, refundEdges: boolean) => {
     setBusy(true);
     setMsg('');
     try {
@@ -350,7 +351,10 @@ export const CyberwareShop = ({
         {
           method: 'DELETE',
           headers: authHeaders(),
-          body: JSON.stringify({ cyberwareId: item.id }),
+          body: JSON.stringify({
+            cyberwareId: item.id,
+            refundEdges,
+          }),
         },
       );
       const payload = await res.json().catch(() => ({}));
@@ -360,18 +364,32 @@ export const CyberwareShop = ({
       if (payload.edges != null) {
         setEdges(Number(payload.edges));
       }
+      playCyberSound(refundEdges ? 'confirm' : 'glitch');
       setMsg(
         payload.refundedEdges
           ? `Removido: ${item.name} (+${payload.refundedEdges} E devolvidos).`
-          : `Removido: ${item.name}.`,
+          : `Removido: ${item.name} (Edges não devolvidos).`,
       );
+      setRemoveTarget(null);
       await refreshAll();
     } catch (e: any) {
+      playCyberSound('deny');
       setMsg(e.message || 'Falha ao remover');
     } finally {
       setBusy(false);
     }
   };
+
+  const removeEdgeCost = removeTarget
+    ? Math.max(
+        0,
+        Number(
+          removeTarget.edgeCost ??
+            edgeCostOf(removeTarget) ??
+            0,
+        ) || 0,
+      )
+    : 0;
 
   const slotHint = slotFilter
     ? slotFilter.map((s) => SLOT_LABELS[s]).join(' · ')
@@ -379,6 +397,63 @@ export const CyberwareShop = ({
 
   return (
     <section className={styles.shop}>
+      {removeTarget && (
+        <div
+          className={styles.modalBackdrop}
+          role="presentation"
+          onClick={() => !busy && setRemoveTarget(null)}
+        >
+          <div
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-chrome-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4 id="remove-chrome-title">Remover chrome</h4>
+            <p>
+              Extrair <strong>{removeTarget.name}</strong> do corpo?
+            </p>
+            {removeEdgeCost > 0 ? (
+              <p className={styles.modalHint}>
+                Esta peça custou <strong>{removeEdgeCost} E</strong> na
+                instalação. Devolver os Edges para a ficha?
+              </p>
+            ) : (
+              <p className={styles.modalHint}>
+                Esta peça não consumiu Edges na instalação.
+              </p>
+            )}
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalCancel}
+                disabled={busy}
+                onClick={() => setRemoveTarget(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => uninstall(removeTarget, false)}
+              >
+                Remover sem devolver
+              </button>
+              {removeEdgeCost > 0 && (
+                <button
+                  type="button"
+                  className={styles.modalPrimary}
+                  disabled={busy}
+                  onClick={() => uninstall(removeTarget, true)}
+                >
+                  Devolver {removeEdgeCost} E e remover
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <header className={styles.head}>
         <div>
           <h3>Ripperdoc — comprar e instalar</h3>
@@ -514,7 +589,10 @@ export const CyberwareShop = ({
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => uninstall(item)}
+                  onClick={() => {
+                    playCyberSound('blip');
+                    setRemoveTarget(item);
+                  }}
                 >
                   Remover
                 </button>

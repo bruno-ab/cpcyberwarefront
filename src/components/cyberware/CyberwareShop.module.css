@@ -156,6 +156,87 @@
   font-family: var(--cp-font-mono);
 }
 
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  width: min(420px, 100%);
+  background: var(--cp-bg-panel, #0a0e14);
+  border: 1px solid var(--cp-yellow);
+  box-shadow: var(--cp-glow-yellow);
+  padding: 1rem 1.1rem 1.15rem;
+  clip-path: var(--cp-clip, none);
+}
+
+.modal h4 {
+  margin: 0 0 0.5rem;
+  font-family: var(--cp-font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.modal p {
+  margin: 0 0 0.55rem;
+  color: var(--cp-text);
+  font-size: 0.9rem;
+}
+
+.modalHint {
+  font-family: var(--cp-font-mono);
+  font-size: 0.78rem !important;
+  color: var(--cp-cyan) !important;
+}
+
+.modalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+  justify-content: flex-end;
+}
+
+.modalActions button {
+  background: transparent;
+  border: 1px solid var(--cp-border-strong);
+  color: var(--cp-text);
+  font-family: var(--cp-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+}
+
+.modalCancel {
+  border-color: var(--cp-text-dim) !important;
+  color: var(--cp-text-dim) !important;
+}
+
+.modalPrimary {
+  border-color: var(--cp-yellow) !important;
+  color: var(--cp-yellow) !important;
+}
+
+.modalActions button:hover:not(:disabled) {
+  box-shadow: var(--cp-glow-cyan);
+}
+
+.modalActions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .search {
   width: min(360px, 100%);
   margin-bottom: 0.75rem;
