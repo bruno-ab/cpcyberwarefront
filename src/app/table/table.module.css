@@ -309,6 +309,19 @@
   pointer-events: none;
 }
 
+.wall[data-selected='1'] {
+  stroke: var(--cp-yellow, #fed33f);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 4px rgba(254, 211, 63, 0.55));
+}
+
+.wallHit {
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
 .wallDoor {
   stroke: #fed33f;
   stroke-width: 3;
@@ -475,6 +488,12 @@
   overflow: visible;
   padding: 0;
   cursor: default;
+}
+
+.device[data-selected='1'] {
+  outline: 2px solid var(--cp-yellow, #fed33f);
+  outline-offset: 1px;
+  box-shadow: 0 0 8px rgba(254, 211, 63, 0.35);
 }
 
 .device[data-net='1'] {

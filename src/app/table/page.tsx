@@ -50,6 +50,8 @@ import {
   BoardNavToolbar,
   type BoardNavTool,
 } from '../../components/vtt/BoardNavToolbar';
+import { GmEditShortcutsLegend } from '../../components/vtt/GmEditShortcutsLegend';
+import { useTableEditHotkeys } from '../../lib/vtt/useTableEditHotkeys';
 import {
   ReactionBar,
   type ReactionId,
@@ -380,6 +382,11 @@ const TablePage = () => {
   const tableBootShownRef = useRef(false);
   const [selectedCharId, setSelectedCharId] = useState('');
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
+    null,
+  );
+  const [selectedWallId, setSelectedWallId] = useState<string | null>(null);
+  const [gmShortcutsOpen, setGmShortcutsOpen] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -746,21 +753,9 @@ const TablePage = () => {
   }, [state?.presence, myPlayerId]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setCtxMenu(null);
-        setSelectedTokenId(null);
-        setRuler(null);
-        setAimMode(false);
-        setAimHoverId(null);
-        setSheetPopupOpen(false);
-      }
-    };
     const onClick = () => setCtxMenu(null);
-    window.addEventListener('keydown', onKey);
     window.addEventListener('click', onClick);
     return () => {
-      window.removeEventListener('keydown', onKey);
       window.removeEventListener('click', onClick);
     };
   }, []);
@@ -1269,6 +1264,47 @@ const TablePage = () => {
     playCyberSound('ui', { volume: 0.25 });
   };
 
+  const gmBoardPickActive = useMemo(
+    () =>
+      isGm &&
+      boardNavTool === 'select' &&
+      tool === 'select' &&
+      !spawnPlacement &&
+      !aimMode,
+    [isGm, boardNavTool, tool, spawnPlacement, aimMode],
+  );
+
+  const selectMapDevice = useCallback((deviceId: string) => {
+    setSelectedDeviceId(deviceId);
+    setSelectedTokenId(null);
+    setSelectedWallId(null);
+    setSelectedNetLink(null);
+    setCtxMenu(null);
+  }, []);
+
+  const selectMapWall = useCallback((wallId: string) => {
+    setSelectedWallId(wallId);
+    setSelectedTokenId(null);
+    setSelectedDeviceId(null);
+    setSelectedNetLink(null);
+    setCtxMenu(null);
+  }, []);
+
+  const clearEditState = useCallback(() => {
+    setCtxMenu(null);
+    setSelectedTokenId(null);
+    setSelectedDeviceId(null);
+    setSelectedWallId(null);
+    setSelectedNetLink(null);
+    setNetLinkFrom(null);
+    setWallDraft(null);
+    setRuler(null);
+    setAimMode(false);
+    setAimHoverId(null);
+    setSheetPopupOpen(false);
+    setGmShortcutsOpen(false);
+  }, []);
+
   const canDragToken = (t: Token) => {
     if (layerLocked('tokens')) return false;
     if (!layerVisible('tokens')) return false;
@@ -1477,6 +1513,74 @@ const TablePage = () => {
     [isGm, viewMode, gmTab, netWireMode],
   );
 
+  const deleteSelectedGm = useCallback(() => {
+    if (!isGm) return;
+    if (selectedNetLink && netEditLinks) {
+      intent('device:unlink', {
+        fromId: selectedNetLink.a,
+        toId: selectedNetLink.b,
+      });
+      setSelectedNetLink(null);
+      return;
+    }
+    if (selectedDeviceId) {
+      intent('device:remove', { deviceId: selectedDeviceId });
+      setSelectedDeviceId(null);
+      return;
+    }
+    if (selectedTokenId && !layerLocked('tokens')) {
+      intent('token:remove', { tokenId: selectedTokenId });
+      setSelectedTokenId(null);
+      return;
+    }
+    if (selectedWallId && !layerLocked('walls')) {
+      intent('wall:remove', { wallId: selectedWallId });
+      setSelectedWallId(null);
+    }
+  }, [
+    isGm,
+    selectedNetLink,
+    netEditLinks,
+    selectedDeviceId,
+    selectedTokenId,
+    selectedWallId,
+    intent,
+    layerLocked,
+  ]);
+
+  const onGmToolHotkey = useCallback(
+    (key: 'fog' | 'wall' | 'grid' | 'lock') => {
+      if (!isGm) return;
+      setBoardNavTool('select');
+      if (key === 'fog') {
+        if (layerLocked('fog')) return;
+        setTool((t) => (t === 'fog' ? 'select' : 'fog'));
+        intent('layer:active', { id: 'fog' });
+        return;
+      }
+      if (key === 'wall') {
+        if (layerLocked('walls')) return;
+        setTool((t) => (t === 'wall' ? 'select' : 'wall'));
+        intent('layer:active', { id: 'walls' });
+        return;
+      }
+      if (key === 'grid') {
+        const vis = layerVisible('grid');
+        intent('layer:update', { id: 'grid', visible: !vis });
+        return;
+      }
+      if (key === 'lock') {
+        const layer = layers.find((l) => l.id === activeLayer);
+        if (!layer) return;
+        intent('layer:update', {
+          id: activeLayer,
+          locked: !layer.locked,
+        });
+      }
+    },
+    [isGm, layerLocked, layerVisible, layers, activeLayer, intent],
+  );
+
   const myRosterChar = useMemo(() => {
     if (selectedChar) return selectedChar;
     return (
@@ -1630,9 +1734,21 @@ const TablePage = () => {
         setNetLinkFrom(null);
         return;
       }
+      if (gmBoardPickActive && viewMode === 'normal') {
+        selectMapDevice(deviceId);
+        return;
+      }
       openNetNode({ deviceId });
     },
-    [netEditLinks, netLinkFrom, intent, openNetNode],
+    [
+      netEditLinks,
+      netLinkFrom,
+      intent,
+      openNetNode,
+      gmBoardPickActive,
+      viewMode,
+      selectMapDevice,
+    ],
   );
 
   const castQuickhack = useCallback(
@@ -1917,148 +2033,37 @@ const TablePage = () => {
     [intent, isGm],
   );
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement | null;
-      const tag = el?.tagName;
-      if (
-        tag === 'INPUT' ||
-        tag === 'TEXTAREA' ||
-        tag === 'SELECT' ||
-        el?.isContentEditable
-      ) {
-        return;
-      }
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        toggleBothHuds();
-        return;
-      }
-      if (e.key === 'Escape' && spawnPlacement) {
-        setSpawnPlacement(null);
-        return;
-      }
-      if (e.key === ' ' || e.code === 'Space') {
-        if (e.type === 'keydown' && !e.repeat) {
-          e.preventDefault();
-          spaceHeldRef.current = true;
-          spacePanUsedRef.current = false;
-          setSpaceHeld(true);
-        }
-        return;
-      }
-      if (e.key === 'v' || e.key === 'V') {
-        setBoardNavTool('select');
-        return;
-      }
-      if (e.key === 'h' || e.key === 'H') {
-        setBoardNavTool('hand');
-        return;
-      }
-      if (selectedNetLink && (e.key === 'Delete' || e.key === 'Backspace')) {
-        e.preventDefault();
-        intent('device:unlink', {
-          fromId: selectedNetLink.a,
-          toId: selectedNetLink.b,
-        });
-        setSelectedNetLink(null);
-        return;
-      }
-      if (e.key === '1') {
-        setViewModeShortcut('normal');
-        return;
-      }
-      if (e.key === '2') {
-        if (isGm || (myTokenIds.length > 0 && hasOptics)) {
-          activateKiroshi(isGm ? { bypass: true } : undefined);
-        }
-        return;
-      }
-      if (e.key === '3') {
-        if (isGm || (myTokenIds.length > 0 && hasNetDeck)) {
-          setViewModeShortcut('net');
-        }
-        return;
-      }
-      if (e.key === '4') {
-        if (isGm || myTokenIds.length > 0) setSafeVision((v) => !v);
-        return;
-      }
-      let dx = 0;
-      let dy = 0;
-      switch (e.key) {
-        case 'ArrowUp':
-          dy = -1;
-          break;
-        case 'ArrowDown':
-          dy = 1;
-          break;
-        case 'ArrowLeft':
-          dx = -1;
-          break;
-        case 'ArrowRight':
-          dx = 1;
-          break;
-        default: {
-          const lk = e.key.toLowerCase();
-          if (lk === 'w') dy = -1;
-          else if (lk === 's') dy = 1;
-          else if (lk === 'a') dx = -1;
-          else if (lk === 'd') dx = 1;
-          else return;
-        }
-      }
-      if (!selectedTokenId) return;
-      const nudgeTok = state?.tokens?.find((t) => t.id === selectedTokenId);
-      if (!nudgeTok || !canDragToken(nudgeTok)) return;
-      if (tool !== 'select' || aimMode || spawnPlacement) return;
-      if ((nudgeTok.floor ?? 0) !== currentFloor) return;
-      e.preventDefault();
-      const nx = Math.max(0, Math.min(mapW - 1, nudgeTok.x + dx));
-      const ny = Math.max(0, Math.min(mapH - 1, nudgeTok.y + dy));
-      if (nx === nudgeTok.x && ny === nudgeTok.y) return;
-      intent('token:move', { tokenId: nudgeTok.id, x: nx, y: ny });
-    };
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key !== ' ' && e.code !== 'Space') return;
-      e.preventDefault();
-      spaceHeldRef.current = false;
-      setSpaceHeld(false);
-      if (!spacePanUsedRef.current) {
-        if (isGm) intent('initiative:next', {});
-        else if (combatMyTurn) intent('initiative:delay', {});
-      }
-      spacePanUsedRef.current = false;
-    };
-    window.addEventListener('keydown', onKey);
-    window.addEventListener('keyup', onKeyUp);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      window.removeEventListener('keyup', onKeyUp);
-    };
-  }, [
+  useTableEditHotkeys({
     isGm,
     combatMyTurn,
     intent,
     setViewModeShortcut,
-    myTokenIds.length,
+    setSafeVision,
+    myTokenIds,
     hasOptics,
     hasNetDeck,
     activateKiroshi,
     toggleBothHuds,
     spawnPlacement,
-    selectedNetLink,
-    selectedTokenId,
-    state?.tokens,
+    setSpawnPlacement,
+    deleteSelectedGm,
+    clearEditState,
+    setBoardNavTool,
+    setTool,
     tool,
+    toggleGmShortcutsLegend: () => setGmShortcutsOpen((o) => !o),
+    onGmToolHotkey,
+    selectedTokenId,
+    stateTokens: state?.tokens,
     aimMode,
     currentFloor,
     mapW,
     mapH,
-    layers,
-    isGm,
-    myPlayerId,
-  ]);
+    canDragToken,
+    spaceHeldRef,
+    spacePanUsedRef,
+    setSpaceHeld,
+  });
 
   const chromeBootCharacter = useMemo(() => {
     if (!myRosterChar) return null;
@@ -2651,6 +2656,12 @@ const TablePage = () => {
                 }
               }}
             />
+            {isGm && (
+              <GmEditShortcutsLegend
+                open={gmShortcutsOpen}
+                onClose={() => setGmShortcutsOpen(false)}
+              />
+            )}
             <DiceGlitchOverlay
               active={diceOverlay.active}
               reveal={diceOverlay.reveal}
@@ -2748,6 +2759,9 @@ const TablePage = () => {
                 }
                 if (e.target === e.currentTarget || (e.target as HTMLElement).dataset?.layer === 'board') {
                   setSelectedTokenId(null);
+                  setSelectedDeviceId(null);
+                  setSelectedWallId(null);
+                  setSelectedNetLink(null);
                 }
               }}
               onMouseMove={(e) => {
@@ -2834,22 +2848,40 @@ const TablePage = () => {
                       )),
                     )}
                   {layerVisible('walls') &&
-                    (state?.walls || []).map((w) => (
-                      <line
-                        key={w.id}
-                        x1={w.x1 * GRID + GRID / 2}
-                        y1={w.y1 * GRID + GRID / 2}
-                        x2={w.x2 * GRID + GRID / 2}
-                        y2={w.y2 * GRID + GRID / 2}
-                        className={
-                          w.door
-                            ? w.open
-                              ? styles.wallDoorOpen
-                              : styles.wallDoor
-                            : styles.wall
-                        }
-                      />
-                    ))}
+                    (state?.walls || []).map((w) => {
+                      const wallSelected = selectedWallId === w.id;
+                      const wallClass = w.door
+                        ? w.open
+                          ? styles.wallDoorOpen
+                          : styles.wallDoor
+                        : styles.wall;
+                      return (
+                        <g key={w.id}>
+                          {gmBoardPickActive && !layerLocked('walls') && (
+                            <line
+                              x1={w.x1 * GRID + GRID / 2}
+                              y1={w.y1 * GRID + GRID / 2}
+                              x2={w.x2 * GRID + GRID / 2}
+                              y2={w.y2 * GRID + GRID / 2}
+                              className={styles.wallHit}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                selectMapWall(w.id);
+                              }}
+                            />
+                          )}
+                          <line
+                            x1={w.x1 * GRID + GRID / 2}
+                            y1={w.y1 * GRID + GRID / 2}
+                            x2={w.x2 * GRID + GRID / 2}
+                            y2={w.y2 * GRID + GRID / 2}
+                            className={wallClass}
+                            data-selected={wallSelected ? '1' : '0'}
+                            pointerEvents="none"
+                          />
+                        </g>
+                      );
+                    })}
                   {(state?.lights || []).map((l) => {
                     const color = l.color
                       ? l.color.length === 8
@@ -2981,9 +3013,11 @@ const TablePage = () => {
                         )}
                       </>
                     );
+                    const deviceSelected = selectedDeviceId === d.id;
                     const shared = {
                       className: styles.device,
                       'data-kind': d.kind,
+                      'data-selected': deviceSelected ? '1' : '0',
                       'data-hackable': d.hackable ? '1' : '0',
                       'data-scan': showScan ? '1' : '0',
                       'data-net': netNode ? '1' : '0',
@@ -3018,7 +3052,20 @@ const TablePage = () => {
                       );
                     }
                     return (
-                      <div key={d.id} {...shared}>
+                      <div
+                        key={d.id}
+                        {...shared}
+                        role={gmBoardPickActive ? 'button' : undefined}
+                        tabIndex={gmBoardPickActive ? 0 : undefined}
+                        onClick={
+                          gmBoardPickActive
+                            ? (e) => {
+                                e.stopPropagation();
+                                selectMapDevice(d.id);
+                              }
+                            : undefined
+                        }
+                      >
                         {body}
                       </div>
                     );
@@ -3104,6 +3151,9 @@ const TablePage = () => {
                           e.stopPropagation();
                           if (e.button !== 0) return;
                           setSelectedTokenId(t.id);
+                          setSelectedDeviceId(null);
+                          setSelectedWallId(null);
+                          setSelectedNetLink(null);
                           setCtxMenu(null);
                           if (aimMode) {
                             if (
@@ -3230,6 +3280,7 @@ const TablePage = () => {
               </div>
             </div>
             <div className={styles.hudOverlay}>
+              {isGm ? '? atalhos GM · Del apaga seleção · ' : ''}
               zoom {zoom.toFixed(2)} · shift+drag régua · setas/WASD: mover token ·{' '}
               {distance}u
               {rangeLabel ? ` (${rangeLabel})` : ''}
