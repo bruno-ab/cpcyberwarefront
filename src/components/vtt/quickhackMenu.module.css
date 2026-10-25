@@ -1,0 +1,120 @@
+.wrap {
+  position: absolute;
+  right: 0.75rem;
+  top: 5.5rem;
+  z-index: 30;
+  width: min(22rem, calc(100% - 1.5rem));
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.55rem 0.65rem;
+  background: rgba(0, 10, 14, 0.92);
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent);
+  box-shadow: 0 0 18px rgba(2, 215, 242, 0.18);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-family: var(--cp-font-mono, monospace);
+}
+
+.head strong {
+  display: block;
+  color: var(--cp-text, #e8eef5);
+  font-size: 0.9rem;
+}
+
+.kind {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cp-cyan, #02d7f2);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.meta span[data-on='1'] {
+  color: var(--cp-yellow, #fed33f);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  max-height: 16rem;
+  overflow: auto;
+}
+
+.hack {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.4rem 0.45rem;
+  background: rgba(2, 215, 242, 0.06);
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 35%, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.hack:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.hack:not(:disabled):hover {
+  border-color: var(--cp-cyan, #02d7f2);
+  background: rgba(2, 215, 242, 0.12);
+}
+
+.hackName {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.78rem;
+  color: var(--cp-cyan, #02d7f2);
+}
+
+.hackStats {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cp-yellow, #fed33f);
+}
+
+.hackDesc {
+  font-size: 0.72rem;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.badge {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-magenta, #ff2a6d);
+}
+
+.foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.err {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cp-magenta, #ff2a6d);
+}

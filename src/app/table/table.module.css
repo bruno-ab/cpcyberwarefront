@@ -253,6 +253,10 @@
   pointer-events: none;
 }
 
+.layout[data-view='net'] .deviceLayer {
+  pointer-events: none;
+}
+
 .device {
   position: absolute;
   border: 1px dashed var(--cp-cyan, #02d7f2);
@@ -263,11 +267,63 @@
   font-size: 0.5rem;
   color: var(--cp-cyan, #02d7f2);
   overflow: visible;
+  padding: 0;
+  cursor: default;
+}
+
+.device[data-net='1'] {
+  pointer-events: auto;
+  cursor: pointer;
+  border-style: solid;
+  box-shadow: 0 0 10px rgba(2, 215, 242, 0.55);
+}
+
+.device[data-jammed='1'] {
+  border-color: var(--cp-magenta, #ff2a6d);
+  color: var(--cp-magenta, #ff2a6d);
+}
+
+.device[data-open='1'] {
+  border-color: var(--cp-yellow, #fed33f);
 }
 
 .layout[data-view='net'] .device[data-hackable='1'] {
   border-style: solid;
   box-shadow: 0 0 8px rgba(2, 215, 242, 0.55);
+}
+
+.layout[data-view='net'] .mapWorld {
+  filter: saturate(0.55) contrast(1.1) brightness(0.85);
+}
+
+.netLinkLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.netLinkLine {
+  stroke: var(--cp-cyan, #02d7f2);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  opacity: 0.85;
+}
+
+.netTag {
+  position: absolute;
+  bottom: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.48rem;
+  color: var(--cp-cyan, #02d7f2);
+  text-shadow: 0 0 4px #000;
+  white-space: nowrap;
+}
+
+.token[data-net='1'] {
+  box-shadow: 0 0 0 2px var(--cp-cyan, #02d7f2);
 }
 
 .layout[data-view='scan'] .device {

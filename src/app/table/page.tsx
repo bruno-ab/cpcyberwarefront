@@ -35,6 +35,10 @@ import {
   type EmoteToast,
 } from '../../components/vtt/EmoteToasts';
 import { GmNotesPanel } from '../../components/vtt/GmNotesPanel';
+import {
+  QuickhackMenu,
+  type NetMenuPayload,
+} from '../../components/vtt/QuickhackMenu';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
 import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
@@ -77,6 +81,9 @@ type VttDevice = {
   accessLevel?: number;
   linkedTo?: string[];
   fov?: number;
+  jammed?: boolean;
+  open?: boolean;
+  iceStacks?: number;
 };
 
 type ChatMsg = {
@@ -289,6 +296,8 @@ const TablePage = () => {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [scanBusy, setScanBusy] = useState(false);
   const [scanToast, setScanToast] = useState<string | null>(null);
+  const [netMenu, setNetMenu] = useState<NetMenuPayload | null>(null);
+  const [netBusy, setNetBusy] = useState(false);
   const [sandyFx, setSandyFx] = useState(false);
   const [pendingRoll, setPendingRoll] = useState<{
     id: string;
@@ -699,6 +708,30 @@ const TablePage = () => {
       );
       window.setTimeout(() => setScanToast(null), 2800);
     });
+    socket.on('vtt:net-menu', (payload: NetMenuPayload) => {
+      setNetBusy(false);
+      setNetMenu(payload);
+      if (payload?.ok) playCyberSound('ui', { volume: 0.35 });
+      else playCyberSound('deny', { volume: 0.4 });
+    });
+    socket.on(
+      'vtt:net-hack',
+      (payload: {
+        ok?: boolean;
+        outcome?: string;
+        error?: string;
+        name?: string;
+      }) => {
+        setNetBusy(false);
+        playCyberSound(payload?.ok ? 'confirm' : 'deny', { volume: 0.45 });
+        setScanToast(
+          payload?.ok
+            ? `${payload.name || 'Hack'} · ${payload.outcome || 'ok'}`
+            : payload?.error || payload?.outcome || 'Hack falhou',
+        );
+        window.setTimeout(() => setScanToast(null), 2800);
+      },
+    );
     socket.on('vtt:attack', (card: any) => setLastAttack(card));
     socket.on(
       'vtt:roll-request',
@@ -1007,6 +1040,43 @@ const TablePage = () => {
     intent('view:mode', { mode: 'normal', force: isGm });
   }, [intent, isGm]);
 
+  const openNetNode = useCallback(
+    (opts: { deviceId?: string; targetTokenId?: string }) => {
+      setNetBusy(true);
+      window.setTimeout(() => setNetBusy(false), 8000);
+      setLocalViewMode('net');
+      intent('view:mode', { mode: 'net', force: isGm });
+      intent('net:menu', {
+        ...opts,
+        tokenId: selectedTokenId || undefined,
+        floor: currentFloor,
+      });
+    },
+    [intent, isGm, selectedTokenId, currentFloor],
+  );
+
+  const castQuickhack = useCallback(
+    (hackId: string) => {
+      if (!netMenu?.ok) return;
+      setNetBusy(true);
+      intent('net:quickhack', {
+        hackId,
+        deviceId: netMenu.deviceId,
+        targetTokenId: netMenu.targetTokenId,
+        tokenId: netMenu.runnerTokenId,
+      });
+      window.setTimeout(() => {
+        intent('net:menu', {
+          deviceId: netMenu.deviceId,
+          targetTokenId: netMenu.targetTokenId,
+          tokenId: netMenu.runnerTokenId,
+          floor: currentFloor,
+        });
+      }, 400);
+    },
+    [intent, netMenu, currentFloor],
+  );
+
   const selectedToken = state?.tokens?.find((t) => t.id === selectedTokenId);
   const floorTokens = (state?.tokens || []).filter(
     (t) => (t.floor ?? 0) === currentFloor,
@@ -1014,6 +1084,35 @@ const TablePage = () => {
   const floorDevices = (state?.devices || []).filter(
     (d) => (d.floor ?? 0) === currentFloor,
   );
+  const netDeviceKinds = useMemo(
+    () => new Set(['camera', 'terminal', 'door', 'turret', 'drone-dock']),
+    [],
+  );
+  const visibleDevices = useMemo(() => {
+    if (viewMode !== 'net') return floorDevices;
+    return floorDevices.filter(
+      (d) => d.hackable && netDeviceKinds.has(d.kind),
+    );
+  }, [viewMode, floorDevices, netDeviceKinds]);
+
+  const netLinks = useMemo(() => {
+    if (viewMode !== 'net') return [] as Array<{ a: VttDevice; b: VttDevice }>;
+    const byId = new Map(visibleDevices.map((d) => [d.id, d]));
+    const seen = new Set<string>();
+    const links: Array<{ a: VttDevice; b: VttDevice }> = [];
+    for (const d of visibleDevices) {
+      for (const lid of d.linkedTo || []) {
+        const other = byId.get(lid);
+        if (!other) continue;
+        const key = d.id < lid ? `${d.id}|${lid}` : `${lid}|${d.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        links.push({ a: d, b: other });
+      }
+    }
+    return links;
+  }, [viewMode, visibleDevices]);
+
   const myTokenIds = (state?.tokens || [])
     .filter(
       (t) =>
@@ -1092,6 +1191,8 @@ const TablePage = () => {
             scanTier={scanResult?.ok ? scanResult.tier : null}
             scanBusy={scanBusy}
             onViewMode={(m) => {
+              if (m !== 'scan') setScanResult(null);
+              if (m !== 'net') setNetMenu(null);
               setLocalViewMode(m);
               intent('view:mode', { mode: m, force: isGm });
             }}
@@ -1141,6 +1242,19 @@ const TablePage = () => {
             <div className={styles.scanToast} role="status">
               {scanToast}
             </div>
+          )}
+          {netMenu && (
+            <QuickhackMenu
+              menu={netMenu}
+              busy={netBusy}
+              onCast={castQuickhack}
+              onClose={() => setNetMenu(null)}
+              onRecharge={() =>
+                intent('net:recharge', {
+                  tokenId: netMenu.runnerTokenId || selectedTokenId,
+                })
+              }
+            />
           )}
 
           <CombatHud
@@ -1593,29 +1707,31 @@ const TablePage = () => {
                   active={fogActive}
                   gmView={isGm}
                 />
+                {viewMode === 'net' && (
+                  <svg
+                    className={styles.netLinkLayer}
+                    width={stageW}
+                    height={stageH}
+                  >
+                    {netLinks.map(({ a, b }) => (
+                      <line
+                        key={`${a.id}-${b.id}`}
+                        x1={a.x * GRID + GRID / 2}
+                        y1={a.y * GRID + GRID / 2}
+                        x2={b.x * GRID + GRID / 2}
+                        y2={b.y * GRID + GRID / 2}
+                        className={styles.netLinkLine}
+                      />
+                    ))}
+                  </svg>
+                )}
                 <div className={styles.deviceLayer} data-view={viewMode}>
-                  {floorDevices.map((d) => {
+                  {visibleDevices.map((d) => {
                     const intel = scanDeviceById.get(d.id);
                     const showScan = viewMode === 'scan' && !!intel;
-                    return (
-                      <div
-                        key={d.id}
-                        className={styles.device}
-                        data-kind={d.kind}
-                        data-hackable={d.hackable ? '1' : '0'}
-                        data-scan={showScan ? '1' : '0'}
-                        data-threat={intel?.threat || ''}
-                        style={{
-                          left: d.x * GRID,
-                          top: d.y * GRID,
-                          width: GRID,
-                          height: GRID,
-                        }}
-                        title={
-                          intel?.tag ||
-                          `${d.name} · ${d.kind} · access ${d.accessLevel ?? 1}`
-                        }
-                      >
+                    const netNode = viewMode === 'net' && d.hackable;
+                    const body = (
+                      <>
                         <span>{d.kind.slice(0, 3).toUpperCase()}</span>
                         {showScan && intel?.tag && (
                           <span
@@ -1625,31 +1741,54 @@ const TablePage = () => {
                             {intel.tag}
                           </span>
                         )}
-                        {viewMode === 'net' &&
-                          (d.linkedTo || []).map((lid) => {
-                            const other = floorDevices.find(
-                              (x) => x.id === lid,
-                            );
-                            if (!other) return null;
-                            return (
-                              <svg
-                                key={lid}
-                                className={styles.netLink}
-                                width={stageW}
-                                height={stageH}
-                              >
-                                <line
-                                  x1={GRID / 2}
-                                  y1={GRID / 2}
-                                  x2={(other.x - d.x) * GRID + GRID / 2}
-                                  y2={(other.y - d.y) * GRID + GRID / 2}
-                                  stroke="var(--cp-cyan)"
-                                  strokeWidth="1"
-                                  strokeDasharray="3 2"
-                                />
-                              </svg>
-                            );
-                          })}
+                        {netNode && (
+                          <span className={styles.netTag}>
+                            A{d.accessLevel ?? 1}
+                            {d.jammed ? ' · JAM' : ''}
+                            {d.open ? ' · OPEN' : ''}
+                          </span>
+                        )}
+                      </>
+                    );
+                    const shared = {
+                      className: styles.device,
+                      'data-kind': d.kind,
+                      'data-hackable': d.hackable ? '1' : '0',
+                      'data-scan': showScan ? '1' : '0',
+                      'data-net': netNode ? '1' : '0',
+                      'data-jammed': d.jammed ? '1' : '0',
+                      'data-open': d.open ? '1' : '0',
+                      'data-threat': intel?.threat || d.threat || '',
+                      style: {
+                        left: d.x * GRID,
+                        top: d.y * GRID,
+                        width: GRID,
+                        height: GRID,
+                      } as React.CSSProperties,
+                      title:
+                        intel?.tag ||
+                        `${d.name} · ${d.kind} · A${d.accessLevel ?? 1}${
+                          d.jammed ? ' · JAM' : ''
+                        }`,
+                    };
+                    if (netNode) {
+                      return (
+                        <button
+                          key={d.id}
+                          type="button"
+                          {...shared}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openNetNode({ deviceId: d.id });
+                          }}
+                        >
+                          {body}
+                        </button>
+                      );
+                    }
+                    return (
+                      <div key={d.id} {...shared}>
+                        {body}
                       </div>
                     );
                   })}
@@ -1705,6 +1844,14 @@ const TablePage = () => {
                           if (e.button !== 0) return;
                           setSelectedTokenId(t.id);
                           setCtxMenu(null);
+                          if (
+                            viewMode === 'net' &&
+                            t.kind === 'drone' &&
+                            !myTokenIds.includes(t.id)
+                          ) {
+                            openNetNode({ targetTokenId: t.id });
+                            return;
+                          }
                           if (!mine || tool !== 'select') return;
                           setDragging(t.id);
                         }}
@@ -1719,7 +1866,14 @@ const TablePage = () => {
                           });
                         }}
                         aria-label={t.name}
-                        title={intel?.tag || t.name}
+                        title={
+                          viewMode === 'net' && t.kind === 'drone'
+                            ? `${t.name} · drone · quickhack`
+                            : intel?.tag || t.name
+                        }
+                        data-net={
+                          viewMode === 'net' && t.kind === 'drone' ? '1' : '0'
+                        }
                       >
                         {portrait ? (
                           // eslint-disable-next-line @next/next/no-img-element

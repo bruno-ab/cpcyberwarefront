@@ -71,7 +71,6 @@ export const NightCityBar = ({
               onKiroshiScan(isGm ? { bypass: true } : undefined);
               return;
             }
-            onClearScan();
             onViewMode(m);
           }}
         >
@@ -136,6 +135,9 @@ export const NightCityBar = ({
         </HudButton>
         <HudButton variant="ghost" onClick={() => onAddDevice('turret')}>
           + Torreta
+        </HudButton>
+        <HudButton variant="ghost" onClick={() => onAddDevice('door')}>
+          + Porta
         </HudButton>
         <HudButton variant="ghost" onClick={onAddClock}>
           + Relógio
