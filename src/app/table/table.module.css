@@ -240,6 +240,12 @@
   line-height: 1.35;
 }
 
+.moodTag {
+  color: var(--cp-cyan, #02d7f2);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.72em;
+}
+
 .deviceLayer {
   position: absolute;
   inset: 0;
@@ -494,6 +500,14 @@
   color: var(--cp-yellow, #fed33f);
   font-family: var(--cp-font-mono, monospace);
   font-size: 0.78rem;
+}
+
+.chat p[data-kind='emote'] .chatBody {
+  color: var(--cp-cyan, #02d7f2);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .composer {

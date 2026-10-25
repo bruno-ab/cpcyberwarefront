@@ -16,7 +16,6 @@ type NightCityBarProps = {
   jammed: boolean;
   clocks: Clock[];
   objectives: Objective[];
-  sceneGmNotes: string;
   safeVision: boolean;
   onViewMode: (mode: ViewMode) => void;
   onFloor: (floor: number) => void;
@@ -25,14 +24,10 @@ type NightCityBarProps = {
   onAddClock: () => void;
   onAddObjective: () => void;
   onToggleObjective: (id: string, done: boolean) => void;
-  onNotes: (text: string) => void;
-  onEmote: (emote: string) => void;
   onAddDevice: (kind: string) => void;
   onSafeVision: (on: boolean) => void;
   onRequestRoll: () => void;
 };
-
-const EMOTES = ['concordo', 'pausa', '1 min', 'alerta', 'gg'];
 
 export const NightCityBar = ({
   isGm,
@@ -42,7 +37,6 @@ export const NightCityBar = ({
   jammed,
   clocks,
   objectives,
-  sceneGmNotes,
   safeVision,
   onViewMode,
   onFloor,
@@ -51,8 +45,6 @@ export const NightCityBar = ({
   onAddClock,
   onAddObjective,
   onToggleObjective,
-  onNotes,
-  onEmote,
   onAddDevice,
   onSafeVision,
   onRequestRoll,
@@ -119,14 +111,6 @@ export const NightCityBar = ({
       </div>
     )}
 
-    <div className={styles.row}>
-      {EMOTES.map((e) => (
-        <HudButton key={e} variant="ghost" onClick={() => onEmote(e)}>
-          {e}
-        </HudButton>
-      ))}
-    </div>
-
     {(clocks.length > 0 || objectives.length > 0) && (
       <div className={styles.meta}>
         {clocks.map((c) => (
@@ -157,16 +141,5 @@ export const NightCityBar = ({
       </div>
     )}
 
-    {isGm && (
-      <label className={styles.notes}>
-        Notas GM (cena)
-        <textarea
-          value={sceneGmNotes}
-          onChange={(e) => onNotes(e.target.value)}
-          rows={2}
-          placeholder="Segredos, gatilhos…"
-        />
-      </label>
-    )}
   </div>
 );

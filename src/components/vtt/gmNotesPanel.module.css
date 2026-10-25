@@ -1,0 +1,45 @@
+.wrap {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.banner {
+  margin: 0;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-yellow, #fed33f);
+}
+
+.field {
+  display: grid;
+  gap: 0.2rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.field textarea {
+  background: #12141a;
+  border: 1px solid var(--cp-border, #333);
+  color: var(--cp-text, #e8eef5);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 0.4rem 0.45rem;
+  resize: vertical;
+  min-height: 3.5rem;
+}
+
+.field textarea:disabled {
+  opacity: 0.45;
+}
+
+.field textarea:focus {
+  outline: none;
+  border-color: var(--cp-cyan, #02d7f2);
+}

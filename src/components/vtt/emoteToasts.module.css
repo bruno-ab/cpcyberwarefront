@@ -1,0 +1,57 @@
+.stack {
+  position: fixed;
+  left: 50%;
+  top: 4.5rem;
+  transform: translateX(-50%);
+  z-index: 95;
+  display: grid;
+  gap: 0.35rem;
+  pointer-events: none;
+  width: min(92vw, 22rem);
+}
+
+.toast {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--cp-cyan, #02d7f2);
+  background: rgba(6, 10, 16, 0.92);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  animation: popIn 0.25s ease-out;
+  text-align: center;
+}
+
+.toast[data-emote='pausa'],
+.toast[data-emote='um_minuto'] {
+  border-color: var(--cp-yellow, #fed33f);
+}
+
+.toast[data-emote='alerta'] {
+  border-color: #ff2a6d;
+}
+
+.name {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.toast strong {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cp-text, #e8eef5);
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

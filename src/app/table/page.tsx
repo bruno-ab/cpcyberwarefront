@@ -26,6 +26,15 @@ import {
   NightCityBar,
   type ViewMode,
 } from '../../components/vtt/NightCityBar';
+import {
+  ReactionBar,
+  type ReactionId,
+} from '../../components/vtt/ReactionBar';
+import {
+  EmoteToasts,
+  type EmoteToast,
+} from '../../components/vtt/EmoteToasts';
+import { GmNotesPanel } from '../../components/vtt/GmNotesPanel';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
 import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
@@ -265,6 +274,12 @@ const TablePage = () => {
     fromName: string;
   } | null>(null);
   const [lastAttack, setLastAttack] = useState<any>(null);
+  const [emoteToasts, setEmoteToasts] = useState<EmoteToast[]>([]);
+  const [presenceMood, setPresenceMood] = useState<
+    Record<number, string>
+  >({});
+  const [sceneNotesDraft, setSceneNotesDraft] = useState('');
+  const [tokenNotesDraft, setTokenNotesDraft] = useState('');
   const [diceOverlay, setDiceOverlay] = useState<{
     active: boolean;
     reveal: DiceReveal | null;
@@ -629,7 +644,7 @@ const TablePage = () => {
         playCyberSound('glitch', { volume: 0.45 });
       }
       if (fx?.type === 'damage') {
-        playCyberSound('alert', { volume: 0.35 });
+        playCyberSound('deny', { volume: 0.35 });
       }
     });
     socket.on('vtt:view-mode', (p: { mode?: ViewMode }) => {
@@ -650,15 +665,51 @@ const TablePage = () => {
           return;
         }
         setPendingRoll(req);
-        playCyberSound('message', { volume: 0.4 });
+        playCyberSound('ui', { volume: 0.4 });
       },
     );
-    socket.on('vtt:emote', () => playCyberSound('ui', { volume: 0.2 }));
+    socket.on(
+      'vtt:emote',
+      (payload: {
+        playerId?: number;
+        name?: string;
+        emote?: string;
+        label?: string;
+      }) => {
+        playCyberSound('ui', { volume: 0.25 });
+        const id = `toast_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const toast: EmoteToast = {
+          id,
+          name: payload.name || 'Runner',
+          emote: payload.emote || 'concordo',
+          label: payload.label || payload.emote || '…',
+        };
+        setEmoteToasts((prev) => [...prev.slice(-4), toast]);
+        if (payload.playerId != null) {
+          setPresenceMood((prev) => ({
+            ...prev,
+            [Number(payload.playerId)]: toast.label,
+          }));
+        }
+        window.setTimeout(() => {
+          setEmoteToasts((prev) => prev.filter((t) => t.id !== id));
+        }, 4200);
+      },
+    );
 
     return () => {
       socket.disconnect();
     };
   }, [sessionId, campaignId, sceneId, loadScenes]);
+
+  useEffect(() => {
+    setSceneNotesDraft(state?.sceneGmNotes || '');
+  }, [state?.sceneGmNotes, sceneId]);
+
+  useEffect(() => {
+    const tok = state?.tokens?.find((t) => t.id === selectedTokenId);
+    setTokenNotesDraft(tok?.gmNotes || '');
+  }, [selectedTokenId, state?.tokens, state?.version]);
 
   useEffect(() => {
     fetch(apiUrl(`/api/campaigns/${campaignId}/roster`), {
@@ -927,6 +978,13 @@ const TablePage = () => {
             onDelete={(id) => void deleteScene(id)}
           />
 
+          <ReactionBar
+            onReact={(id: ReactionId) => {
+              intent('chat:emote', { emote: id });
+              playCyberSound('ui', { volume: 0.3 });
+            }}
+          />
+
           <NightCityBar
             isGm={isGm}
             viewMode={viewMode}
@@ -935,7 +993,6 @@ const TablePage = () => {
             jammed={!!state?.radioJammed}
             clocks={state?.threatClocks || []}
             objectives={state?.objectives || []}
-            sceneGmNotes={state?.sceneGmNotes || ''}
             safeVision={safeVision}
             onViewMode={(m) => {
               setLocalViewMode(m);
@@ -957,10 +1014,6 @@ const TablePage = () => {
             onToggleObjective={(id, done) =>
               intent('objective:set', { id, done })
             }
-            onNotes={(text) =>
-              intent('gmnotes:set', { scope: 'scene', text })
-            }
-            onEmote={(emote) => intent('chat:emote', { emote })}
             onAddDevice={(kind) =>
               intent('device:add', {
                 kind,
@@ -1585,6 +1638,27 @@ const TablePage = () => {
         </HudPanel>
 
         <aside className={styles.side}>
+          {isGm && (
+            <HudPanel title="Notas GM">
+              <GmNotesPanel
+                sceneNotes={sceneNotesDraft}
+                tokenName={selectedToken?.name || null}
+                tokenNotes={tokenNotesDraft}
+                onSceneNotesChange={setSceneNotesDraft}
+                onTokenNotesChange={setTokenNotesDraft}
+                onSceneNotesCommit={(text) =>
+                  intent('gmnotes:set', { scope: 'scene', text })
+                }
+                onTokenNotesCommit={(text) => {
+                  if (!selectedTokenId) return;
+                  intent('gmnotes:set', {
+                    tokenId: selectedTokenId,
+                    text,
+                  });
+                }}
+              />
+            </HudPanel>
+          )}
           <HudPanel title="Camadas">
             <LayersPanel
               layers={layers}
@@ -1607,6 +1681,12 @@ const TablePage = () => {
               {(state?.presence || []).map((p, i) => (
                 <li key={`${p.playerId}-${i}`}>
                   {p.name} ({p.role})
+                  {presenceMood[Number(p.playerId)] ? (
+                    <span className={styles.moodTag}>
+                      {' '}
+                      · {presenceMood[Number(p.playerId)]}
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -1815,6 +1895,8 @@ const TablePage = () => {
           )}
         </aside>
       </div>
+
+      <EmoteToasts items={emoteToasts} />
 
       {pendingRoll && (
         <div className={styles.rollRequest} role="dialog" aria-live="polite">
