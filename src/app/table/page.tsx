@@ -41,6 +41,8 @@ import {
 } from '../../components/vtt/QuickhackMenu';
 import { DroneHud } from '../../components/vtt/DroneHud';
 import { AimOverlay } from '../../components/vtt/AimOverlay';
+import { RunnerPanel } from '../../components/vtt/RunnerPanel';
+import { RunnerSheetPopup } from '../../components/vtt/RunnerSheetPopup';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
 import {
   buildAimPreview,
@@ -340,6 +342,7 @@ const TablePage = () => {
   const [importingUvtt, setImportingUvtt] = useState(false);
   const [aimMode, setAimMode] = useState(false);
   const [aimHoverId, setAimHoverId] = useState<string | null>(null);
+  const [sheetPopupOpen, setSheetPopupOpen] = useState(false);
   const [safeVision, setSafeVision] = useState(false);
   const [localViewMode, setLocalViewMode] = useState<ViewMode | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
@@ -612,6 +615,7 @@ const TablePage = () => {
         setRuler(null);
         setAimMode(false);
         setAimHoverId(null);
+        setSheetPopupOpen(false);
       }
     };
     const onClick = () => setCtxMenu(null);
@@ -630,6 +634,20 @@ const TablePage = () => {
     setActiveSceneId(null);
     void loadScenes();
   }, [campaignId, loadScenes]);
+
+  useEffect(() => {
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('access_token') || ''
+        : '';
+    const payload = token ? parseJwt(token) : null;
+    const playerId = Number(payload?.id || payload?.sub || 0) || 0;
+    if (playerId) setMyPlayerId(playerId);
+    const name = String(
+      payload?.name || payload?.username || '',
+    ).slice(0, 48);
+    if (name) setMyName(name);
+  }, []);
 
   useEffect(() => {
     if (!sceneId) return;
@@ -875,11 +893,16 @@ const TablePage = () => {
           ? data.characters
           : [];
         setRoster(list);
-        if (list[0] && !selectedCharId) setSelectedCharId(list[0].id);
+        const mine =
+          list.find((c) => Number(c.playerId) === Number(myPlayerId)) ||
+          list[0];
+        if (mine && (!selectedCharId || !list.some((c) => c.id === selectedCharId))) {
+          setSelectedCharId(mine.id);
+        }
       })
       .catch(() => setRoster([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId]);
+  }, [campaignId, myPlayerId]);
 
   const onWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -1356,6 +1379,8 @@ const TablePage = () => {
         return rangeBandLabel(rb.band, rb.penalty);
       })();
 
+  const runnerForPanel = myRosterChar;
+
   return (
     <PageFrame>
       <div
@@ -1373,6 +1398,32 @@ const TablePage = () => {
                 : 'ok'
         }
       >
+        <div className={styles.runnerCol}>
+          <RunnerPanel
+            character={runnerForPanel}
+            difficulty={difficulty}
+            onOpenSheet={() => setSheetPopupOpen(true)}
+            onRoll={(opts) => {
+              if (runnerForPanel) setSelectedCharId(runnerForPanel.id);
+              rollDice(opts);
+            }}
+            onChrome={(name) => {
+              const tid =
+                state?.tokens?.find(
+                  (t) =>
+                    Number(t.ownerPlayerId) === Number(myPlayerId) ||
+                    Number(t.controllerPlayerId) === Number(myPlayerId),
+                )?.id || selectedTokenId;
+              if (!tid) return;
+              intent('chrome:activate', {
+                tokenId: tid,
+                chrome: name,
+              });
+              playCyberSound('ui', { volume: 0.3 });
+            }}
+          />
+        </div>
+
         <HudPanel
           title={`Mesa — ${
             scenes.find((s) => s.id === sceneId)?.name ||
@@ -2611,6 +2662,17 @@ const TablePage = () => {
             </HudButton>
           </div>
         </div>
+      )}
+
+      {sheetPopupOpen && runnerForPanel && (
+        <RunnerSheetPopup
+          character={runnerForPanel}
+          onClose={() => setSheetPopupOpen(false)}
+          onRoll={(opts) => {
+            setSelectedCharId(runnerForPanel.id);
+            rollDice(opts);
+          }}
+        />
       )}
 
       {ctxMenu && (
