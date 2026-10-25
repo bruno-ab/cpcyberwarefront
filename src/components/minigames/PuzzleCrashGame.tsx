@@ -207,7 +207,8 @@ const detonateCrash = (
 const injectIceBlock = (
   g: (Cell | null)[][],
 ): { ok: boolean; x: number; y: number; ttl: number } => {
-  const ttl = 1 + Math.floor(Math.random() * 5);
+  /** TTL em drops (peças travadas), não em segundos. */
+  const ttl = 2 + Math.floor(Math.random() * 4); // 2–5
   const cols = Array.from({ length: COLS }, (_, i) => i).sort(
     () => Math.random() - 0.5,
   );
@@ -284,6 +285,23 @@ export const PuzzleCrashGame = () => {
   const dryStreakRef = useRef(0);
   const forceNextCrashRef = useRef(false);
   const defenderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gridRef = useRef(grid);
+  const pieceRef = useRef(piece);
+  const nextPieceRef = useRef(nextPiece);
+  const statusRef = useRef(status);
+
+  useEffect(() => {
+    gridRef.current = grid;
+  }, [grid]);
+  useEffect(() => {
+    pieceRef.current = piece;
+  }, [piece]);
+  useEffect(() => {
+    nextPieceRef.current = nextPiece;
+  }, [nextPiece]);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   const spawnPiece = useCallback((force = false): Piece => {
     const pity = dryStreakRef.current >= CRASH_PITY;
@@ -379,7 +397,11 @@ export const PuzzleCrashGame = () => {
   const useRowPaint = () => {
     spendAdvantage('row_paint', () => {
       const color = randColor();
-      setGrid((prev) => paintBottomRow(prev, color));
+      setGrid((prev) => {
+        const next = paintBottomRow(prev, color);
+        gridRef.current = next;
+        return next;
+      });
       triggerGlitch(color, false);
       pushTerm(
         'warn',
@@ -441,24 +463,45 @@ export const PuzzleCrashGame = () => {
     applyGravity(next);
     mergePowers(next);
     applyGravity(next);
-    return { next, gained, boomColor, cleared, dropMeta };
+    // NETDEF countdown: −1 por peça travada (não por wall-clock).
+    const iceEvents = tickIceBlocks(next);
+    if (iceEvents.length) {
+      applyGravity(next);
+      mergePowers(next);
+      applyGravity(next);
+    }
+    return { next, gained, boomColor, cleared, dropMeta, iceEvents };
   }, []);
 
   const softDrop = useCallback(() => {
-    if (status !== 'playing' || !piece || lock.current) return;
-    const moved = { ...piece, y: piece.y + 1 };
-    if (fits(grid, moved)) {
+    if (statusRef.current !== 'playing' || lock.current) return;
+    const current = pieceRef.current;
+    if (!current) return;
+    const g = gridRef.current;
+    const moved = { ...current, y: current.y + 1 };
+    if (fits(g, moved)) {
       setPiece(moved);
       return;
     }
     lock.current = true;
-    const { next, gained, boomColor, cleared, dropMeta } = lockPiece(
-      grid,
-      piece,
-    );
+    const { next, gained, boomColor, cleared, dropMeta, iceEvents } =
+      lockPiece(g, current);
+    gridRef.current = next;
     setGrid(next);
     setMoveCount((m) => m + 1);
     pushTerm('cmd', `> drop --packet ${dropMeta}`);
+
+    for (const ev of iceEvents) {
+      if (ev.kind === 'purge') {
+        pushTerm('sys', `netdef node@${ev.x},${ev.y} timed out → purged`);
+      } else if (ev.color) {
+        pushTerm(
+          'warn',
+          `netdef node@${ev.x},${ev.y} mutated → ${GEM_LABELS[ev.color]}`,
+          { color: GEM_HEX[ev.color] },
+        );
+      }
+    }
 
     if (gained > 0 && boomColor) {
       const nextScore = scoreRef.current + gained;
@@ -504,7 +547,7 @@ export const PuzzleCrashGame = () => {
         `░░░░ ${GEM_LABELS[boomColor]}_PURGE ░░░░ // noise=${Math.min(99, gained)}`,
         { color: GEM_HEX[boomColor] },
       );
-    } else {
+    } else if (!iceEvents.length) {
       pushTerm('sys', 'packet settled. no cascade.');
     }
 
@@ -518,16 +561,18 @@ export const PuzzleCrashGame = () => {
       triggerGlitch('alert', true);
       return;
     }
-    let upcoming = nextPiece ?? spawnPiece();
+    let upcoming = nextPieceRef.current ?? spawnPiece();
     if (forceNextCrashRef.current) {
       upcoming = armCrashOnPiece(upcoming);
       forceNextCrashRef.current = false;
       dryStreakRef.current = 0;
     }
     setPiece(upcoming);
-    setNextPiece(spawnPiece());
+    const following = spawnPiece();
+    nextPieceRef.current = following;
+    setNextPiece(following);
     lock.current = false;
-  }, [status, piece, nextPiece, grid, lockPiece, pushTerm, spawnPiece]);
+  }, [lockPiece, pushTerm, spawnPiece]);
 
   useEffect(() => {
     scoreRef.current = score;
@@ -561,7 +606,7 @@ export const PuzzleCrashGame = () => {
     return () => clearTimeout(t);
   }, [status, mode, remaining, score, pushTerm]);
 
-  // ICE countdown + network defender spawn
+  // Network defender spawn (NETDEF countdown roda no lockPiece por drop)
   useEffect(() => {
     if (status !== 'playing') {
       if (defenderTimer.current) clearTimeout(defenderTimer.current);
@@ -569,35 +614,6 @@ export const PuzzleCrashGame = () => {
     }
 
     let alive = true;
-
-    const iceTick = setInterval(() => {
-      setGrid((prev) => {
-        const next = cloneGrid(prev);
-        const events = tickIceBlocks(next);
-        if (!events.length) return prev;
-        applyGravity(next);
-        mergePowers(next);
-        applyGravity(next);
-        setTimeout(() => {
-          if (!alive) return;
-          for (const ev of events) {
-            if (ev.kind === 'purge') {
-              pushTerm(
-                'sys',
-                `netdef node@${ev.x},${ev.y} timed out → purged`,
-              );
-            } else if (ev.color) {
-              pushTerm(
-                'warn',
-                `netdef node@${ev.x},${ev.y} mutated → ${GEM_LABELS[ev.color]}`,
-                { color: GEM_HEX[ev.color] },
-              );
-            }
-          }
-        }, 0);
-        return next;
-      });
-    }, 1000);
 
     const scheduleDefender = () => {
       const delay =
@@ -608,6 +624,7 @@ export const PuzzleCrashGame = () => {
         setGrid((prev) => {
           const next = cloneGrid(prev);
           const inj = injectIceBlock(next);
+          if (inj.ok) gridRef.current = next;
           setTimeout(() => {
             if (!alive) return;
             if (!inj.ok) {
@@ -633,7 +650,6 @@ export const PuzzleCrashGame = () => {
 
     return () => {
       alive = false;
-      clearInterval(iceTick);
       if (defenderTimer.current) clearTimeout(defenderTimer.current);
     };
   }, [status, pushTerm]);
@@ -641,24 +657,29 @@ export const PuzzleCrashGame = () => {
   useEffect(() => {
     if (status !== 'playing') return;
     const onKey = (e: KeyboardEvent) => {
-      if (!piece) return;
+      const current = pieceRef.current;
+      if (!current) return;
+      const g = gridRef.current;
       if (e.key === 'ArrowLeft') {
-        const m = { ...piece, x: piece.x - 1 };
-        if (fits(grid, m)) setPiece(m);
+        const m = { ...current, x: current.x - 1 };
+        if (fits(g, m)) setPiece(m);
       } else if (e.key === 'ArrowRight') {
-        const m = { ...piece, x: piece.x + 1 };
-        if (fits(grid, m)) setPiece(m);
+        const m = { ...current, x: current.x + 1 };
+        if (fits(g, m)) setPiece(m);
       } else if (e.key === 'ArrowDown') {
         softDrop();
       } else if (e.key === 'ArrowUp' || e.key === ' ') {
         e.preventDefault();
-        const m = { ...piece, rot: ((piece.rot + 1) % 4) as Piece['rot'] };
-        if (fits(grid, m)) setPiece(m);
+        const m = {
+          ...current,
+          rot: ((current.rot + 1) % 4) as Piece['rot'],
+        };
+        if (fits(g, m)) setPiece(m);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [status, piece, grid, softDrop]);
+  }, [status, softDrop]);
 
   useEffect(() => {
     if (status === 'won') {
@@ -699,7 +720,8 @@ export const PuzzleCrashGame = () => {
           apaga <em>todas</em> as peças dessa cor — quanto maior o power, mais
           score. Use <strong>vantagens (edges)</strong> na barra lateral: pintar
           a última linha ou armar ⚡ na próxima peça. Blocos{' '}
-          <strong>cinza</strong> são NETDEF.
+          <strong>cinza</strong> são NETDEF — o número cai{' '}
+          <em>1 por peça travada</em>; em 0 o nó some ou vira gem.
         </p>
         <div className={styles.legend}>
           {GEM_COLORS.map((c) => (
