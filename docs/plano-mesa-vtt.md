@@ -57,6 +57,12 @@ Breach→`minigame-result`, heat em encontros, loot/eddies, recap→N54.
 - JWT em mutações REST, CORS, rate limit socket
 - Upload validado; limpar TS / `ignoreBuildErrors`; e2e Playwright; README; perf 100 tokens
 
+## Entrega 25-10 (P2.1 + Night City MVP)
+
+- Combate: `initiative:roll-all`, delay/hold/next+round, turn economy, `attack:macro`, `token:damage`, CombatHud
+- Scan / NET / devices / floors / prep publish / Sandevistan FX / threat clocks / objectives / emotes / roll:request / Safe vision / GM notes
+- Backlog completo: `plano-mesa-night-city.md`
+
 ## Fora de escopo longo prazo
 
 App nativo; lighting “Foundry completo” na primeira passada de visão (MVP LoS + portas + luz pontual).

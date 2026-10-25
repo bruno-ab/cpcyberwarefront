@@ -21,6 +21,11 @@ import {
   SceneBar,
   type VttSceneSummary,
 } from '../../components/vtt/SceneBar';
+import { CombatHud } from '../../components/vtt/CombatHud';
+import {
+  NightCityBar,
+  type ViewMode,
+} from '../../components/vtt/NightCityBar';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
 import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
@@ -40,10 +45,29 @@ type Token = {
   y: number;
   color: string;
   hidden?: boolean;
-  bars?: { hp: number; hpMax: number };
+  bars?: { hp: number; hpMax: number; humanity?: number; edges?: number };
   ownerPlayerId?: number;
-  characterId?: number;
+  controllerPlayerId?: number;
+  characterId?: number | string;
   portraitUrl?: string | null;
+  kind?: string;
+  floor?: number;
+  auras?: string[];
+  gmNotes?: string;
+};
+
+type VttDevice = {
+  id: string;
+  kind: string;
+  name: string;
+  x: number;
+  y: number;
+  floor?: number;
+  hackable: boolean;
+  threat?: string;
+  accessLevel?: number;
+  linkedTo?: string[];
+  fov?: number;
 };
 
 type ChatMsg = {
@@ -58,6 +82,9 @@ type VttState = {
   version: number;
   campaignId?: number;
   sceneId?: string | null;
+  published?: boolean;
+  floor?: number;
+  viewMode?: ViewMode;
   map: {
     width: number;
     height: number;
@@ -68,13 +95,55 @@ type VttState = {
   tokens: Token[];
   walls: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }>;
   fog: Array<{ x: number; y: number; revealed: boolean }>;
-  initiative: Array<{ tokenId: string; score: number; name: string }>;
+  devices?: VttDevice[];
+  zones?: Array<{
+    id: string;
+    kind: string;
+    label: string;
+    cells: Array<{ x: number; y: number }>;
+    floor?: number;
+  }>;
+  threatClocks?: Array<{ id: string; label: string; value: number; max: number }>;
+  objectives?: Array<{ id: string; text: string; done: boolean }>;
+  conditions?: Array<{
+    id: string;
+    tokenId: string;
+    kind: string;
+    label: string;
+    roundsLeft: number;
+  }>;
+  combat?: { active: boolean; round: number; phase: string } | null;
+  turnEconomy?: {
+    tokenId: string;
+    mainUsed: boolean;
+    moveUsed: boolean;
+    reactionUsed: boolean;
+    extraActions: number;
+  } | null;
+  initiative: Array<{
+    tokenId: string;
+    name: string;
+    score: number;
+    delayed?: boolean;
+    holding?: boolean;
+    extraTurns?: number;
+  }>;
   turnIndex: number;
   presence: Array<{ playerId: number; name: string; role: string }>;
   chat: ChatMsg[];
   handouts: Handout[];
   breach?: BreachState | null;
   radioStation?: string | null;
+  radioJammed?: boolean;
+  sceneGmNotes?: string;
+  pendingRolls?: Array<{
+    id: string;
+    toPlayerId: number;
+    attr: string;
+    skill: string;
+    label: string;
+    fromName: string;
+  }>;
   layers?: VttLayer[];
   activeLayer?: VttLayerId;
 };
@@ -185,6 +254,17 @@ const TablePage = () => {
   const [handoutBody, setHandoutBody] = useState('');
   const [handoutFrom, setHandoutFrom] = useState('Rogue');
   const [uploadingBg, setUploadingBg] = useState(false);
+  const [safeVision, setSafeVision] = useState(false);
+  const [localViewMode, setLocalViewMode] = useState<ViewMode | null>(null);
+  const [sandyFx, setSandyFx] = useState(false);
+  const [pendingRoll, setPendingRoll] = useState<{
+    id: string;
+    attr: string;
+    skill: string;
+    label: string;
+    fromName: string;
+  } | null>(null);
+  const [lastAttack, setLastAttack] = useState<any>(null);
   const [diceOverlay, setDiceOverlay] = useState<{
     active: boolean;
     reveal: DiceReveal | null;
@@ -411,6 +491,13 @@ const TablePage = () => {
   }, [state?.chat, scrollChat]);
 
   useEffect(() => {
+    document.documentElement.dataset.safeVision = safeVision ? 'on' : 'off';
+    return () => {
+      delete document.documentElement.dataset.safeVision;
+    };
+  }, [safeVision]);
+
+  useEffect(() => {
     const me = state?.presence?.find(
       (p) => Number(p.playerId) === Number(myPlayerId),
     );
@@ -535,6 +622,38 @@ const TablePage = () => {
         playCyberSound(result.botch ? 'deny' : 'confirm', { volume: 0.6 });
       }, 1000);
     });
+    socket.on('vtt:fx', (fx: { type?: string; tokenId?: string }) => {
+      if (fx?.type === 'sandevistan') {
+        setSandyFx(true);
+        window.setTimeout(() => setSandyFx(false), 2200);
+        playCyberSound('glitch', { volume: 0.45 });
+      }
+      if (fx?.type === 'damage') {
+        playCyberSound('alert', { volume: 0.35 });
+      }
+    });
+    socket.on('vtt:view-mode', (p: { mode?: ViewMode }) => {
+      if (p?.mode) setLocalViewMode(p.mode);
+    });
+    socket.on('vtt:attack', (card: any) => setLastAttack(card));
+    socket.on(
+      'vtt:roll-request',
+      (req: {
+        id: string;
+        toPlayerId: number;
+        attr: string;
+        skill: string;
+        label: string;
+        fromName: string;
+      }) => {
+        if (Number(req.toPlayerId) !== Number(playerId) && req.toPlayerId !== 0) {
+          return;
+        }
+        setPendingRoll(req);
+        playCyberSound('message', { volume: 0.4 });
+      },
+    );
+    socket.on('vtt:emote', () => playCyberSound('ui', { volume: 0.2 }));
 
     return () => {
       socket.disconnect();
@@ -661,7 +780,10 @@ const TablePage = () => {
     if (layerLocked('tokens')) return false;
     if (!layerVisible('tokens')) return false;
     if (isGm) return true;
-    return Number(t.ownerPlayerId) === Number(myPlayerId);
+    return (
+      Number(t.ownerPlayerId) === Number(myPlayerId) ||
+      Number(t.controllerPlayerId) === Number(myPlayerId)
+    );
   };
 
   const fogActive =
@@ -736,18 +858,60 @@ const TablePage = () => {
   const mapH = state?.map?.height || 20;
   const stageW = mapW * GRID;
   const stageH = mapH * GRID;
+  const currentFloor = state?.floor ?? 0;
+  const viewMode: ViewMode =
+    localViewMode || state?.viewMode || 'normal';
 
   const selectedToken = state?.tokens?.find((t) => t.id === selectedTokenId);
+  const floorTokens = (state?.tokens || []).filter(
+    (t) => (t.floor ?? 0) === currentFloor,
+  );
+  const floorDevices = (state?.devices || []).filter(
+    (d) => (d.floor ?? 0) === currentFloor,
+  );
+  const myTokenIds = (state?.tokens || [])
+    .filter(
+      (t) =>
+        Number(t.ownerPlayerId) === Number(myPlayerId) ||
+        Number(t.controllerPlayerId) === Number(myPlayerId),
+    )
+    .map((t) => t.id);
+
+  const myHumanity = selectedToken?.bars?.humanity;
+  const rangeLabel = !ruler
+    ? ''
+    : distance <= 3
+      ? 'curto'
+      : distance <= 8
+        ? 'médio (−1)'
+        : distance <= 15
+          ? 'longo (−2)'
+          : 'fora';
 
   return (
     <PageFrame>
-      <div className={styles.layout}>
+      <div
+        className={styles.layout}
+        data-view={viewMode}
+        data-sandy={sandyFx ? '1' : '0'}
+        data-humanity={
+          myHumanity == null
+            ? undefined
+            : myHumanity <= 2
+              ? 'critical'
+              : myHumanity <= 5
+                ? 'low'
+                : 'ok'
+        }
+      >
         <HudPanel
           title={`Mesa — ${
             scenes.find((s) => s.id === sceneId)?.name ||
             state?.map?.name ||
             '…'
-          } · ${campaign?.name || `Campanha ${campaignId}`}`}
+          } · ${campaign?.name || `Campanha ${campaignId}`}${
+            state?.published === false ? ' · PREP' : ''
+          }${state?.radioJammed ? ' · JAM' : ''}`}
           className={styles.stage}
         >
           <SceneBar
@@ -761,6 +925,106 @@ const TablePage = () => {
             onRename={(id, name) => void renameScene(id, name)}
             onActivate={(id) => void activateScene(id)}
             onDelete={(id) => void deleteScene(id)}
+          />
+
+          <NightCityBar
+            isGm={isGm}
+            viewMode={viewMode}
+            floor={currentFloor}
+            published={state?.published !== false}
+            jammed={!!state?.radioJammed}
+            clocks={state?.threatClocks || []}
+            objectives={state?.objectives || []}
+            sceneGmNotes={state?.sceneGmNotes || ''}
+            safeVision={safeVision}
+            onViewMode={(m) => {
+              setLocalViewMode(m);
+              intent('view:mode', { mode: m, force: isGm });
+            }}
+            onFloor={(f) => intent('floor:set', { floor: f })}
+            onPublish={(p) => intent('scene:publish', { published: p })}
+            onJam={(j) => intent('radio:jam', { jammed: j })}
+            onAddClock={() =>
+              intent('clock:set', {
+                label: 'Patrulha',
+                value: 0,
+                max: 4,
+              })
+            }
+            onAddObjective={() =>
+              intent('objective:set', { text: 'Novo objetivo' })
+            }
+            onToggleObjective={(id, done) =>
+              intent('objective:set', { id, done })
+            }
+            onNotes={(text) =>
+              intent('gmnotes:set', { scope: 'scene', text })
+            }
+            onEmote={(emote) => intent('chat:emote', { emote })}
+            onAddDevice={(kind) =>
+              intent('device:add', {
+                kind,
+                x: 6,
+                y: 6,
+                name: kind,
+                floor: currentFloor,
+              })
+            }
+            onSafeVision={setSafeVision}
+            onRequestRoll={() => {
+              const target =
+                Number(
+                  state?.presence?.find((p) => p.role === 'player')
+                    ?.playerId,
+                ) || myPlayerId;
+              intent('roll:request', {
+                toPlayerId: target,
+                attr: 'dexterity',
+                skill: 'athletics',
+                label: 'Reflexos + Esquiva',
+              });
+            }}
+          />
+
+          <CombatHud
+            isGm={isGm}
+            combatActive={!!state?.combat?.active}
+            round={state?.combat?.round || 1}
+            turnIndex={state?.turnIndex || 0}
+            initiative={state?.initiative || []}
+            turnEconomy={state?.turnEconomy}
+            myTokenIds={myTokenIds}
+            onStart={() => intent('combat:start', {})}
+            onRollAll={() => intent('initiative:roll-all', { floor: currentFloor })}
+            onNext={() => intent('initiative:next', {})}
+            onDelay={() => intent('initiative:delay', {})}
+            onHold={() => intent('initiative:hold', {})}
+            onEnd={() => intent('combat:end', {})}
+            onAction={(kind) => intent('turn:action', { kind })}
+            onAttack={() => {
+              const attackerId =
+                state?.turnEconomy?.tokenId ||
+                myTokenIds[0] ||
+                selectedTokenId;
+              if (!attackerId || !selectedTokenId) return;
+              intent('attack:macro', {
+                attackerTokenId: attackerId,
+                targetTokenId: selectedTokenId,
+                skill: 'firearms',
+                label: 'Firearms',
+              });
+            }}
+            onSandy={() => {
+              const tid =
+                state?.turnEconomy?.tokenId ||
+                selectedTokenId ||
+                myTokenIds[0];
+              if (!tid) return;
+              intent('chrome:activate', {
+                tokenId: tid,
+                chrome: 'sandevistan',
+              });
+            }}
           />
 
           <div className={styles.toolbar}>
@@ -1172,13 +1436,62 @@ const TablePage = () => {
                   active={fogActive}
                   gmView={isGm}
                 />
+                <div className={styles.deviceLayer} data-view={viewMode}>
+                  {floorDevices.map((d) => (
+                    <div
+                      key={d.id}
+                      className={styles.device}
+                      data-kind={d.kind}
+                      data-hackable={d.hackable ? '1' : '0'}
+                      style={{
+                        left: d.x * GRID,
+                        top: d.y * GRID,
+                        width: GRID,
+                        height: GRID,
+                      }}
+                      title={`${d.name} · ${d.kind} · access ${d.accessLevel ?? 1}`}
+                    >
+                      <span>{d.kind.slice(0, 3).toUpperCase()}</span>
+                      {viewMode === 'net' &&
+                        (d.linkedTo || []).map((lid) => {
+                          const other = floorDevices.find((x) => x.id === lid);
+                          if (!other) return null;
+                          return (
+                            <svg
+                              key={lid}
+                              className={styles.netLink}
+                              width={stageW}
+                              height={stageH}
+                            >
+                              <line
+                                x1={GRID / 2}
+                                y1={GRID / 2}
+                                x2={(other.x - d.x) * GRID + GRID / 2}
+                                y2={(other.y - d.y) * GRID + GRID / 2}
+                                stroke="var(--cp-cyan)"
+                                strokeWidth="1"
+                                strokeDasharray="3 2"
+                              />
+                            </svg>
+                          );
+                        })}
+                    </div>
+                  ))}
+                </div>
                 <div
                   className={styles.tokenLayer}
                   style={{
                     display: layerVisible('tokens') ? undefined : 'none',
                   }}
                 >
-                  {(state?.tokens || []).map((t) => {
+                  {(viewMode === 'net'
+                    ? floorTokens.filter(
+                        (t) =>
+                          t.kind === 'drone' ||
+                          myTokenIds.includes(t.id),
+                      )
+                    : floorTokens
+                  ).map((t) => {
                     const turn =
                       state?.initiative?.[state.turnIndex || 0]?.tokenId ===
                       t.id;
@@ -1186,6 +1499,9 @@ const TablePage = () => {
                     const portrait =
                       resolveMediaSrc(t.portraitUrl) || t.portraitUrl || null;
                     const mine = canDragToken(t);
+                    const scanHot =
+                      viewMode === 'scan' &&
+                      (t.hidden || (t.auras || []).length > 0);
                     return (
                       <button
                         type="button"
@@ -1195,6 +1511,8 @@ const TablePage = () => {
                         data-selected={selected ? '1' : '0'}
                         data-mine={mine ? '1' : '0'}
                         data-hidden={t.hidden ? '1' : '0'}
+                        data-scan={scanHot ? '1' : '0'}
+                        data-aura={(t.auras || [])[0] || ''}
                         style={{
                           left: t.x * GRID,
                           top: t.y * GRID,
@@ -1230,7 +1548,14 @@ const TablePage = () => {
                             {t.name.slice(0, 2).toUpperCase()}
                           </span>
                         )}
-                        <span className={styles.tokenName}>{t.name.slice(0, 8)}</span>
+                        <span className={styles.tokenName}>
+                          {t.name.slice(0, 8)}
+                        </span>
+                        {viewMode === 'scan' && (
+                          <span className={styles.scanTag}>
+                            {t.kind || 'host'}
+                          </span>
+                        )}
                         {t.bars && (
                           <span
                             className={styles.tokenBar}
@@ -1249,7 +1574,8 @@ const TablePage = () => {
             </div>
             <div className={styles.hudOverlay}>
               zoom {zoom.toFixed(2)} · shift+drag régua · {distance}u
-              {` · layer:${activeLayer}`}
+              {rangeLabel ? ` (${rangeLabel})` : ''}
+              {` · layer:${activeLayer} · view:${viewMode} · F${currentFloor}`}
               {tool !== 'select' ? ` · tool:${tool}` : ''}
               {tool === 'fog' ? ` · fog:${fogMode} r${fogRadius}` : ''}
               {state?.radioStation ? ` · ${state.radioStation}` : ''}
@@ -1315,6 +1641,24 @@ const TablePage = () => {
                         {m.at ? m.at.slice(11, 19) : ''} {m.name}
                       </span>
                       <span className={styles.chatBody}>{m.text}</span>
+                      {m.kind === 'attack' &&
+                        lastAttack?.id === m.id &&
+                        lastAttack?.damage?.successes > 0 &&
+                        lastAttack?.targetTokenId &&
+                        isGm && (
+                          <HudButton
+                            variant="ghost"
+                            onClick={() =>
+                              intent('token:damage', {
+                                tokenId: lastAttack.targetTokenId,
+                                amount: lastAttack.damage.successes,
+                                fromAttack: true,
+                              })
+                            }
+                          >
+                            Aplicar dano
+                          </HudButton>
+                        )}
                     </p>
                   ))
                 )}
@@ -1471,6 +1815,39 @@ const TablePage = () => {
           )}
         </aside>
       </div>
+
+      {pendingRoll && (
+        <div className={styles.rollRequest} role="dialog" aria-live="polite">
+          <p>
+            {pendingRoll.fromName} pede:{' '}
+            <strong>{pendingRoll.label}</strong>
+          </p>
+          <div className={styles.diceHints}>
+            <HudButton
+              onClick={() => {
+                rollDice({
+                  attr: pendingRoll.attr,
+                  skill: pendingRoll.skill,
+                  label: pendingRoll.label,
+                });
+                intent('roll:request-ack', { id: pendingRoll.id });
+                setPendingRoll(null);
+              }}
+            >
+              Rolar agora
+            </HudButton>
+            <HudButton
+              variant="ghost"
+              onClick={() => {
+                intent('roll:request-ack', { id: pendingRoll.id });
+                setPendingRoll(null);
+              }}
+            >
+              Depois
+            </HudButton>
+          </div>
+        </div>
+      )}
 
       {ctxMenu && (
         <div

@@ -1,0 +1,154 @@
+'use client';
+
+import { HudButton } from '../ui/HudButton';
+import styles from './combatHud.module.css';
+
+export type InitiativeEntry = {
+  tokenId: string;
+  name: string;
+  score: number;
+  delayed?: boolean;
+  holding?: boolean;
+  extraTurns?: number;
+};
+
+type CombatHudProps = {
+  isGm: boolean;
+  combatActive: boolean;
+  round: number;
+  turnIndex: number;
+  initiative: InitiativeEntry[];
+  turnEconomy?: {
+    tokenId: string;
+    mainUsed: boolean;
+    moveUsed: boolean;
+    reactionUsed: boolean;
+    extraActions: number;
+  } | null;
+  myTokenIds: string[];
+  onStart: () => void;
+  onRollAll: () => void;
+  onNext: () => void;
+  onDelay: () => void;
+  onHold: () => void;
+  onEnd: () => void;
+  onAction: (kind: 'main' | 'move' | 'reaction' | 'extra') => void;
+  onAttack: () => void;
+  onSandy: () => void;
+};
+
+export const CombatHud = ({
+  isGm,
+  combatActive,
+  round,
+  turnIndex,
+  initiative,
+  turnEconomy,
+  myTokenIds,
+  onStart,
+  onRollAll,
+  onNext,
+  onDelay,
+  onHold,
+  onEnd,
+  onAction,
+  onAttack,
+  onSandy,
+}: CombatHudProps) => {
+  const current = initiative[turnIndex];
+  const myTurn =
+    !!current &&
+    (isGm || myTokenIds.includes(current.tokenId));
+
+  return (
+    <div className={styles.wrap}>
+      <div className={styles.head}>
+        <span className={styles.label}>
+          Combate {combatActive ? `· R${round}` : '· off'}
+        </span>
+        {isGm && (
+          <div className={styles.row}>
+            {!combatActive ? (
+              <HudButton onClick={onStart}>Iniciar</HudButton>
+            ) : (
+              <HudButton variant="ghost" onClick={onEnd}>
+                Encerrar
+              </HudButton>
+            )}
+            <HudButton onClick={onRollAll}>Rolar iniciativa</HudButton>
+            <HudButton variant="ghost" onClick={onNext}>
+              Próximo
+            </HudButton>
+          </div>
+        )}
+      </div>
+
+      <ol className={styles.list}>
+        {initiative.map((ini, i) => (
+          <li
+            key={ini.tokenId}
+            data-current={i === turnIndex ? '1' : '0'}
+          >
+            <span>
+              {ini.name}
+              {ini.delayed ? ' (delay)' : ''}
+              {ini.holding ? ' (hold)' : ''}
+              {(ini.extraTurns || 0) > 0 ? ` +${ini.extraTurns}` : ''}
+            </span>
+            <span className={styles.score}>{ini.score}</span>
+          </li>
+        ))}
+      </ol>
+
+      {current && (
+        <div className={styles.turnBox}>
+          <p>
+            Turno: <strong>{current.name}</strong>
+          </p>
+          {myTurn && turnEconomy && (
+            <div className={styles.row}>
+              <HudButton
+                variant={turnEconomy.mainUsed ? 'ghost' : 'primary'}
+                disabled={turnEconomy.mainUsed}
+                onClick={() => onAction('main')}
+              >
+                Ação
+              </HudButton>
+              <HudButton
+                variant={turnEconomy.moveUsed ? 'ghost' : 'primary'}
+                disabled={turnEconomy.moveUsed}
+                onClick={() => onAction('move')}
+              >
+                Movimento
+              </HudButton>
+              <HudButton
+                variant={turnEconomy.reactionUsed ? 'ghost' : 'primary'}
+                disabled={turnEconomy.reactionUsed}
+                onClick={() => onAction('reaction')}
+              >
+                Reação
+              </HudButton>
+              <HudButton
+                variant="ghost"
+                disabled={turnEconomy.extraActions <= 0}
+                onClick={() => onAction('extra')}
+              >
+                Extra ({turnEconomy.extraActions})
+              </HudButton>
+              <HudButton onClick={onAttack}>Atacar alvo</HudButton>
+              <HudButton variant="ghost" onClick={onSandy}>
+                Sandevistan
+              </HudButton>
+              <HudButton variant="ghost" onClick={onDelay}>
+                Atrasar
+              </HudButton>
+              <HudButton variant="ghost" onClick={onHold}>
+                Prontidão
+              </HudButton>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};

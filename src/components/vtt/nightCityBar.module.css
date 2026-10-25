@@ -1,0 +1,105 @@
+.wrap {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 30%, transparent);
+  background: rgba(0, 8, 12, 0.45);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.label {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-cyan, #02d7f2);
+  margin-right: 0.25rem;
+}
+
+.floor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.floor input {
+  width: 2.5rem;
+  background: #12141a;
+  border: 1px solid var(--cp-border, #333);
+  color: var(--cp-cyan, #02d7f2);
+  padding: 0.2rem;
+  font-size: 0.75rem;
+}
+
+.meta {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.clock {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.72rem;
+}
+
+.clockTrack {
+  display: inline-flex;
+  gap: 0.15rem;
+}
+
+.clockTrack i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1px solid var(--cp-yellow, #fed33f);
+  display: inline-block;
+}
+
+.clockTrack i[data-on='1'] {
+  background: var(--cp-yellow, #fed33f);
+}
+
+.objectives {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.75rem;
+}
+
+.objectives label {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.notes {
+  display: grid;
+  gap: 0.2rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.notes textarea {
+  background: #12141a;
+  border: 1px solid var(--cp-border, #333);
+  color: var(--cp-text, #e8eef5);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.75rem;
+  padding: 0.35rem;
+  resize: vertical;
+}

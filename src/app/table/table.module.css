@@ -240,6 +240,114 @@
   line-height: 1.35;
 }
 
+.deviceLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.device {
+  position: absolute;
+  border: 1px dashed var(--cp-cyan, #02d7f2);
+  background: rgba(2, 215, 242, 0.12);
+  display: grid;
+  place-items: center;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.5rem;
+  color: var(--cp-cyan, #02d7f2);
+  overflow: visible;
+}
+
+.layout[data-view='net'] .device[data-hackable='1'] {
+  border-style: solid;
+  box-shadow: 0 0 8px rgba(2, 215, 242, 0.55);
+}
+
+.layout[data-view='scan'] .device {
+  outline: 1px solid var(--cp-yellow, #fed33f);
+}
+
+.netLink {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.scanTag {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.5rem;
+  color: var(--cp-yellow, #fed33f);
+  text-shadow: 0 0 4px #000;
+  white-space: nowrap;
+}
+
+.token[data-scan='1'] {
+  box-shadow: 0 0 0 2px var(--cp-yellow, #fed33f);
+}
+
+.token[data-aura='sandevistan'] {
+  filter: saturate(1.4) hue-rotate(-10deg);
+  box-shadow: 0 0 12px rgba(254, 211, 63, 0.8);
+}
+
+.token[data-aura='hacked'] {
+  animation: tokenGlitch 0.4s steps(2) infinite;
+}
+
+.layout[data-sandy='1'] .mapWorld {
+  filter: contrast(1.15) saturate(0.7) hue-rotate(-15deg);
+  transition: filter 0.2s linear;
+}
+
+.layout[data-humanity='low'] .stage {
+  filter: contrast(1.05);
+}
+
+.layout[data-humanity='critical'] .chatBody {
+  text-shadow: 1px 0 rgba(255, 42, 109, 0.45);
+}
+
+.rollRequest {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 90;
+  min-width: 16rem;
+  padding: 0.75rem;
+  background: #0c0e14;
+  border: 1px solid var(--cp-yellow, #fed33f);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+.rollRequest p {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+}
+
+@keyframes tokenGlitch {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(1px, -1px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+:global(html[data-safe-vision='on']) .token[data-aura='hacked'],
+:global(html[data-safe-vision='on']) .layout[data-sandy='1'] .mapWorld {
+  animation: none !important;
+  filter: none !important;
+}
+
 .selectionBar {
   display: flex;
   flex-wrap: wrap;
