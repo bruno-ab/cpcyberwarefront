@@ -193,3 +193,15 @@
   color: var(--cp-text);
   padding: 0.45rem 0.5rem;
 }
+
+.argHint {
+  margin: 2rem 0 0;
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cp-text-dim) 65%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}

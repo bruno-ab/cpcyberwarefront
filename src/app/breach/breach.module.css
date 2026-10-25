@@ -9,6 +9,15 @@
   line-height: 1.45;
 }
 
+.iceSig {
+  margin: -0.5rem 0 1rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cp-text-dim) 60%, transparent);
+}
+
 .tabs {
   display: flex;
   flex-wrap: wrap;

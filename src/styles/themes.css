@@ -193,3 +193,99 @@ html[data-theme='amber'] {
   --cp-rarity-rare: #ffb000;
   --cp-rarity-legendary: #ffd24a;
 }
+
+/* —— Blackwall: violet ICE + glitch magenta —— */
+html[data-theme='blackwall'] {
+  --cp-bg-0: #06040c;
+  --cp-bg-1: #0c0818;
+  --cp-bg-2: #120c22;
+  --cp-bg-panel: rgba(8, 4, 20, 0.85);
+  --cp-border: #3a2860;
+  --cp-border-strong: #5a3890;
+
+  --cp-cyan: #8b5cf6;
+  --cp-cyan-dim: #6d42c4;
+  --cp-yellow: #c4b5fd;
+  --cp-yellow-bright: #e9e0ff;
+  --cp-orange: #a855f7;
+  --cp-magenta: #ff2a6d;
+  --cp-alert: #ff2a6d;
+  --cp-alert-soft: #ff6aad;
+  --cp-ok: #34d399;
+  --cp-violet: #5b21b6;
+
+  --cp-text: #e8e0ff;
+  --cp-text-dim: #8a78b8;
+
+  --cp-glow-cyan: 0 0 14px rgba(139, 92, 246, 0.55);
+  --cp-glow-yellow: 0 0 12px rgba(196, 181, 253, 0.4);
+  --cp-glow-alert: 0 0 14px rgba(255, 42, 109, 0.45);
+  --cp-inset-cyan: inset 0 0 14px rgba(139, 92, 246, 0.12);
+
+  --cp-rarity-rare: #8b5cf6;
+  --cp-rarity-legendary: #c4b5fd;
+}
+
+/* —— Militech: ouro corporativo + vermelho sangue —— */
+html[data-theme='militech'] {
+  --cp-bg-0: #0a0806;
+  --cp-bg-1: #12100c;
+  --cp-bg-2: #1a1610;
+  --cp-bg-panel: rgba(12, 10, 6, 0.84);
+  --cp-border: #4a4030;
+  --cp-border-strong: #6a5840;
+
+  --cp-cyan: #d4af37;
+  --cp-cyan-dim: #a88828;
+  --cp-yellow: #f5e6a8;
+  --cp-yellow-bright: #fff8dc;
+  --cp-orange: #c9a227;
+  --cp-magenta: #8b6914;
+  --cp-alert: #c41e3a;
+  --cp-alert-soft: #e04560;
+  --cp-ok: #90c695;
+  --cp-violet: #6b4e12;
+
+  --cp-text: #f0ead8;
+  --cp-text-dim: #9a9078;
+
+  --cp-glow-cyan: 0 0 12px rgba(212, 175, 55, 0.45);
+  --cp-glow-yellow: 0 0 10px rgba(245, 230, 168, 0.35);
+  --cp-glow-alert: 0 0 14px rgba(196, 30, 58, 0.45);
+  --cp-inset-cyan: inset 0 0 14px rgba(212, 175, 55, 0.1);
+
+  --cp-rarity-rare: #d4af37;
+  --cp-rarity-legendary: #f5e6a8;
+}
+
+/* —— Trauma Team: verde clínico + branco —— */
+html[data-theme='traumateam'] {
+  --cp-bg-0: #040a08;
+  --cp-bg-1: #081210;
+  --cp-bg-2: #0c1a16;
+  --cp-bg-panel: rgba(4, 16, 12, 0.86);
+  --cp-border: #1a4038;
+  --cp-border-strong: #2a6050;
+
+  --cp-cyan: #00e676;
+  --cp-cyan-dim: #00a855;
+  --cp-yellow: #ffffff;
+  --cp-yellow-bright: #e0fff0;
+  --cp-orange: #69f0ae;
+  --cp-magenta: #00bcd4;
+  --cp-alert: #ff1744;
+  --cp-alert-soft: #ff6090;
+  --cp-ok: #00e676;
+  --cp-violet: #00897b;
+
+  --cp-text: #e8fff4;
+  --cp-text-dim: #6a9888;
+
+  --cp-glow-cyan: 0 0 12px rgba(0, 230, 118, 0.5);
+  --cp-glow-yellow: 0 0 10px rgba(255, 255, 255, 0.25);
+  --cp-glow-alert: 0 0 12px rgba(255, 23, 68, 0.45);
+  --cp-inset-cyan: inset 0 0 14px rgba(0, 230, 118, 0.1);
+
+  --cp-rarity-rare: #00e676;
+  --cp-rarity-legendary: #ffffff;
+}

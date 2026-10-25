@@ -49,7 +49,11 @@
       "arasaka": "Arasaka",
       "netwatch": "NetWatch",
       "edgerunners": "Edgerunners",
-      "amber": "Amber CRT"
+      "amber": "Amber CRT",
+      "blackwall": "Blackwall ICE",
+      "militech": "Militech Gold",
+      "traumateam": "Trauma Team",
+      "lockedSlot": "??? — locked"
     },
     "motion": {
       "on": "FX on",
@@ -144,6 +148,47 @@
       "legendary": "Lendário",
       "pool": "Pool épico",
       "roll": "Marca"
+    },
+    "shardHint": "Fragmento de dados"
+  },
+  "account": {
+    "title": "Conta",
+    "sub": "Sessão na rede Night City — link, crew e saída segura.",
+    "sessionTitle": "Sessão",
+    "statusLabel": "Status:",
+    "statusOnline": "LINK ATIVO",
+    "statusOffline": "OFFLINE",
+    "characters": "Personagens",
+    "logout": "Desconectar",
+    "jackIn": "Jack in",
+    "register": "Registrar"
+  },
+  "secrets": {
+    "console": {
+      "title": "Jack de fragmentos",
+      "sub": "Handshake offline — códigos e cristais encontrados na rede liberam paletas e lore.",
+      "inputLabel": "Código / handshake",
+      "placeholder": "NC-…",
+      "submit": "Sincronizar",
+      "empty": "Buffer vazio.",
+      "unknown": "Handshake recusado — fragmento desconhecido.",
+      "already": "Já estava no buffer.",
+      "themeUnlocked": "Paleta liberada:",
+      "loreUnlocked": "Fragmento de lore decodificado.",
+      "shardCollected": "Cristal de dados capturado.",
+      "palettes": "Paletas secretas",
+      "noneYet": "Nenhuma ainda — explore memorial, lore, breach…",
+      "lockedPalette": "████ — locked",
+      "fragments": "Cristais",
+      "shardOn": "Capturado",
+      "shardOff": "Ausente",
+      "fragmentHint": "Três sinais fracos espalhados pelo HUD. Clique neles quando achar.",
+      "lore": "Lore desbloqueado"
+    },
+    "themes": {
+      "blackwall": "Blackwall ICE",
+      "militech": "Militech Gold",
+      "traumateam": "Trauma Team"
     }
   }
 }

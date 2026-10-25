@@ -7,6 +7,7 @@ import { HudButton } from '../../components/ui/HudButton';
 import { useTranslations } from '../../i18n/useTranslations';
 import { apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
+import { ShardGlyph } from '../../components/secrets/ShardGlyph';
 import styles from './memorial.module.css';
 
 type NotableRoll = {
@@ -302,6 +303,14 @@ const MemorialPage = () => {
             ))}
           </div>
         )}
+        <p className={styles.argHint} aria-hidden>
+          flatline sig · 77
+          <ShardGlyph
+            shardId="shard-tt-b"
+            glyph="◆"
+            ariaHint={t('shardHint')}
+          />
+        </p>
       </div>
     </PageFrame>
   );

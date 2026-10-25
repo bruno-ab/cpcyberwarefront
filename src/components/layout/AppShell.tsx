@@ -8,6 +8,7 @@ import { MotionToggle } from './MotionToggle';
 import { SoundToggle } from './SoundToggle';
 import { FontScaleToggle } from './FontScaleToggle';
 import { HeatStrip } from './HeatStrip';
+import { ShardGlyph } from '../secrets/ShardGlyph';
 import styles from './AppShell.module.css';
 
 const NAV = [
@@ -91,6 +92,10 @@ export const AppShell = ({ children }: { children: ReactNode }) => (
     <div className={styles.horizon} aria-hidden />
     <AppNav />
     <main className={styles.main}>{children}</main>
+    <footer className={styles.siteFooter}>
+      <span className={styles.footerSig}>NC-VTT · v0.1</span>
+      <ShardGlyph shardId="shard-bw-a" glyph="◈" ariaHint="Signal fragment" />
+    </footer>
   </div>
 );
 

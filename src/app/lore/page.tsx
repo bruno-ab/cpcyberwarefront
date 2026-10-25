@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import { apiUrl } from '../../lib/api';
+import { ShardGlyph } from '../../components/secrets/ShardGlyph';
 import styles from '../book/book.module.css';
+import loreStyles from './lore.module.css';
 
 type Lore = { id: string; title: string; body: string; order: number };
 
@@ -46,6 +48,10 @@ const LorePage = () => {
         </aside>
         <HudPanel title={current?.title || 'Lore'}>
           <pre className={styles.body}>{current?.body || 'Sem lore carregado.'}</pre>
+          <p className={loreStyles.argHint} aria-hidden>
+            corp palette branch · AU
+            <ShardGlyph shardId="shard-mi-c" glyph="◇" ariaHint="Data fragment" />
+          </p>
         </HudPanel>
       </div>
     </PageFrame>

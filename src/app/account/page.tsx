@@ -6,10 +6,14 @@ import { useRouter } from 'next/navigation';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudButton } from '../../components/ui/HudButton';
 import { HudPanel } from '../../components/ui/HudPanel';
+import { ShardConsole } from '../../components/secrets/ShardConsole';
+import { useTranslations } from '../../i18n/useTranslations';
 import styles from './account.module.css';
 
 const AccountPage = () => {
   const router = useRouter();
+  const { t } = useTranslations('account');
+  const { t: tc } = useTranslations('common');
   const [mounted, setMounted] = useState(false);
   const [hasToken, setHasToken] = useState(false);
 
@@ -27,7 +31,7 @@ const AccountPage = () => {
   if (!mounted) {
     return (
       <PageFrame>
-        <p className={styles.status}>Sincronizando conta…</p>
+        <p className={styles.status}>{tc('loading')}</p>
       </PageFrame>
     );
   }
@@ -37,40 +41,42 @@ const AccountPage = () => {
       <div className={styles.page}>
         <header className={styles.hero}>
           <div>
-            <h1>Conta</h1>
-            <p>Sessão na rede Night City — link, crew e saída segura.</p>
+            <h1>{t('title')}</h1>
+            <p>{t('sub')}</p>
           </div>
         </header>
 
-        <HudPanel title="Sessão">
+        <HudPanel title={t('sessionTitle')}>
           <p className={styles.meta}>
-            Status:{' '}
+            {t('statusLabel')}{' '}
             <strong data-ok={hasToken}>
-              {hasToken ? 'LINK ATIVO' : 'OFFLINE'}
+              {hasToken ? t('statusOnline') : t('statusOffline')}
             </strong>
           </p>
           <div className={styles.actions}>
             {hasToken ? (
               <>
                 <Link href="/characters">
-                  <HudButton>Personagens</HudButton>
+                  <HudButton>{t('characters')}</HudButton>
                 </Link>
                 <HudButton variant="ghost" type="button" onClick={logout}>
-                  Desconectar
+                  {t('logout')}
                 </HudButton>
               </>
             ) : (
               <>
                 <Link href="/login">
-                  <HudButton>Jack in</HudButton>
+                  <HudButton>{t('jackIn')}</HudButton>
                 </Link>
                 <Link href="/register">
-                  <HudButton variant="ghost">Registrar</HudButton>
+                  <HudButton variant="ghost">{t('register')}</HudButton>
                 </Link>
               </>
             )}
           </div>
         </HudPanel>
+
+        <ShardConsole />
       </div>
     </PageFrame>
   );

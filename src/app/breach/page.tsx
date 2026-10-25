@@ -225,6 +225,9 @@ const BreachPage = () => {
             (Rockerboy / Media) e mesa de bar. Vitória/fracasso viram acesso,
             reputação, Humanidade ou eddies na mesa.
           </p>
+          <p className={styles.iceSig} aria-hidden>
+            ICE sig · BW-7
+          </p>
 
           <div className={styles.tabs} role="tablist" aria-label="Categoria">
             {GROUPS.map((g) => (

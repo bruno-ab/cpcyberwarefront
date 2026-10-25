@@ -49,7 +49,11 @@
       "arasaka": "Arasaka",
       "netwatch": "NetWatch",
       "edgerunners": "Edgerunners",
-      "amber": "Amber CRT"
+      "amber": "Amber CRT",
+      "blackwall": "Blackwall ICE",
+      "militech": "Militech Gold",
+      "traumateam": "Trauma Team",
+      "lockedSlot": "??? — locked"
     },
     "motion": {
       "on": "FX on",
@@ -144,6 +148,47 @@
       "legendary": "Legendary",
       "pool": "Epic pool",
       "roll": "Mark"
+    },
+    "shardHint": "Data fragment"
+  },
+  "account": {
+    "title": "Account",
+    "sub": "Night City net session — link, crew, and safe disconnect.",
+    "sessionTitle": "Session",
+    "statusLabel": "Status:",
+    "statusOnline": "LINK ACTIVE",
+    "statusOffline": "OFFLINE",
+    "characters": "Characters",
+    "logout": "Disconnect",
+    "jackIn": "Jack in",
+    "register": "Register"
+  },
+  "secrets": {
+    "console": {
+      "title": "Fragment jack",
+      "sub": "Offline handshake — codes and crystals found in the net unlock palettes and lore.",
+      "inputLabel": "Code / handshake",
+      "placeholder": "NC-…",
+      "submit": "Sync",
+      "empty": "Empty buffer.",
+      "unknown": "Handshake denied — unknown fragment.",
+      "already": "Already in buffer.",
+      "themeUnlocked": "Palette unlocked:",
+      "loreUnlocked": "Lore fragment decoded.",
+      "shardCollected": "Data crystal captured.",
+      "palettes": "Secret palettes",
+      "noneYet": "None yet — explore memorial, lore, breach…",
+      "lockedPalette": "████ — locked",
+      "fragments": "Crystals",
+      "shardOn": "Captured",
+      "shardOff": "Missing",
+      "fragmentHint": "Three faint signals scattered across the HUD. Click them when you find them.",
+      "lore": "Unlocked lore"
+    },
+    "themes": {
+      "blackwall": "Blackwall ICE",
+      "militech": "Militech Gold",
+      "traumateam": "Trauma Team"
     }
   }
 }
