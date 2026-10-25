@@ -168,6 +168,27 @@ type RosterChar = {
   sheetSummary?: Record<string, any>;
 };
 
+type ScanIntelTag = {
+  id: string;
+  tier: number;
+  tag?: string;
+  threat?: string;
+  accessLevel?: number;
+  name?: string;
+  kind?: string;
+  hp?: string;
+};
+
+type ScanResult = {
+  ok: boolean;
+  tier: number;
+  optics?: string[];
+  devices: ScanIntelTag[];
+  tokens: ScanIntelTag[];
+  error?: string;
+  message?: string;
+};
+
 type ToolMode = 'select' | 'fog' | 'wall' | 'pan';
 type FogMode = 'reveal' | 'hide';
 
@@ -265,6 +286,9 @@ const TablePage = () => {
   const [uploadingBg, setUploadingBg] = useState(false);
   const [safeVision, setSafeVision] = useState(false);
   const [localViewMode, setLocalViewMode] = useState<ViewMode | null>(null);
+  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [scanBusy, setScanBusy] = useState(false);
+  const [scanToast, setScanToast] = useState<string | null>(null);
   const [sandyFx, setSandyFx] = useState(false);
   const [pendingRoll, setPendingRoll] = useState<{
     id: string;
@@ -650,6 +674,31 @@ const TablePage = () => {
     socket.on('vtt:view-mode', (p: { mode?: ViewMode }) => {
       if (p?.mode) setLocalViewMode(p.mode);
     });
+    socket.on('vtt:scan', (payload: ScanResult) => {
+      setScanBusy(false);
+      if (!payload?.ok) {
+        setScanResult(null);
+        setScanToast(payload?.message || 'Scan falhou');
+        playCyberSound('deny', { volume: 0.45 });
+        window.setTimeout(() => setScanToast(null), 3200);
+        return;
+      }
+      setScanResult({
+        ok: true,
+        tier: Number(payload.tier) || 0,
+        optics: payload.optics || [],
+        devices: Array.isArray(payload.devices) ? payload.devices : [],
+        tokens: Array.isArray(payload.tokens) ? payload.tokens : [],
+      });
+      setLocalViewMode('scan');
+      playCyberSound('scan', { volume: 0.4 });
+      setScanToast(
+        payload.tier <= 0
+          ? 'NOISE — scan sem leitura útil'
+          : `Kiroshi online · tier ${payload.tier}`,
+      );
+      window.setTimeout(() => setScanToast(null), 2800);
+    });
     socket.on('vtt:attack', (card: any) => setLastAttack(card));
     socket.on(
       'vtt:roll-request',
@@ -913,6 +962,51 @@ const TablePage = () => {
   const viewMode: ViewMode =
     localViewMode || state?.viewMode || 'normal';
 
+  const myRosterChar = useMemo(() => {
+    if (selectedChar) return selectedChar;
+    return (
+      roster.find((c) => Number(c.playerId) === Number(myPlayerId)) || null
+    );
+  }, [selectedChar, roster, myPlayerId]);
+
+  const hasOptics = !!(
+    myRosterChar?.sheetSummary?.hasOptics ||
+    (Array.isArray(myRosterChar?.sheetSummary?.opticsChrome) &&
+      (myRosterChar?.sheetSummary?.opticsChrome?.length ?? 0) > 0)
+  );
+
+  const scanDeviceById = useMemo(() => {
+    const map = new Map<string, ScanIntelTag>();
+    for (const d of scanResult?.devices || []) map.set(d.id, d);
+    return map;
+  }, [scanResult]);
+
+  const scanTokenById = useMemo(() => {
+    const map = new Map<string, ScanIntelTag>();
+    for (const t of scanResult?.tokens || []) map.set(t.id, t);
+    return map;
+  }, [scanResult]);
+
+  const activateKiroshi = useCallback(
+    (opts?: { bypass?: boolean }) => {
+      setScanBusy(true);
+      window.setTimeout(() => setScanBusy(false), 8000);
+      intent('scan:activate', {
+        characterId: myRosterChar?.id,
+        floor: state?.floor ?? 0,
+        difficulty,
+        bypass: opts?.bypass === true,
+      });
+    },
+    [intent, myRosterChar?.id, state?.floor, difficulty],
+  );
+
+  const clearScan = useCallback(() => {
+    setScanResult(null);
+    setLocalViewMode('normal');
+    intent('view:mode', { mode: 'normal', force: isGm });
+  }, [intent, isGm]);
+
   const selectedToken = state?.tokens?.find((t) => t.id === selectedTokenId);
   const floorTokens = (state?.tokens || []).filter(
     (t) => (t.floor ?? 0) === currentFloor,
@@ -994,6 +1088,9 @@ const TablePage = () => {
             clocks={state?.threatClocks || []}
             objectives={state?.objectives || []}
             safeVision={safeVision}
+            hasOptics={hasOptics}
+            scanTier={scanResult?.ok ? scanResult.tier : null}
+            scanBusy={scanBusy}
             onViewMode={(m) => {
               setLocalViewMode(m);
               intent('view:mode', { mode: m, force: isGm });
@@ -1037,7 +1134,14 @@ const TablePage = () => {
                 label: 'Reflexos + Esquiva',
               });
             }}
+            onKiroshiScan={activateKiroshi}
+            onClearScan={clearScan}
           />
+          {scanToast && (
+            <div className={styles.scanToast} role="status">
+              {scanToast}
+            </div>
+          )}
 
           <CombatHud
             isGm={isGm}
@@ -1490,46 +1594,65 @@ const TablePage = () => {
                   gmView={isGm}
                 />
                 <div className={styles.deviceLayer} data-view={viewMode}>
-                  {floorDevices.map((d) => (
-                    <div
-                      key={d.id}
-                      className={styles.device}
-                      data-kind={d.kind}
-                      data-hackable={d.hackable ? '1' : '0'}
-                      style={{
-                        left: d.x * GRID,
-                        top: d.y * GRID,
-                        width: GRID,
-                        height: GRID,
-                      }}
-                      title={`${d.name} · ${d.kind} · access ${d.accessLevel ?? 1}`}
-                    >
-                      <span>{d.kind.slice(0, 3).toUpperCase()}</span>
-                      {viewMode === 'net' &&
-                        (d.linkedTo || []).map((lid) => {
-                          const other = floorDevices.find((x) => x.id === lid);
-                          if (!other) return null;
-                          return (
-                            <svg
-                              key={lid}
-                              className={styles.netLink}
-                              width={stageW}
-                              height={stageH}
-                            >
-                              <line
-                                x1={GRID / 2}
-                                y1={GRID / 2}
-                                x2={(other.x - d.x) * GRID + GRID / 2}
-                                y2={(other.y - d.y) * GRID + GRID / 2}
-                                stroke="var(--cp-cyan)"
-                                strokeWidth="1"
-                                strokeDasharray="3 2"
-                              />
-                            </svg>
-                          );
-                        })}
-                    </div>
-                  ))}
+                  {floorDevices.map((d) => {
+                    const intel = scanDeviceById.get(d.id);
+                    const showScan = viewMode === 'scan' && !!intel;
+                    return (
+                      <div
+                        key={d.id}
+                        className={styles.device}
+                        data-kind={d.kind}
+                        data-hackable={d.hackable ? '1' : '0'}
+                        data-scan={showScan ? '1' : '0'}
+                        data-threat={intel?.threat || ''}
+                        style={{
+                          left: d.x * GRID,
+                          top: d.y * GRID,
+                          width: GRID,
+                          height: GRID,
+                        }}
+                        title={
+                          intel?.tag ||
+                          `${d.name} · ${d.kind} · access ${d.accessLevel ?? 1}`
+                        }
+                      >
+                        <span>{d.kind.slice(0, 3).toUpperCase()}</span>
+                        {showScan && intel?.tag && (
+                          <span
+                            className={styles.scanTag}
+                            data-threat={intel.threat || ''}
+                          >
+                            {intel.tag}
+                          </span>
+                        )}
+                        {viewMode === 'net' &&
+                          (d.linkedTo || []).map((lid) => {
+                            const other = floorDevices.find(
+                              (x) => x.id === lid,
+                            );
+                            if (!other) return null;
+                            return (
+                              <svg
+                                key={lid}
+                                className={styles.netLink}
+                                width={stageW}
+                                height={stageH}
+                              >
+                                <line
+                                  x1={GRID / 2}
+                                  y1={GRID / 2}
+                                  x2={(other.x - d.x) * GRID + GRID / 2}
+                                  y2={(other.y - d.y) * GRID + GRID / 2}
+                                  stroke="var(--cp-cyan)"
+                                  strokeWidth="1"
+                                  strokeDasharray="3 2"
+                                />
+                              </svg>
+                            );
+                          })}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div
                   className={styles.tokenLayer}
@@ -1552,9 +1675,12 @@ const TablePage = () => {
                     const portrait =
                       resolveMediaSrc(t.portraitUrl) || t.portraitUrl || null;
                     const mine = canDragToken(t);
+                    const intel = scanTokenById.get(t.id);
                     const scanHot =
                       viewMode === 'scan' &&
-                      (t.hidden || (t.auras || []).length > 0);
+                      (!!intel ||
+                        t.hidden ||
+                        (t.auras || []).length > 0);
                     return (
                       <button
                         type="button"
@@ -1565,6 +1691,7 @@ const TablePage = () => {
                         data-mine={mine ? '1' : '0'}
                         data-hidden={t.hidden ? '1' : '0'}
                         data-scan={scanHot ? '1' : '0'}
+                        data-threat={intel?.threat || ''}
                         data-aura={(t.auras || [])[0] || ''}
                         style={{
                           left: t.x * GRID,
@@ -1592,6 +1719,7 @@ const TablePage = () => {
                           });
                         }}
                         aria-label={t.name}
+                        title={intel?.tag || t.name}
                       >
                         {portrait ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -1605,8 +1733,11 @@ const TablePage = () => {
                           {t.name.slice(0, 8)}
                         </span>
                         {viewMode === 'scan' && (
-                          <span className={styles.scanTag}>
-                            {t.kind || 'host'}
+                          <span
+                            className={styles.scanTag}
+                            data-threat={intel?.threat || ''}
+                          >
+                            {intel?.tag || t.kind || 'host'}
                           </span>
                         )}
                         {t.bars && (

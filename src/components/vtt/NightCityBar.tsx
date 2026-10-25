@@ -17,6 +17,9 @@ type NightCityBarProps = {
   clocks: Clock[];
   objectives: Objective[];
   safeVision: boolean;
+  hasOptics: boolean;
+  scanTier: number | null;
+  scanBusy?: boolean;
   onViewMode: (mode: ViewMode) => void;
   onFloor: (floor: number) => void;
   onPublish: (published: boolean) => void;
@@ -27,6 +30,8 @@ type NightCityBarProps = {
   onAddDevice: (kind: string) => void;
   onSafeVision: (on: boolean) => void;
   onRequestRoll: () => void;
+  onKiroshiScan: (opts?: { bypass?: boolean }) => void;
+  onClearScan: () => void;
 };
 
 export const NightCityBar = ({
@@ -38,6 +43,9 @@ export const NightCityBar = ({
   clocks,
   objectives,
   safeVision,
+  hasOptics,
+  scanTier,
+  scanBusy,
   onViewMode,
   onFloor,
   onPublish,
@@ -48,6 +56,8 @@ export const NightCityBar = ({
   onAddDevice,
   onSafeVision,
   onRequestRoll,
+  onKiroshiScan,
+  onClearScan,
 }: NightCityBarProps) => (
   <div className={styles.wrap}>
     <div className={styles.row}>
@@ -56,11 +66,39 @@ export const NightCityBar = ({
         <HudButton
           key={m}
           variant={viewMode === m ? 'primary' : 'ghost'}
-          onClick={() => onViewMode(m)}
+          onClick={() => {
+            if (m === 'scan') {
+              onKiroshiScan(isGm ? { bypass: true } : undefined);
+              return;
+            }
+            onClearScan();
+            onViewMode(m);
+          }}
         >
           {m}
         </HudButton>
       ))}
+      <HudButton
+        variant={scanTier != null ? 'primary' : 'ghost'}
+        disabled={scanBusy || (!hasOptics && !isGm)}
+        onClick={() =>
+          onKiroshiScan(isGm && !hasOptics ? { bypass: true } : undefined)
+        }
+        title={
+          hasOptics
+            ? 'Kiroshi Scan · Perception+Investigation'
+            : isGm
+              ? 'GM bypass · full intel (tier 3)'
+              : 'Requer óptica cibernética instalada'
+        }
+      >
+        Kiroshi{scanTier != null ? ` T${scanTier}` : ''}
+      </HudButton>
+      {scanTier != null && (
+        <HudButton variant="ghost" onClick={onClearScan}>
+          Clear scan
+        </HudButton>
+      )}
       <label className={styles.floor}>
         Andar
         <input

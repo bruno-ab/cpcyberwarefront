@@ -274,6 +274,21 @@
   outline: 1px solid var(--cp-yellow, #fed33f);
 }
 
+.device[data-scan='1'] {
+  outline: 1px solid var(--cp-yellow, #fed33f);
+  box-shadow: 0 0 10px rgba(254, 211, 63, 0.35);
+}
+
+.device[data-threat='high'],
+.token[data-threat='high'] {
+  outline-color: var(--cp-magenta, #ff2a6d);
+}
+
+.device[data-threat='med'],
+.token[data-threat='med'] {
+  outline-color: #ff9f1c;
+}
+
 .netLink {
   position: absolute;
   left: 0;
@@ -291,10 +306,41 @@
   color: var(--cp-yellow, #fed33f);
   text-shadow: 0 0 4px #000;
   white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.scanTag[data-threat='high'] {
+  color: var(--cp-magenta, #ff2a6d);
+}
+
+.scanTag[data-threat='med'] {
+  color: #ff9f1c;
+}
+
+.scanTag[data-threat='low'] {
+  color: var(--cp-cyan, #02d7f2);
 }
 
 .token[data-scan='1'] {
   box-shadow: 0 0 0 2px var(--cp-yellow, #fed33f);
+}
+
+.scanToast {
+  position: absolute;
+  top: 4.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 0.35rem 0.75rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-yellow, #fed33f);
+  background: rgba(0, 8, 12, 0.85);
+  border: 1px solid color-mix(in srgb, var(--cp-yellow, #fed33f) 45%, transparent);
+  pointer-events: none;
 }
 
 .token[data-aura='sandevistan'] {

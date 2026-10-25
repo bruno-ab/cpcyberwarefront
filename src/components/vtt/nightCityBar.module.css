@@ -103,3 +103,10 @@
   padding: 0.35rem;
   resize: vertical;
 }
+
+.scanHint {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  color: var(--cp-yellow, #fed33f);
+}
