@@ -58,7 +58,7 @@ export const AppNav = () => {
         <ThemeSwitcher />
         <MotionToggle />
         <SoundToggle />
-        <div className={styles.locale}>
+        <div className={styles.locale} suppressHydrationWarning>
           <button
             type="button"
             className={locale === 'pt-BR' ? styles.localeActive : undefined}
