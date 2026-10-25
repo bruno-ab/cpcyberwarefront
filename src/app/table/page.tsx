@@ -1276,6 +1276,29 @@ const TablePage = () => {
     (Array.isArray(myRosterChar?.sheetSummary?.opticsChrome) &&
       (myRosterChar?.sheetSummary?.opticsChrome?.length ?? 0) > 0)
   );
+  const hasNetDeck = useMemo(() => {
+    if (myRosterChar?.sheetSummary?.hasNetDeck) return true;
+    if (
+      Array.isArray(myRosterChar?.sheetSummary?.deckChrome) &&
+      (myRosterChar?.sheetSummary?.deckChrome?.length ?? 0) > 0
+    ) {
+      return true;
+    }
+    const chrome = Array.isArray(myRosterChar?.sheetSummary?.chrome)
+      ? myRosterChar!.sheetSummary!.chrome
+      : [];
+    if (
+      chrome.some((n: string) =>
+        /deck|cyberdeck|netrunning|ram\s*manager|interface/i.test(String(n)),
+      )
+    ) {
+      return true;
+    }
+    const role = String(
+      myRosterChar?.role || myRosterChar?.sheetSummary?.role || '',
+    ).toLowerCase();
+    return role.includes('net');
+  }, [myRosterChar]);
   const showArHud = isGm || hasOptics;
 
   const canSpawnDrone = useMemo(() => {
@@ -1615,6 +1638,8 @@ const TablePage = () => {
             objectives={state?.objectives || []}
             safeVision={safeVision}
             hasOptics={hasOptics}
+            hasNetDeck={hasNetDeck}
+            hasTokenOnTable={myTokenIds.length > 0}
             scanTier={scanResult?.ok ? scanResult.tier : null}
             scanBusy={scanBusy}
             onViewMode={(m) => {

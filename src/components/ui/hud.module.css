@@ -89,6 +89,15 @@
   color: var(--cp-alert);
 }
 
+.button:disabled,
+.button:disabled:hover,
+.button:disabled:focus-visible {
+  opacity: 0.38;
+  cursor: not-allowed;
+  box-shadow: none;
+  background: transparent;
+}
+
 .badge {
   display: inline-block;
   font-family: var(--cp-font-mono);
