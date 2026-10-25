@@ -5,6 +5,12 @@
   padding: 0.45rem 0.5rem;
   border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 28%, transparent);
   background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+}
+
+.wrap[data-collapsed='1'] {
+  padding: 0.32rem 0.45rem;
+  max-width: min(320px, 88vw);
 }
 
 .head {
@@ -21,6 +27,39 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--cp-cyan, #02d7f2);
+}
+
+.collapseBtn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.chipTitle {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.72rem;
+  color: var(--cp-text, #e8eef5);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  font-size: 0.65rem;
+  color: var(--cp-text-dim, #8a9aa8);
+  margin-left: 0.15rem;
 }
 
 .createRow {

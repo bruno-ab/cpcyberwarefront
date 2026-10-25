@@ -90,8 +90,9 @@
 .sceneDock {
   position: absolute;
   top: 3.1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 0.65rem;
+  left: auto;
+  transform: none;
   z-index: 22;
   max-width: min(520px, 90vw);
   pointer-events: auto;
@@ -213,12 +214,16 @@
 }
 
 .mapStage[data-nav-tool='hand'],
-.mapStage[data-space-pan='1'] {
+.mapStage[data-tool='pan'],
+.mapStage[data-space-pan='1'],
+.mapStage[data-panning='1'] {
   cursor: grab;
 }
 
 .mapStage[data-nav-tool='hand']:active,
-.mapStage[data-space-pan='1']:active {
+.mapStage[data-tool='pan']:active,
+.mapStage[data-space-pan='1']:active,
+.mapStage[data-panning='1'] {
   cursor: grabbing;
 }
 
@@ -474,7 +479,7 @@
 }
 
 .netLinkLayer[data-edit='1'] {
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .netLinkLine {
@@ -965,6 +970,7 @@
   .sceneDock {
     top: auto;
     bottom: 7.5rem;
-    transform: translateX(-50%) scale(0.92);
+    right: 0.45rem;
+    transform: scale(0.92);
   }
 }

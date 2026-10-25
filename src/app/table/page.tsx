@@ -1316,6 +1316,9 @@ const TablePage = () => {
       const json = await res.json();
       if (!res.ok || !json?.url) throw new Error(json?.error || 'upload failed');
       intent('map:background', { url: json.url });
+      intent('layer:update', { id: 'background', visible: true });
+      intent('layer:active', { id: 'background' });
+      setTool('pan');
       playCyberSound('confirm', { volume: 0.4 });
     } catch {
       playCyberSound('deny', { volume: 0.4 });
@@ -1751,6 +1754,53 @@ const TablePage = () => {
     return () => ro.disconnect();
   }, []);
 
+  const navPanActive = useCallback(
+    () =>
+      tool === 'pan' ||
+      boardNavTool === 'hand' ||
+      spaceHeldRef.current,
+    [tool, boardNavTool],
+  );
+
+  const beginPan = useCallback(
+    (clientX: number, clientY: number) => {
+      if (spaceHeldRef.current) spacePanUsedRef.current = true;
+      setPanning(true);
+      panStart.current = {
+        x: clientX,
+        y: clientY,
+        panX: pan.x,
+        panY: pan.y,
+      };
+    },
+    [pan.x, pan.y],
+  );
+
+  useEffect(() => {
+    if (!panning) return;
+    const onMove = (e: MouseEvent) => {
+      if (!panStart.current) return;
+      setPan({
+        x:
+          panStart.current.panX + (e.clientX - panStart.current.x),
+        y:
+          panStart.current.panY + (e.clientY - panStart.current.y),
+      });
+    };
+    const endPan = () => {
+      setPanning(false);
+      panStart.current = null;
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', endPan);
+    window.addEventListener('blur', endPan);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', endPan);
+      window.removeEventListener('blur', endPan);
+    };
+  }, [panning]);
+
   const sceneTitle = useMemo(() => {
     const sceneName =
       scenes.find((s) => s.id === sceneId)?.name ||
@@ -2138,7 +2188,11 @@ const TablePage = () => {
       </HudButton>
       <HudButton
         variant={tool === 'pan' ? 'primary' : 'ghost'}
-        onClick={() => setTool(tool === 'pan' ? 'select' : 'pan')}
+        onClick={() => {
+          const next = tool === 'pan' ? 'select' : 'pan';
+          setTool(next);
+          if (next === 'pan') setBoardNavTool('select');
+        }}
       >
         Pan
       </HudButton>
@@ -2476,7 +2530,15 @@ const TablePage = () => {
             className={styles.canvasWrap}
             onWheel={onWheel}
           >
-            <BoardNavToolbar tool={boardNavTool} onTool={setBoardNavTool} />
+            <BoardNavToolbar
+              tool={boardNavTool}
+              onTool={(t) => {
+                setBoardNavTool(t);
+                if (t === 'hand' && tool !== 'fog' && tool !== 'wall') {
+                  setTool('select');
+                }
+              }}
+            />
             <DiceGlitchOverlay
               active={diceOverlay.active}
               reveal={diceOverlay.reveal}
@@ -2496,7 +2558,9 @@ const TablePage = () => {
               className={styles.mapStage}
               data-spawn-place={spawnPlacement ? '1' : '0'}
               data-nav-tool={boardNavTool}
+              data-tool={tool}
               data-space-pan={spaceHeld ? '1' : '0'}
+              data-panning={panning ? '1' : '0'}
               style={{
                 width: boardViewW,
                 height: boardViewH,
@@ -2531,7 +2595,9 @@ const TablePage = () => {
                   !e.shiftKey &&
                   tool !== 'fog' &&
                   tool !== 'wall' &&
-                  tool !== 'pan'
+                  tool !== 'pan' &&
+                  boardNavTool !== 'hand' &&
+                  !spaceHeldRef.current
                 ) {
                   const c = cellFromEvent(e);
                   placeSpawnToken(spawnPlacement, c.x, c.y);
@@ -2543,19 +2609,10 @@ const TablePage = () => {
                   return;
                 }
                 if (
-                  tool === 'pan' ||
-                  boardNavTool === 'hand' ||
-                  spaceHeldRef.current ||
-                  e.button === 1
+                  e.button === 1 ||
+                  (e.button === 0 && navPanActive())
                 ) {
-                  if (spaceHeldRef.current) spacePanUsedRef.current = true;
-                  setPanning(true);
-                  panStart.current = {
-                    x: e.clientX,
-                    y: e.clientY,
-                    panX: pan.x,
-                    panY: pan.y,
-                  };
+                  beginPan(e.clientX, e.clientY);
                   return;
                 }
                 if (isGm && tool === 'fog') {
@@ -2582,17 +2639,7 @@ const TablePage = () => {
                 }
               }}
               onMouseMove={(e) => {
-                if (panning && panStart.current) {
-                  setPan({
-                    x:
-                      panStart.current.panX +
-                      (e.clientX - panStart.current.x),
-                    y:
-                      panStart.current.panY +
-                      (e.clientY - panStart.current.y),
-                  });
-                  return;
-                }
+                if (panning) return;
                 if (ruler && e.buttons === 1) {
                   const c = cellFromEvent(e);
                   setRuler({ ...ruler, x2: c.x, y2: c.y });
@@ -2611,13 +2658,9 @@ const TablePage = () => {
               }}
               onMouseUp={() => {
                 setDragging(null);
-                setPanning(false);
-                panStart.current = null;
                 lastFogCell.current = null;
               }}
               onMouseLeave={() => {
-                setPanning(false);
-                panStart.current = null;
                 lastFogCell.current = null;
               }}
             >
@@ -2926,6 +2969,14 @@ const TablePage = () => {
                           }
                         }}
                         onMouseDown={(e) => {
+                          if (
+                            e.button === 0 &&
+                            (tool === 'pan' ||
+                              boardNavTool === 'hand' ||
+                              spaceHeldRef.current)
+                          ) {
+                            return;
+                          }
                           e.stopPropagation();
                           if (e.button !== 0) return;
                           setSelectedTokenId(t.id);
@@ -3061,7 +3112,11 @@ const TablePage = () => {
               {tool !== 'select' ? ` · tool:${tool}` : ''}
               {tool === 'fog' ? ` · fog:${fogMode} r${fogRadius}` : ''}
               {state?.radioStation ? ` · ${state.radioStation}` : ''}
-              {mapBgSrc ? ' · bg' : ''}
+              {mapBgSrc
+                ? layerVisible('background')
+                  ? ' · bg'
+                  : ' · bg(off)'
+                : ''}
               {aimMode
                 ? ` · MIRA${aimPreview ? ` · ${aimPreview.summary}` : ''}`
                 : ''}
