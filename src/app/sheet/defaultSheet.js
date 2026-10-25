@@ -71,6 +71,7 @@ const defaultResources = {
     willpower: 5,
     edges: 3,
     implant_capacity: 10,
+    max_cyberware: 8,
   },
   vitality: 7,
   vitality_marked: 0,

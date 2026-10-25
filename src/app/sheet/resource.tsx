@@ -235,7 +235,12 @@ const Resources = ({ characterData }: ResourcesProps) => {
         <section className={styles.col}>
           <h4 className={styles.colTitle}>Resources</h4>
           {Object.entries(otherTraitsValues)
-            .filter(([name]) => name !== 'edges' && name !== 'implant_capacity')
+            .filter(
+              ([name]) =>
+                name !== 'edges' &&
+                name !== 'implant_capacity' &&
+                name !== 'max_cyberware',
+            )
             .map(([name]) => (
               <div key={name} className={styles.row}>
                 <span className={styles.dots}>
@@ -295,6 +300,32 @@ const Resources = ({ characterData }: ResourcesProps) => {
                       0,
                       Number(e.target.value) || 0,
                     ),
+                  };
+                  setOtherTraitsValues(next);
+                  persist({ other: next });
+                }}
+              />
+            </label>
+          </div>
+          <div className={styles.row}>
+            <label className={styles.numberField}>
+              <span className={styles.label}>Max chrome (peças)</span>
+              <input
+                type="number"
+                min={1}
+                className={styles.input}
+                value={otherTraitsValues.max_cyberware ?? 8}
+                onChange={(e) => {
+                  const next = {
+                    ...otherTraitsValues,
+                    max_cyberware: Math.max(1, Number(e.target.value) || 1),
+                  };
+                  setOtherTraitsValues(next);
+                }}
+                onBlur={(e) => {
+                  const next = {
+                    ...otherTraitsValues,
+                    max_cyberware: Math.max(1, Number(e.target.value) || 1),
                   };
                   setOtherTraitsValues(next);
                   persist({ other: next });

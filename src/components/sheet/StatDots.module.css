@@ -1,0 +1,42 @@
+.track {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+.dot {
+  font-size: 1.35rem;
+  line-height: 1;
+  user-select: none;
+  color: color-mix(in srgb, var(--cp-yellow, #fed33f) 28%, #2a2a2a);
+}
+
+.dot[data-tier='base'] {
+  color: #02d7f2;
+  text-shadow: 0 0 8px rgba(2, 215, 242, 0.55);
+}
+
+.dot[data-tier='bonus'] {
+  color: #ff2a2a;
+  text-shadow: 0 0 10px rgba(255, 42, 42, 0.65);
+}
+
+.dot[role='button'] {
+  cursor: pointer;
+}
+
+.dot[role='button']:hover {
+  filter: brightness(1.15);
+}
+
+.bonusTag {
+  margin-left: 0.25rem;
+  font-style: normal;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: #ff2a2a;
+}

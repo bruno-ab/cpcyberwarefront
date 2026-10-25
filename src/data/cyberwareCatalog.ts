@@ -1,4 +1,5 @@
 import { CyberWareSlot } from './cyberwareSlots';
+import { STAT_BOOSTER_CATALOG } from './cyberware-stat-boosters';
 
 export type CyberwareCatalogEntry = {
   name: string;
@@ -21,13 +22,15 @@ export type CyberwareCatalogEntry = {
   price: number;
   image: string;
   source: 'cp2077' | 'edgerunners' | 'both';
+  /** Bônus permanentes de bolinhas na ficha (chave = attr/skill). */
+  statBonuses?: Record<string, number>;
 };
 
 /**
  * Catálogo Storyteller baseado em Cyberpunk 2077 e Edgerunners.
  * edgeCost = E; implantCost = carga humana; hackDifficulty = dif. de netrun.
  */
-export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
+const BASE_CATALOG: CyberwareCatalogEntry[] = [
   // —— Operating System / Chip ——
   {
     name: 'Sandevistan (Militech Apogee)',
@@ -244,6 +247,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     price: 6000,
     image: '/images/cyberware/skeleton.svg',
     source: 'cp2077',
+    statBonuses: { athletics: 1 },
   },
   {
     name: 'Para Bellum',
@@ -460,6 +464,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     price: 12000,
     image: '/images/cyberware/hands.svg',
     source: 'cp2077',
+    statBonuses: { firearms: 2 },
   },
   {
     name: 'Microgenerator',
@@ -510,6 +515,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     price: 24000,
     image: '/images/cyberware/arms.svg',
     source: 'both',
+    statBonuses: { strength: 2, brawl: 1 },
   },
   {
     name: 'Monowire',
@@ -592,6 +598,7 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     price: 12000,
     image: '/images/cyberware/legs.svg',
     source: 'cp2077',
+    statBonuses: { stealth: 2 },
   },
   {
     name: 'Leeroy Jenkins Legs (Military)',
@@ -609,4 +616,10 @@ export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
     image: '/images/cyberware/legs.svg',
     source: 'edgerunners',
   },
+];
+
+/** Catálogo completo: clássicos + boosters Mk.I–III. */
+export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
+  ...BASE_CATALOG,
+  ...STAT_BOOSTER_CATALOG,
 ];

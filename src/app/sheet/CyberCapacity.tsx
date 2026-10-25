@@ -36,10 +36,18 @@ type CyberCapacityProps = {
       inCyberpsychosis: boolean;
       cyberpsychosisSeverity: number;
     };
+    cyberwareLimits?: {
+      maxPieces: number;
+      installedCount: number;
+      piecesRemaining: number;
+      atPieceLimit: boolean;
+    };
+    statBonuses?: Record<string, number>;
     sheet?: {
       other_traits?: {
         edges?: number;
         implant_capacity?: number;
+        max_cyberware?: number;
       };
     };
   };
@@ -55,6 +63,16 @@ const CyberCapacity = ({ characterData }: CyberCapacityProps) => {
       cyberwares.map((cw) => ({ implantCost: cw.implantCost ?? 1 })),
     );
   const edges = characterData.sheet?.other_traits?.edges ?? 0;
+  const limits = characterData.cyberwareLimits;
+  const sheetMax = Number(characterData.sheet?.other_traits?.max_cyberware);
+  const maxPieces =
+    limits?.maxPieces ?? (sheetMax > 0 ? sheetMax : 8);
+  const installedCount =
+    limits?.installedCount ?? characterData.cyberwares?.length ?? 0;
+  const statBonuses = characterData.statBonuses || {};
+  const bonusEntries = Object.entries(statBonuses).filter(
+    ([, v]) => Number(v) > 0,
+  );
 
   const installedParts = useMemo(
     () => bodyPartsWithInstalledChrome(cyberwares.map((cw) => cw.type)),
@@ -98,6 +116,18 @@ const CyberCapacity = ({ characterData }: CyberCapacityProps) => {
           </div>
         </div>
         <div className={styles.stat}>
+          <div className={styles.statLabel}>Peças / máx</div>
+          <strong
+            className={styles.statValue}
+            data-warn={installedCount >= maxPieces ? '1' : '0'}
+          >
+            {installedCount}/{maxPieces}
+          </strong>
+          <div className={styles.statMeta}>
+            limite em Ficha → Recursos (max chrome)
+          </div>
+        </div>
+        <div className={styles.stat}>
           <div className={styles.statLabel}>Cyberpsicose</div>
           <strong
             className={styles.statValue}
@@ -110,6 +140,13 @@ const CyberCapacity = ({ characterData }: CyberCapacityProps) => {
           </strong>
         </div>
       </div>
+
+      {bonusEntries.length > 0 && (
+        <p className={styles.bodyHint}>
+          Bônus na ficha (bolinhas vermelhas):{' '}
+          {bonusEntries.map(([k, v]) => `${k} +${v}`).join(' · ')}
+        </p>
+      )}
 
       <div className={styles.layout}>
         <aside className={styles.bodyCol}>
