@@ -10,7 +10,7 @@ export type NpcRecord = {
   threat: 'baixa' | 'média' | 'alta' | 'lendária';
   summary: string;
   storytellerHooks: string[];
-  /** Retrato SVG local em /images/npcs/{id}.svg */
+  /** Retrato fanart local em /npcs/{id}.jpg (fallback SVG em /images/npcs/) */
   image?: string;
   sheet: StorytellerSheet;
 };
@@ -18,7 +18,7 @@ export type NpcRecord = {
 const baseVirtues = { conscience: 2, self_control: 2, courage: 3 };
 
 /** Fichas Storyteller de NPCs icônicos de Cyberpunk 2077 (+ DLC / cameos úteis) */
-export const NPC_SHEETS: NpcRecord[] = [
+const NPC_SHEET_DATA: NpcRecord[] = [
   {
     id: 'jackie-welles',
     name: 'Jackie Welles',
@@ -1374,6 +1374,14 @@ export const NPC_SHEETS: NpcRecord[] = [
     },
   },
 ];
+
+/** Fanart JPG servido pelo Next em public/npcs/ (ver cpcyberware sync-npc-portraits). */
+export const npcPortraitPath = (id: string) => `/npcs/${id}.jpg`;
+
+export const NPC_SHEETS: NpcRecord[] = NPC_SHEET_DATA.map((npc) => ({
+  ...npc,
+  image: npcPortraitPath(npc.id),
+}));
 
 export const getNpcById = (id: string) => NPC_SHEETS.find((npc) => npc.id === id);
 

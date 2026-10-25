@@ -64,6 +64,7 @@ const NpcsPage = () => {
                     if (el.dataset.fallback === '1') return;
                     el.dataset.fallback = '1';
                     el.src = `/images/npcs/${npc.id}.svg`;
+                    el.onerror = null;
                   }}
                 />
                 <header className={styles.cardHeader}>
