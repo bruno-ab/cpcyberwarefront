@@ -1,6 +1,5 @@
 /**
- * Sons cyberpunk sintetizados via Web Audio API — sem assets binários.
- * Tom: blips de HUD, jack NET, glitch ICE, arpejos de breach.
+ * SFX cyberpunk: samples MyInstants (+ fallback Web Audio sintetizado).
  */
 
 import { readStoredSound, type SoundPref } from './soundPrefs';
@@ -31,11 +30,46 @@ type PlayOpts = {
   volume?: number;
 };
 
+type SampleSpec = {
+  src: string;
+  /** Corta o clip (ms) — muitos MP3 do MyInstants são longos. */
+  maxMs?: number;
+  /** Volume relativo do sample (0–1 antes do master). */
+  gain?: number;
+};
+
+const BASE = '/sounds/cyberpunk';
+
+/** Mapa: evento → sample baixado do MyInstants. */
+const SAMPLES: Record<CyberSound, SampleSpec> = {
+  ui: { src: `${BASE}/blip.mp3`, maxMs: 280, gain: 0.35 },
+  confirm: { src: `${BASE}/message.mp3`, maxMs: 700, gain: 0.55 },
+  deny: { src: `${BASE}/alert-soft.mp3`, maxMs: 600, gain: 0.5 },
+  jack: { src: `${BASE}/phone.mp3`, maxMs: 1400, gain: 0.45 },
+  key: { src: `${BASE}/blip.mp3`, maxMs: 120, gain: 0.22 },
+  correct: { src: `${BASE}/message.mp3`, maxMs: 450, gain: 0.45 },
+  wrong: { src: `${BASE}/alert.mp3`, maxMs: 500, gain: 0.5 },
+  leak: { src: `${BASE}/alert.mp3`, maxMs: 550, gain: 0.55 },
+  alarm: { src: `${BASE}/alarm-cop.mp3`, maxMs: 1600, gain: 0.5 },
+  win: { src: `${BASE}/message.mp3`, maxMs: 900, gain: 0.6 },
+  lose: { src: `${BASE}/police.mp3`, maxMs: 1600, gain: 0.45 },
+  glitch: { src: `${BASE}/drop.mp3`, maxMs: 700, gain: 0.4 },
+  scan: { src: `${BASE}/ringtone.mp3`, maxMs: 900, gain: 0.35 },
+  pick: { src: `${BASE}/blip.mp3`, maxMs: 200, gain: 0.3 },
+  crash: { src: `${BASE}/drop.mp3`, maxMs: 900, gain: 0.5 },
+  install: { src: `${BASE}/sfx.mp3`, maxMs: 1800, gain: 0.4 },
+  reboot: { src: `${BASE}/ui-2077.mp3`, maxMs: 2000, gain: 0.4 },
+  coin: { src: `${BASE}/message.mp3`, maxMs: 500, gain: 0.5 },
+  lock: { src: `${BASE}/alert-soft.mp3`, maxMs: 700, gain: 0.45 },
+  surge: { src: `${BASE}/alarm-synth.mp3`, maxMs: 1400, gain: 0.4 },
+};
+
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
-let unlocked = false;
 let pref: SoundPref = 'on';
 let listenersBound = false;
+const cache = new Map<string, HTMLAudioElement>();
+const playing = new Set<HTMLAudioElement>();
 
 const ensureCtx = (): AudioContext | null => {
   if (typeof window === 'undefined') return null;
@@ -52,8 +86,6 @@ const ensureCtx = (): AudioContext | null => {
   }
   return ctx;
 };
-
-const now = () => ensureCtx()?.currentTime ?? 0;
 
 const tone = (
   freq: number,
@@ -115,7 +147,8 @@ const noiseBurst = (dur: number, gain = 0.12, delay = 0) => {
   src.stop(t0 + dur + 0.02);
 };
 
-const playPatch = (id: CyberSound, volume = 1) => {
+/** Fallback sintético se o MP3 falhar. */
+const playSynth = (id: CyberSound, volume = 1) => {
   const v = volume;
   switch (id) {
     case 'ui':
@@ -123,112 +156,98 @@ const playPatch = (id: CyberSound, volume = 1) => {
       tone(1400, 0.03, 'square', { gain: 0.05 * v, delay: 0.02 });
       break;
     case 'confirm':
+    case 'correct':
+    case 'coin':
+    case 'win':
       tone(520, 0.07, 'triangle', { gain: 0.12 * v });
       tone(780, 0.09, 'triangle', { gain: 0.1 * v, delay: 0.05 });
       tone(1040, 0.11, 'sine', { gain: 0.08 * v, delay: 0.1 });
       break;
     case 'deny':
+    case 'wrong':
+    case 'leak':
       tone(220, 0.14, 'sawtooth', { gain: 0.1 * v, slideTo: 110 });
       noiseBurst(0.08, 0.06 * v, 0.02);
       break;
     case 'jack':
       tone(180, 0.12, 'sawtooth', { gain: 0.1 * v, slideTo: 420 });
       tone(640, 0.08, 'square', { gain: 0.09 * v, delay: 0.08 });
-      tone(960, 0.06, 'square', { gain: 0.07 * v, delay: 0.14 });
-      noiseBurst(0.05, 0.05 * v, 0.1);
       break;
     case 'key':
-      tone(1100 + Math.random() * 400, 0.028, 'square', {
-        gain: 0.045 * v,
-      });
-      break;
-    case 'correct':
-      tone(660, 0.05, 'triangle', { gain: 0.1 * v });
-      tone(990, 0.07, 'triangle', { gain: 0.09 * v, delay: 0.04 });
-      break;
-    case 'wrong':
-      tone(160, 0.1, 'sawtooth', { gain: 0.11 * v });
-      tone(120, 0.12, 'square', { gain: 0.08 * v, delay: 0.05 });
-      break;
-    case 'leak':
-      tone(90, 0.16, 'sawtooth', { gain: 0.12 * v, slideTo: 40 });
-      noiseBurst(0.12, 0.08 * v);
+    case 'pick':
+      tone(1100 + Math.random() * 400, 0.028, 'square', { gain: 0.045 * v });
       break;
     case 'alarm':
+    case 'lose':
       for (let i = 0; i < 3; i++) {
         tone(880, 0.07, 'square', { gain: 0.09 * v, delay: i * 0.12 });
-        tone(440, 0.07, 'square', {
-          gain: 0.08 * v,
-          delay: i * 0.12 + 0.06,
-        });
+        tone(440, 0.07, 'square', { gain: 0.08 * v, delay: i * 0.12 + 0.06 });
       }
       break;
-    case 'win':
-      [523, 659, 784, 1046].forEach((f, i) => {
-        tone(f, 0.12, 'triangle', { gain: 0.11 * v, delay: i * 0.07 });
-        tone(f * 2, 0.08, 'sine', {
-          gain: 0.04 * v,
-          delay: i * 0.07 + 0.02,
-        });
-      });
-      break;
-    case 'lose':
-      tone(400, 0.15, 'sawtooth', { gain: 0.1 * v, slideTo: 80 });
-      tone(200, 0.2, 'square', { gain: 0.08 * v, delay: 0.08, slideTo: 60 });
-      noiseBurst(0.2, 0.1 * v, 0.05);
-      break;
     case 'glitch':
-      noiseBurst(0.09, 0.14 * v);
-      tone(300 + Math.random() * 900, 0.06, 'sawtooth', {
-        gain: 0.08 * v,
-        slideTo: 80 + Math.random() * 200,
-      });
+    case 'crash':
+    case 'surge':
+      noiseBurst(0.12, 0.14 * v);
+      tone(90, 0.18, 'sawtooth', { gain: 0.12 * v, slideTo: 30 });
       break;
     case 'scan':
       tone(240, 0.22, 'sine', { gain: 0.07 * v, slideTo: 1600 });
-      tone(1600, 0.1, 'sine', { gain: 0.04 * v, delay: 0.18, slideTo: 400 });
-      break;
-    case 'pick':
-      tone(740, 0.04, 'square', { gain: 0.09 * v });
-      tone(1180, 0.05, 'triangle', { gain: 0.07 * v, delay: 0.03 });
-      break;
-    case 'crash':
-      noiseBurst(0.14, 0.16 * v);
-      tone(90, 0.18, 'sawtooth', { gain: 0.14 * v, slideTo: 30 });
-      tone(1500, 0.05, 'square', { gain: 0.08 * v, delay: 0.02 });
       break;
     case 'install':
-      tone(110, 0.35, 'sine', { gain: 0.08 * v });
-      tone(165, 0.35, 'triangle', { gain: 0.05 * v, detune: 8 });
-      for (let i = 0; i < 5; i++) {
-        tone(400 + i * 90, 0.05, 'square', {
-          gain: 0.05 * v,
-          delay: 0.08 + i * 0.07,
-        });
-      }
-      break;
     case 'reboot':
-      tone(60, 0.25, 'sine', { gain: 0.1 * v, slideTo: 220 });
+      tone(110, 0.35, 'sine', { gain: 0.08 * v });
       tone(220, 0.2, 'triangle', { gain: 0.09 * v, delay: 0.2, slideTo: 440 });
-      tone(880, 0.15, 'sine', { gain: 0.07 * v, delay: 0.38 });
-      noiseBurst(0.06, 0.05 * v, 0.4);
-      break;
-    case 'coin':
-      tone(980, 0.05, 'square', { gain: 0.09 * v });
-      tone(1480, 0.08, 'triangle', { gain: 0.08 * v, delay: 0.04 });
       break;
     case 'lock':
       tone(320, 0.06, 'square', { gain: 0.08 * v });
-      tone(280, 0.08, 'square', { gain: 0.07 * v, delay: 0.07 });
       tone(520, 0.1, 'triangle', { gain: 0.09 * v, delay: 0.16 });
-      break;
-    case 'surge':
-      tone(80, 0.2, 'sawtooth', { gain: 0.12 * v, slideTo: 600 });
-      noiseBurst(0.18, 0.12 * v, 0.04);
-      tone(1200, 0.08, 'square', { gain: 0.07 * v, delay: 0.12 });
       break;
     default:
       break;
+  }
+};
+
+const getAudio = (src: string): HTMLAudioElement => {
+  let el = cache.get(src);
+  if (!el) {
+    el = new Audio(src);
+    el.preload = 'auto';
+    cache.set(src, el);
+  }
+  return el;
+};
+
+const playSample = (spec: SampleSpec, volume: number): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const base = getAudio(spec.src);
+    const el = base.cloneNode(true) as HTMLAudioElement;
+    el.volume = Math.max(0, Math.min(1, (spec.gain ?? 0.5) * volume));
+    el.currentTime = 0;
+    playing.add(el);
+    const cleanup = () => {
+      playing.delete(el);
+      el.removeAttribute('src');
+      el.load();
+    };
+    el.addEventListener('ended', cleanup, { once: true });
+    void el.play().catch(() => {
+      cleanup();
+    });
+    if (spec.maxMs) {
+      window.setTimeout(() => {
+        try {
+          el.pause();
+          el.currentTime = 0;
+        } catch {
+          /* ignore */
+        }
+        cleanup();
+      }, spec.maxMs);
+    }
+    return true;
+  } catch {
+    return false;
   }
 };
 
@@ -242,7 +261,14 @@ export const unlockCyberAudio = async () => {
       /* ignore */
     }
   }
-  unlocked = audio.state === 'running';
+  // Preload dos samples curtos mais usados
+  ['blip.mp3', 'message.mp3', 'alert.mp3', 'alert-soft.mp3'].forEach((f) => {
+    try {
+      getAudio(`${BASE}/${f}`).load();
+    } catch {
+      /* ignore */
+    }
+  });
 };
 
 export const bindCyberAudioUnlock = () => {
@@ -258,6 +284,16 @@ export const bindCyberAudioUnlock = () => {
 
 export const setCyberSoundPref = (next: SoundPref) => {
   pref = next;
+  if (next === 'off') {
+    playing.forEach((el) => {
+      try {
+        el.pause();
+      } catch {
+        /* ignore */
+      }
+    });
+    playing.clear();
+  }
 };
 
 export const getCyberSoundPref = (): SoundPref => pref;
@@ -265,15 +301,12 @@ export const getCyberSoundPref = (): SoundPref => pref;
 export const playCyberSound = (id: CyberSound, opts: PlayOpts = {}) => {
   if (typeof window === 'undefined') return;
   if (pref === 'off' || readStoredSound() === 'off') return;
+  const volume = opts.volume ?? 1;
   const audio = ensureCtx();
-  if (!audio) return;
-  if (audio.state === 'suspended') {
-    void audio.resume().then(() => {
-      unlocked = true;
-      playPatch(id, opts.volume ?? 1);
-    });
-    return;
+  if (audio?.state === 'suspended') {
+    void audio.resume();
   }
-  unlocked = true;
-  playPatch(id, opts.volume ?? 1);
+  const spec = SAMPLES[id];
+  const ok = spec ? playSample(spec, volume) : false;
+  if (!ok) playSynth(id, volume);
 };
