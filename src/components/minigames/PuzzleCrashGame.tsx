@@ -454,7 +454,7 @@ export const PuzzleCrashGame = () => {
         applyGravity(next);
         mergePowers(next);
         applyGravity(next);
-        queue.then(() => {
+        setTimeout(() => {
           if (!alive) return;
           for (const ev of events) {
             if (ev.kind === 'purge') {
@@ -470,7 +470,7 @@ export const PuzzleCrashGame = () => {
               );
             }
           }
-        });
+        }, 0);
         return next;
       });
     }, 1000);
@@ -484,7 +484,7 @@ export const PuzzleCrashGame = () => {
         setGrid((prev) => {
           const next = cloneGrid(prev);
           const inj = injectIceBlock(next);
-          queue.then(() => {
+          setTimeout(() => {
             if (!alive) return;
             if (!inj.ok) {
               pushTerm('warn', 'netdef inject failed — grid saturated');
@@ -499,7 +499,7 @@ export const PuzzleCrashGame = () => {
               `▓▒░ DEFENDER_PULSE ░▒▓ scramble=${inj.ttl}${inj.ttl}${inj.ttl}`,
             );
             triggerGlitch(null, true);
-          });
+          }, 0);
           return inj.ok ? next : prev;
         });
         scheduleDefender();
