@@ -135,7 +135,8 @@ const AdventurePage = () => {
           <h2>Anteriormente em Night City</h2>
           <p className={styles.timelineIntro}>
             Resumos de sessão da campanha — o que a crew já queimou, deve e
-            sobreviveu.
+            sobreviveu. Cada recap gera manchete no{' '}
+            <Link href="/news">Noticiário N54</Link> e pode subir Heat.
           </p>
           {recaps.length === 0 && (
             <p className={styles.empty}>Nenhum recap ainda. Jacke a primeira sessão.</p>

@@ -22,5 +22,8 @@ export const streetCredPrice = (
   return Math.round(base * Math.max(0.7, mod));
 };
 
+export type { CampaignHeat } from './heat';
+export { heatAwarePrice, heatShopMarkup } from './heat';
+
 export const formatEddies = (n: number): string =>
   `¤${Math.round(n).toLocaleString('pt-BR')}`;

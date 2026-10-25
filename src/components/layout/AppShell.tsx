@@ -17,6 +17,7 @@ const NAV = [
   { href: '/npcs', key: 'npcs' },
   { href: '/gigs', key: 'gigs' },
   { href: '/adventure', key: 'adventure' },
+  { href: '/news', key: 'news' },
   { href: '/shop', key: 'shop' },
   { href: '/wiki', key: 'wiki' },
   { href: '/achievements', key: 'achievements' },

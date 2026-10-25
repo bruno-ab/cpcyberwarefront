@@ -9,13 +9,20 @@ import { apiUrl, authHeaders } from '../../lib/api';
 import {
   formatEddies,
   itemEddiePrice,
-  streetCredPrice,
+  heatAwarePrice,
 } from '../../lib/shopPricing';
+import type { CampaignHeat } from '../../lib/heat';
+import { heatShopMarkup } from '../../lib/heat';
 import styles from './shop.module.css';
 
 type Gear = { id: string; name: string; price: number; rarity?: string; category?: string };
 type Vehicle = { id: string; name: string; price: number };
-type Campaign = { eddies: number; streetCred: number; hideout?: any };
+type Campaign = {
+  eddies: number;
+  streetCred: number;
+  hideout?: any;
+  heat?: CampaignHeat;
+};
 type Character = {
   id: string;
   name: string;
@@ -57,6 +64,9 @@ const ShopPage = () => {
   }, [selected]);
 
   const streetCred = campaign?.streetCred || 0;
+  const heat = campaign?.heat;
+  const heatMod = heatShopMarkup(heat);
+  const priceOf = (base: number) => heatAwarePrice(base, streetCred, heat);
 
   const reload = async () => {
     const [g, v, c, camp, chars] = await Promise.all([
@@ -117,7 +127,7 @@ const ShopPage = () => {
 
   const priceLabel = (item: { price?: number; implant_cost?: number }) => {
     const base = itemEddiePrice(item);
-    const final = streetCredPrice(base, streetCred);
+    const final = priceOf(base);
     if (final !== base) {
       return `${formatEddies(final)} (lista ${formatEddies(base)})`;
     }
@@ -131,7 +141,10 @@ const ShopPage = () => {
           {campaign && (
             <p className={styles.ledger}>
               Eddies campanha {formatEddies(campaign.eddies)} · Street Cred{' '}
-              {campaign.streetCred} (desconto até 30%)
+              {campaign.streetCred} · Heat ×{heatMod.toFixed(2)}{' '}
+              <a href="/news" style={{ color: 'inherit' }}>
+                (noticiário)
+              </a>
             </p>
           )}
 

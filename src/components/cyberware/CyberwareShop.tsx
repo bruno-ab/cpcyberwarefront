@@ -13,7 +13,7 @@ import { cyberwareImageSrc } from '../../lib/media';
 import {
   formatEddies,
   itemEddiePrice,
-  streetCredPrice,
+  heatAwarePrice,
 } from '../../lib/shopPricing';
 import styles from './CyberwareShop.module.css';
 
@@ -79,6 +79,9 @@ export const CyberwareShop = ({
   const [filter, setFilter] = useState('');
   const [edges, setEdges] = useState(Number(sheet?.other_traits?.edges ?? 0));
   const [streetCred, setStreetCred] = useState(0);
+  const [heat, setHeat] = useState<import('../../lib/heat').CampaignHeat | null>(
+    null,
+  );
   const [campaignEddies, setCampaignEddies] = useState(0);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
@@ -105,6 +108,7 @@ export const CyberwareShop = ({
       .then((c) => {
         setStreetCred(Number(c?.streetCred || 0));
         setCampaignEddies(Number(c?.eddies || 0));
+        setHeat(c?.heat || null);
       })
       .catch(() => undefined);
   }, []);
@@ -144,7 +148,7 @@ export const CyberwareShop = ({
 
   const displayPrice = (item: CatalogItem) => {
     const base = itemEddiePrice(item);
-    return streetCredPrice(base, streetCred);
+    return heatAwarePrice(base, streetCred, heat);
   };
 
   const saveSheet = async (nextSheet: Record<string, unknown>) => {
