@@ -1,52 +1,62 @@
 # Plano de melhoria — Mesa `/table`
 
-Revisão 25-10-2026. Baseline: chat/dice glitch, sessão `campaign-{id}`, GM via `gmPlayerId`, roster spawn, fog/walls/pan.
+Revisão 25-10-2026 (pós-cenas/camadas).
 
-## Já entregue
+## Já entregue (P0 + P1)
 
-- Chat usável + dice glitch/SFX + pool attr+skill
-- Sessão por campanha + JWT; spawn roster; fog brush/fill; walls; handout SMS; Breach; braindance log
+- Chat, dice glitch/SFX, pool attr+skill, JWT/GM via `gmPlayerId`
+- Cenas (`vtt_scenes`) — cada uma com mesa isolada
+- Background upload, FogCanvas + brush, walls, pan/zoom/régua
+- Tokens (portrait, seleção, turno highlight, menu), camadas VIS/LCK
+- Persistência `vtt_sessions`; handout SMS; Breach; braindance log; rádio stub
 
-## P1 — Mapa e tokens (próxima fatia)
+Docs: `docs/25-10-2026.md`
 
-1. Background de mapa (`backgroundUrl` + upload GM); grid por cima
-2. Fog performático (canvas/bitmap; brush raio; hide/reveal)
-3. Tokens melhores (portrait, menu contexto, highlight turno)
-4. Seleção clara + drag só do próprio token (player)
-5. Persistência no JSON DB por `campaignId` (sobrevive restart da API)
+## Roadmap priorizado (visão produto)
 
-## P2 — Combate e ficha ao vivo
+| Ordem | Bloco | Por quê |
+|-------|--------|---------|
+| 1 | **Combate ao vivo** | Sem luta a mesa não fecha o loop de RPG |
+| 2 | **Segurança de visibilidade + reconexão** | Barato agora, caro depois |
+| 3 | Visão / paredes / portas / luz | Walls já existem; LoS é o salto de imersão |
+| 4 | Áudio + efeitos + handout→telefone | Alto ganho / baixo–médio esforço |
+| 5 | Ergonomia + mobile | Qualidade de vida |
+| 6 | Integrações campanha (breach→heat, loot, recap) | Fecha o sandbox |
 
-1. Iniciativa rolada (Dex+Alertness), ordenar, passar turno
-2. Barras Vitalidade/Humanidade sync ficha ↔ token
-3. Macro de ataque (Firearms / arma do inventário)
-4. Whisper / canais (all | gm | player↔GM)
-5. Presença rica (avatar, personagem, “rolando”)
+**Imersão/custo:** áudio, efeitos de cena e handout→Agent rendem mais cedo; visão dinâmica é o mais caro e o que mais “parece Night City”.
 
-## P3 — Cena e integrações
+## P2 — Combate ao vivo ← **agora**
 
-1. Handouts → telefone da ficha (`SheetPhone` / N54)
-2. Breach na mesa → `minigame-result` (heat/XP)
-3. Rádio com stations + SFX
-4. Braindance scrubber (play/pause na timeline)
-5. Lobby: seletor de campanha + link `?campaign=`
+Spec completa (intents, estado, UI, commits):
 
-## P4 — Polish + mobile
+→ **[`plano-mesa-p2-combate.md`](./plano-mesa-p2-combate.md)**
 
-1. HUD scanlines / ripperdoc iniciativa
-2. Mobile: accordion sidebar, pinch zoom, touch drag
-3. `aria-live` nos rolls; limpar leftovers demo (`10-i`, SMS genérico)
+Resumo: iniciativa real (Dex+Alertness+chrome), economia de turno, sync Vitalidade/Humanidade/Edges, macro ataque + card no chat, condições, alcance na régua, templates de área, hardening de `snapshotFor`.
 
-## Fatia recomendada agora
+## P3 — Visão e ambiente
 
-**P1 entregue (25-10-2026)** — background + tokens UI + persistência + camadas + cenas.
+→ **[`plano-mesa-p3-visao.md`](./plano-mesa-p3-visao.md)** (rascunho)
 
-- Front: imagem sob o grid; menu no token; FogCanvas; painel Camadas; SceneBar (criar/ativar/duplicar)
-- API: `vtt_sessions` + `vtt_scenes`; cada cena = mesa isolada; `layer:*` / `vtt:scene-*`
-- Próxima fatia sugerida: **P2** (iniciativa rolada, barras sync, whisper)
+## P4 — Som e narrativa
 
-## Fora de escopo
+Áudio por cena, música adaptativa, cutscene GM, handout→`SheetPhone`, braindance scrubber, “olhem aqui” / ping.
 
-- Vision cones / lighting estilo Foundry
-- App nativo
-- Auth JWT em todas as rotas REST (roadmap global separado)
+## P5 — Ergonomia
+
+Multiselect, undo/redo, biblioteca de tokens, whisper/`/gmroll`, macros salvas, presença rica, mobile, screen do GM.
+
+## P6 — Campanha ↔ mesa
+
+Breach→`minigame-result`, heat em encontros, loot/eddies, recap→N54.
+
+## Fundação técnica (contínuo)
+
+- Visibilidade só no servidor (auditar fog/tokens)
+- RNG só no servidor (`DiceService` + `crypto.randomInt` — já)
+- Reconexão com snapshot completo no `vtt:join`
+- JWT em mutações REST, CORS, rate limit socket
+- Upload validado; limpar TS / `ignoreBuildErrors`; e2e Playwright; README; perf 100 tokens
+
+## Fora de escopo longo prazo
+
+App nativo; lighting “Foundry completo” na primeira passada de visão (MVP LoS + portas + luz pontual).
