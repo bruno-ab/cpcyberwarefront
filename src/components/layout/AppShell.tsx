@@ -6,6 +6,7 @@ import { useTranslations } from '../../i18n/useTranslations';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { MotionToggle } from './MotionToggle';
 import { SoundToggle } from './SoundToggle';
+import { FontScaleToggle } from './FontScaleToggle';
 import { HeatStrip } from './HeatStrip';
 import styles from './AppShell.module.css';
 
@@ -58,6 +59,7 @@ export const AppNav = () => {
         <ThemeSwitcher />
         <MotionToggle />
         <SoundToggle />
+        <FontScaleToggle />
         <div className={styles.locale} suppressHydrationWarning>
           <button
             type="button"

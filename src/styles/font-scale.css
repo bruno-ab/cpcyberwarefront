@@ -1,0 +1,14 @@
+/**
+ * Toggle de leitura: html[data-font='lg'] amplia textos (rem/em).
+ */
+html {
+  font-size: 100%;
+}
+
+html[data-font='lg'] {
+  font-size: 118.75%;
+}
+
+html[data-font='lg'] body {
+  letter-spacing: 0.01em;
+}

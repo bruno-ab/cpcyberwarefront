@@ -61,6 +61,12 @@
       "off": "SFX off",
       "disable": "Desativar sons",
       "enable": "Ativar sons"
+    },
+    "font": {
+      "on": "TXT on",
+      "off": "TXT off",
+      "enlarge": "Aumentar fonte dos textos",
+      "reduce": "Fonte normal"
     }
   },
   "home": {

@@ -5,6 +5,7 @@ import '../styles/themes.css';
 import '../styles/hud-base.css';
 import '../styles/bg-glitch.css';
 import '../styles/motion.css';
+import '../styles/font-scale.css';
 import './globals.css';
 import { BgGlitch } from '../components/layout/BgGlitch';
 import { Providers } from '../components/layout/Providers';
@@ -41,7 +42,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
     >
       <script
         dangerouslySetInnerHTML={{
-          __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('cp-theme');var ok=['matrix','hotline','arasaka','netwatch','edgerunners','amber'];if(t&&ok.indexOf(t)>=0)d.setAttribute('data-theme',t);var m=localStorage.getItem('cp-motion');if(m==='on'||m==='off'){d.setAttribute('data-motion',m);}else if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.setAttribute('data-motion','off');}else{d.setAttribute('data-motion','on');}var s=localStorage.getItem('cp-sound');if(s==='on'||s==='off'){d.setAttribute('data-sound',s);}else{d.setAttribute('data-sound','on');}}catch(e){}})();`,
+          __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('cp-theme');var ok=['matrix','hotline','arasaka','netwatch','edgerunners','amber'];if(t&&ok.indexOf(t)>=0)d.setAttribute('data-theme',t);var m=localStorage.getItem('cp-motion');if(m==='on'||m==='off'){d.setAttribute('data-motion',m);}else if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.setAttribute('data-motion','off');}else{d.setAttribute('data-motion','on');}var s=localStorage.getItem('cp-sound');if(s==='on'||s==='off'){d.setAttribute('data-sound',s);}else{d.setAttribute('data-sound','on');}var f=localStorage.getItem('cp-font');if(f==='md'||f==='lg'){d.setAttribute('data-font',f);}else{d.setAttribute('data-font','md');}}catch(e){}})();`,
         }}
       />
       <BgGlitch />

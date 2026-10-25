@@ -61,6 +61,12 @@
       "off": "SFX off",
       "disable": "Mute SFX",
       "enable": "Enable SFX"
+    },
+    "font": {
+      "on": "TXT on",
+      "off": "TXT off",
+      "enlarge": "Increase text size",
+      "reduce": "Default text size"
     }
   },
   "home": {
