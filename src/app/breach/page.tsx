@@ -13,6 +13,15 @@ import { HotwireCircuitGame } from '../../components/minigames/HotwireCircuitGam
 import { PacketSnifferGame } from '../../components/minigames/PacketSnifferGame';
 import { SignalTraceGame } from '../../components/minigames/SignalTraceGame';
 import { CrowdDodgeGame } from '../../components/minigames/CrowdDodgeGame';
+import { ElectronicLockGame } from '../../components/minigames/ElectronicLockGame';
+import { RipperSurgeryGame } from '../../components/minigames/RipperSurgeryGame';
+import { ImplantCalibrationGame } from '../../components/minigames/ImplantCalibrationGame';
+import { CyberpsychosisSurgeGame } from '../../components/minigames/CyberpsychosisSurgeGame';
+import { BarGambleGame } from '../../components/minigames/BarGambleGame';
+import { RockerboyShowGame } from '../../components/minigames/RockerboyShowGame';
+import { BraindanceEditGame } from '../../components/minigames/BraindanceEditGame';
+import { PasswordMastermindGame } from '../../components/minigames/PasswordMastermindGame';
+import { CyberdeckMemoryGame } from '../../components/minigames/CyberdeckMemoryGame';
 import { apiUrl, authHeaders } from '../../lib/api';
 import styles from './breach.module.css';
 
@@ -29,6 +38,7 @@ type Challenge = {
 };
 
 type Difficulties = Record<string, string>;
+
 type Mode =
   | 'protocol'
   | 'puzzle'
@@ -36,21 +46,70 @@ type Mode =
   | 'hotwire'
   | 'sniffer'
   | 'trace'
-  | 'dodge';
+  | 'dodge'
+  | 'lock'
+  | 'surgery'
+  | 'calibrate'
+  | 'psycho'
+  | 'bar'
+  | 'rocker'
+  | 'media'
+  | 'mastermind'
+  | 'deckram';
+
+type GroupId = 'netrun' | 'chrome' | 'role' | 'street';
 
 const DIFF_ORDER = ['treino', 'rua', 'corpo', 'arasaka', 'blackwall'];
 
-const MODES: Array<{ id: Mode; label: string }> = [
-  { id: 'protocol', label: 'Breach Protocol' },
-  { id: 'puzzle', label: 'Puzzle Crash' },
-  { id: 'terminal', label: 'Terminal Jack' },
-  { id: 'hotwire', label: 'Hotwire Circuit' },
-  { id: 'sniffer', label: 'Packet Sniffer' },
-  { id: 'trace', label: 'Signal Trace' },
-  { id: 'dodge', label: 'Crowd Dodge' },
+const GROUPS: Array<{
+  id: GroupId;
+  label: string;
+  modes: Array<{ id: Mode; label: string }>;
+}> = [
+  {
+    id: 'netrun',
+    label: 'Netrun',
+    modes: [
+      { id: 'protocol', label: 'Breach Protocol' },
+      { id: 'puzzle', label: 'Puzzle Crash' },
+      { id: 'terminal', label: 'Terminal Jack' },
+      { id: 'sniffer', label: 'Packet Sniffer' },
+      { id: 'trace', label: 'Signal Trace' },
+      { id: 'mastermind', label: 'Mastermind' },
+      { id: 'deckram', label: 'Deck RAM' },
+    ],
+  },
+  {
+    id: 'chrome',
+    label: 'Chrome / ICE',
+    modes: [
+      { id: 'lock', label: 'Arrombamento' },
+      { id: 'hotwire', label: 'Hotwire' },
+      { id: 'surgery', label: 'Cirurgia' },
+      { id: 'calibrate', label: 'Calibragem' },
+      { id: 'psycho', label: 'Cyberpsicose' },
+    ],
+  },
+  {
+    id: 'role',
+    label: 'Role',
+    modes: [
+      { id: 'rocker', label: 'Rockerboy Show' },
+      { id: 'media', label: 'Braindance Media' },
+    ],
+  },
+  {
+    id: 'street',
+    label: 'Rua / Bar',
+    modes: [
+      { id: 'dodge', label: 'Crowd Dodge' },
+      { id: 'bar', label: 'Dados do Bar' },
+    ],
+  },
 ];
 
 const BreachPage = () => {
+  const [group, setGroup] = useState<GroupId>('netrun');
   const [mode, setMode] = useState<Mode>('protocol');
   const [difficulties, setDifficulties] = useState<Difficulties>({});
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -59,6 +118,8 @@ const BreachPage = () => {
   const [state, setState] = useState<BreachState | null>(null);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const activeGroup = GROUPS.find((g) => g.id === group) || GROUPS[0];
 
   useEffect(() => {
     fetch(apiUrl('/api/vtt/breach/challenges'), { headers: authHeaders() })
@@ -126,18 +187,40 @@ const BreachPage = () => {
     }
   };
 
+  const selectGroup = (id: GroupId) => {
+    setGroup(id);
+    const g = GROUPS.find((x) => x.id === id);
+    if (g?.modes[0]) setMode(g.modes[0].id);
+  };
+
   return (
     <PageFrame>
       <div className={styles.page}>
         <HudPanel title="Netrunning · Minigames">
           <p className={styles.intro}>
-            Kit de jack: hex protocol, puzzle de cores, terminal CRT, hotwire
-            físico, sniffer de pacotes, trace de sinal e fuga na rua. O Narrador
-            pode tratar vitória/fracasso como acesso, loot ou ICE.
+            Kit completo: netrun, arrombamento, chrome/humanidade, roles
+            (Rockerboy / Media) e mesa de bar. Vitória/fracasso viram acesso,
+            reputação, Humanidade ou eddies na mesa.
           </p>
 
+          <div className={styles.tabs} role="tablist" aria-label="Categoria">
+            {GROUPS.map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                role="tab"
+                aria-selected={group === g.id}
+                className={styles.tab}
+                data-active={group === g.id}
+                onClick={() => selectGroup(g.id)}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+
           <div className={styles.tabs} role="tablist" aria-label="Minigame">
-            {MODES.map((m) => (
+            {activeGroup.modes.map((m) => (
               <button
                 key={m.id}
                 type="button"
@@ -249,6 +332,15 @@ const BreachPage = () => {
           {mode === 'sniffer' && <PacketSnifferGame />}
           {mode === 'trace' && <SignalTraceGame />}
           {mode === 'dodge' && <CrowdDodgeGame />}
+          {mode === 'lock' && <ElectronicLockGame />}
+          {mode === 'surgery' && <RipperSurgeryGame />}
+          {mode === 'calibrate' && <ImplantCalibrationGame />}
+          {mode === 'psycho' && <CyberpsychosisSurgeGame />}
+          {mode === 'bar' && <BarGambleGame />}
+          {mode === 'rocker' && <RockerboyShowGame />}
+          {mode === 'media' && <BraindanceEditGame />}
+          {mode === 'mastermind' && <PasswordMastermindGame />}
+          {mode === 'deckram' && <CyberdeckMemoryGame />}
         </HudPanel>
       </div>
     </PageFrame>

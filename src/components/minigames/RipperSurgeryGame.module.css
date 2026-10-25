@@ -1,0 +1,66 @@
+.table {
+  position: relative;
+  height: 260px;
+  border: 1px solid #ff4d6d66;
+  background:
+    radial-gradient(circle at 50% 40%, #1a080c, #050205 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 8px, #ff4d6d11 9px);
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+.target {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 2px solid #fed33f;
+  border-radius: 50%;
+  box-shadow: 0 0 14px #fed33f88;
+}
+
+.target::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  background: #ff4d6d;
+  border-radius: 50%;
+}
+
+.laser {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  background: #2be4ea;
+  border-radius: 50%;
+  box-shadow: 0 0 16px #2be4ea, 0 0 28px #2be4ea88;
+  pointer-events: none;
+}
+
+.prompt {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  margin: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: #8b93a7;
+  letter-spacing: 0.1em;
+}
+
+.bar {
+  margin-top: 0.55rem;
+  height: 8px;
+  background: #111;
+  border: 1px solid #ff4d6d55;
+}
+
+.fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff4d6d, #fed33f);
+  box-shadow: 0 0 10px #fed33f66;
+}

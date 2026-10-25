@@ -1,0 +1,71 @@
+.lock {
+  position: relative;
+  width: min(280px, 100%);
+  aspect-ratio: 1;
+  margin: 0.5rem auto 1rem;
+  display: grid;
+  place-items: center;
+}
+
+.ring {
+  position: absolute;
+  border: 2px solid #2be4ea88;
+  border-radius: 50%;
+  box-shadow: inset 0 0 18px #2be4ea22;
+}
+
+.marker {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 8px;
+  height: 14px;
+  margin-left: -4px;
+  background: #fed33f;
+  box-shadow: 0 0 8px #fed33f;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.target {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.target::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: #ff4d6d;
+  box-shadow: 0 0 8px #ff4d6d;
+}
+
+.core {
+  width: 18%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fed33f, #8814ff);
+  box-shadow: 0 0 16px #fed33f66;
+  z-index: 10;
+}
+
+.controls {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 320px;
+  margin-bottom: 0.65rem;
+}
+
+.ringCtrl {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: #2be4ea;
+}

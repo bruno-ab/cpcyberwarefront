@@ -1,0 +1,59 @@
+.meter {
+  position: relative;
+  height: 18px;
+  background: #111;
+  border: 1px solid #ff2bd666;
+  margin-bottom: 1rem;
+  overflow: visible;
+}
+
+.stress {
+  height: 100%;
+  background: linear-gradient(90deg, #2bfea0, #fed33f, #ff4d6d);
+  transition: width 0.15s ease;
+}
+
+.threshold {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: #fff;
+  box-shadow: 0 0 8px #ff4d6d;
+}
+
+.meterLabel {
+  position: absolute;
+  right: 0;
+  top: -1.2rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  color: #ff4d6d;
+}
+
+.sliders {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 70px 1fr 36px;
+  gap: 0.45rem;
+  align-items: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: #2be4ea;
+  text-transform: uppercase;
+}
+
+.row input {
+  width: 100%;
+}
+
+.row em {
+  font-style: normal;
+  color: #fed33f;
+  text-align: right;
+}

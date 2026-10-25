@@ -1,0 +1,50 @@
+.bet {
+  display: grid;
+  grid-template-columns: 60px 1fr 48px;
+  gap: 0.45rem;
+  align-items: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: #2be4ea;
+  margin-bottom: 0.75rem;
+}
+
+.bet em {
+  font-style: normal;
+  color: #fed33f;
+}
+
+.dice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.dice > div {
+  border: 1px solid #fed33f55;
+  background: #0a0a12;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.dice span {
+  display: block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  color: #8b93a7;
+  letter-spacing: 0.1em;
+}
+
+.dice strong {
+  font-family: 'Audiowide', sans-serif;
+  font-size: 2rem;
+  color: #fed33f;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.5rem;
+}

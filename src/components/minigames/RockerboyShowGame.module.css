@@ -1,0 +1,53 @@
+.stage {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+  height: 300px;
+  margin-bottom: 0.5rem;
+}
+
+.lane {
+  position: relative;
+  appearance: none;
+  border: 1px solid #ff2bd655;
+  background: linear-gradient(180deg, #120018, #050208);
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+}
+
+.lane:hover {
+  border-color: #ff2bd6;
+}
+
+.note {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  height: 14px;
+  background: #fed33f;
+  box-shadow: 0 0 10px #fed33f;
+  border-radius: 2px;
+}
+
+.zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 78%;
+  height: 10%;
+  border-top: 2px solid #2be4ea;
+  border-bottom: 2px solid #2be4ea;
+  background: #2be4ea22;
+}
+
+.key {
+  position: absolute;
+  bottom: 0.35rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Audiowide', sans-serif;
+  font-size: 0.75rem;
+  color: #2be4ea;
+}

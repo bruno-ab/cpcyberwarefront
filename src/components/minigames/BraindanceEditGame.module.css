@@ -1,0 +1,77 @@
+.timeline,
+.pool {
+  margin-bottom: 0.75rem;
+}
+
+.timeline h4,
+.pool h4 {
+  margin: 0 0 0.35rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #2be4ea;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.45rem;
+  border: 1px solid #fed33f44;
+  background: #0a0a12;
+}
+
+.empty {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: #555;
+}
+
+.clip {
+  appearance: none;
+  border: 1px solid #555;
+  background: #12141a;
+  color: #c3c3c3;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  text-align: left;
+  max-width: 100%;
+}
+
+.clip[data-tag='hook'] {
+  border-color: #ff4d6d;
+  color: #ff4d6d;
+}
+
+.clip[data-tag='fact'] {
+  border-color: #2be4ea;
+  color: #2be4ea;
+}
+
+.clip[data-tag='spin'] {
+  border-color: #fed33f;
+  color: #fed33f;
+}
+
+.clip[data-tag='fluff'] {
+  border-color: #777;
+  color: #8b93a7;
+}
+
+.clip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.headline {
+  margin: 0.65rem 0;
+  font-family: 'Audiowide', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  color: #fed33f;
+  text-shadow: 0 0 10px #fed33f55;
+}
