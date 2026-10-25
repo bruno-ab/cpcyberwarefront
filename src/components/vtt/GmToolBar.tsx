@@ -24,7 +24,7 @@ type CategoryId = 'visao' | 'spawn' | 'devices' | 'alertas' | 'cena';
 
 const CATEGORIES: Array<{ id: CategoryId; label: string; tab?: GmTab }> = [
   { id: 'visao', label: 'Visão' },
-  { id: 'spawn', label: 'NPCs', tab: 'tokens' },
+  { id: 'spawn', label: 'Roster / Tokens', tab: 'tokens' },
   { id: 'devices', label: 'Devices' },
   { id: 'alertas', label: 'Alertas' },
   { id: 'cena', label: 'Cena/Mapa', tab: 'map' },
@@ -106,7 +106,12 @@ export const GmToolBar = ({
         ))}
       </div>
       {open && open !== 'cena' && (
-        <div className={styles.drawer}>{contentFor(open)}</div>
+        <div
+          className={styles.drawer}
+          data-variant={open === 'spawn' ? 'spawn' : undefined}
+        >
+          {contentFor(open)}
+        </div>
       )}
       {open === 'cena' && (
         <div className={styles.drawerWide}>{contentFor('cena')}</div>

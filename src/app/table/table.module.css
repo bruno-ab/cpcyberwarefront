@@ -204,6 +204,11 @@
   height: 100%;
 }
 
+.mapStage[data-spawn-place='1'] {
+  cursor: copy;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent);
+}
+
 .mapWorld {
   position: absolute;
   left: 0;

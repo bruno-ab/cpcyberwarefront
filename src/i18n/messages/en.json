@@ -315,6 +315,16 @@
         "short": "Ready",
         "hint": "In position — go"
       }
+    },
+    "gmSpawn": {
+      "dragHint": "Drag onto the table or select an entry then click the map.",
+      "charactersHeading": "Characters",
+      "npcsHeading": "NPCs",
+      "emptyCharacters": "No characters on the campaign roster.",
+      "emptyNpcs": "No NPCs linked to this campaign.",
+      "dragOrClick": "Drag to map or click to place",
+      "alreadyOnTable": "Token already on the table",
+      "onTable": "On table"
     }
   }
 }

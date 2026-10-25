@@ -315,6 +315,16 @@
         "short": "Pronto",
         "hint": "Posição tomada — pode seguir"
       }
+    },
+    "gmSpawn": {
+      "dragHint": "Arraste para a mesa ou clique na ficha e depois no mapa.",
+      "charactersHeading": "Personagens",
+      "npcsHeading": "NPCs",
+      "emptyCharacters": "Nenhum personagem no roster da campanha.",
+      "emptyNpcs": "Nenhum NPC vinculado à campanha.",
+      "dragOrClick": "Arrastar para o mapa ou clicar para posicionar",
+      "alreadyOnTable": "Token já está na mesa",
+      "onTable": "Na mesa"
     }
   }
 }

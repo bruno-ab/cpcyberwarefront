@@ -1,0 +1,119 @@
+.wrap {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: min(320px, 88vw);
+}
+
+.hint {
+  margin: 0;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-yellow, #fed33f);
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.55rem;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: 9rem;
+  overflow: auto;
+}
+
+.row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.4rem;
+  background: rgba(12, 14, 22, 0.85);
+  border: 1px solid color-mix(in srgb, var(--cp-border, #333) 85%, transparent);
+  color: var(--cp-text, #e8eef5);
+  cursor: grab;
+  text-align: left;
+}
+
+.row:active {
+  cursor: grabbing;
+}
+
+.row[data-on-table='1'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.row[data-placing='1'] {
+  border-color: var(--cp-cyan, #02d7f2);
+  box-shadow: 0 0 10px rgba(2, 215, 242, 0.25);
+}
+
+.row:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent);
+}
+
+.portrait {
+  width: 2rem;
+  height: 2rem;
+  object-fit: cover;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 35%, transparent);
+  flex-shrink: 0;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.52rem;
+  color: var(--cp-text-dim, #8a9aa8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cp-yellow, #fed33f);
+}

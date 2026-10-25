@@ -20,7 +20,7 @@ export const TokenEmotePicker = ({
   cooldownUntil = 0,
   onEmote,
 }: TokenEmotePickerProps) => {
-  const t = useTranslations('vtt.tokenEmote');
+  const { t } = useTranslations('vtt.tokenEmote');
   const onCooldown = Date.now() < cooldownUntil;
 
   return (

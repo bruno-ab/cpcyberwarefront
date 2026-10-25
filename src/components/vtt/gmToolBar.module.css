@@ -70,6 +70,14 @@
   width: min(520px, 94vw);
 }
 
+.drawer[data-variant='spawn'] {
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  max-height: min(52vh, 380px);
+  width: min(360px, 94vw);
+}
+
 .subTabs {
   flex: 1 1 100%;
   display: inline-flex;

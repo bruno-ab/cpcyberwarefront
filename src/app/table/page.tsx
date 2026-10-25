@@ -34,6 +34,16 @@ import {
 } from '../../components/vtt/FloatingHudPanel';
 import { TableTopHud } from '../../components/vtt/TableTopHud';
 import { GmToolBar } from '../../components/vtt/GmToolBar';
+import {
+  GmTokenSpawnList,
+  parseSpawnDragPayload,
+  VTT_SPAWN_DRAG_MIME,
+  type SpawnDragPayload,
+} from '../../components/vtt/GmTokenSpawnList';
+import {
+  fetchCampaignNpcs,
+  type CampaignNpc,
+} from '../../lib/campaignsApi';
 import { CombatHotbar } from '../../components/vtt/CombatHotbar';
 import {
   ReactionBar,
@@ -73,7 +83,11 @@ import {
 } from '../../lib/vttAim';
 import { useCampaign } from '../../lib/campaign';
 import { useTranslations } from '../../i18n/useTranslations';
-import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
+import {
+  characterImageSrc,
+  npcImageSrc,
+  resolveMediaSrc,
+} from '../../lib/media';
 import {
   ATTR_OPTIONS,
   SKILL_OPTIONS,
@@ -348,6 +362,9 @@ const TablePage = () => {
   const [attrKey, setAttrKey] = useState<string>('dexterity');
   const [skillKey, setSkillKey] = useState<string>('firearms');
   const [roster, setRoster] = useState<RosterChar[]>([]);
+  const [campaignNpcs, setCampaignNpcs] = useState<CampaignNpc[]>([]);
+  const [spawnPlacement, setSpawnPlacement] =
+    useState<SpawnDragPayload | null>(null);
   const rosterRef = useRef<RosterChar[]>([]);
   rosterRef.current = roster;
   const [rosterHydrated, setRosterHydrated] = useState(false);
@@ -1042,6 +1059,16 @@ const TablePage = () => {
   }, [campaignId, myPlayerId]);
 
   useEffect(() => {
+    if (!isGm || !campaignId) {
+      setCampaignNpcs([]);
+      return;
+    }
+    fetchCampaignNpcs(campaignId)
+      .then(setCampaignNpcs)
+      .catch(() => setCampaignNpcs([]));
+  }, [campaignId, isGm]);
+
+  useEffect(() => {
     if (!authReady || !rosterHydrated || tableBootShownRef.current) return;
     tableBootShownRef.current = true;
     setChromeBootOpen(true);
@@ -1052,14 +1079,78 @@ const TablePage = () => {
     setZoom((z) => Math.min(2.5, Math.max(0.5, z - e.deltaY * 0.001)));
   };
 
-  const cellFromEvent = (e: React.MouseEvent) => {
+  const cellFromClient = (clientX: number, clientY: number) => {
     const stage = stageRef.current;
     if (!stage) return { x: 0, y: 0 };
     const rect = stage.getBoundingClientRect();
-    const x = (e.clientX - rect.left - pan.x) / (GRID * zoom);
-    const y = (e.clientY - rect.top - pan.y) / (GRID * zoom);
+    const x = (clientX - rect.left - pan.x) / (GRID * zoom);
+    const y = (clientY - rect.top - pan.y) / (GRID * zoom);
     return { x: Math.floor(x), y: Math.floor(y) };
   };
+
+  const cellFromEvent = (e: React.MouseEvent) =>
+    cellFromClient(e.clientX, e.clientY);
+
+  const onTableCharacterIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const t of state?.tokens || []) {
+      if (t.characterId != null) ids.add(Number(t.characterId));
+    }
+    return ids;
+  }, [state?.tokens]);
+
+  const mapNpcThreat = (raw?: string): 'low' | 'med' | 'high' | undefined => {
+    const s = String(raw || '').toLowerCase();
+    if (s.includes('low') || s.includes('baix')) return 'low';
+    if (s.includes('high') || s.includes('alt')) return 'high';
+    if (s.includes('med') || s.includes('méd') || s.includes('mod')) return 'med';
+    return undefined;
+  };
+
+  const placeSpawnToken = useCallback(
+    (payload: SpawnDragPayload, x: number, y: number) => {
+      if (!isGm) return;
+      if (payload.kind === 'character') {
+        const c = roster.find((r) => r.id === payload.id);
+        if (!c) return;
+        const cid = Number(c.id);
+        if (onTableCharacterIds.has(cid)) return;
+        const idx = roster.findIndex((r) => r.id === c.id);
+        intent('token:add', {
+          name: c.name,
+          kind: 'runner',
+          x,
+          y,
+          characterId: cid,
+          ownerPlayerId:
+            c.playerId != null ? Number(c.playerId) : undefined,
+          portraitUrl: characterImageSrc(c),
+          color: TOKEN_COLORS[(idx >= 0 ? idx : 0) % TOKEN_COLORS.length],
+          bars: {
+            hp: Number(c.vitality) || 7,
+            hpMax: Number(c.vitalityMax) || 7,
+          },
+        });
+      } else {
+        const npc = campaignNpcs.find((n) => n.id === payload.id);
+        if (!npc) return;
+        intent('token:add', {
+          name: npc.name,
+          kind: 'npc',
+          x,
+          y,
+          affiliation: npc.affiliation || undefined,
+          arThreat: mapNpcThreat(npc.threat),
+          portraitUrl: npcImageSrc({ id: npc.id }),
+          color: '#ff2a6d',
+          bars: { hp: 7, hpMax: 7 },
+        });
+      }
+      playCyberSound('confirm', { volume: 0.35 });
+      setSpawnPlacement(null);
+    },
+    [isGm, roster, campaignNpcs, onTableCharacterIds, intent],
+  );
 
   const distance = useMemo(() => {
     if (!ruler) return 0;
@@ -1650,6 +1741,10 @@ const TablePage = () => {
         toggleBothHuds();
         return;
       }
+      if (e.key === 'Escape' && spawnPlacement) {
+        setSpawnPlacement(null);
+        return;
+      }
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
         if (isGm) intent('initiative:next', {});
@@ -1688,6 +1783,7 @@ const TablePage = () => {
     hasNetDeck,
     activateKiroshi,
     toggleBothHuds,
+    spawnPlacement,
   ]);
 
   const chromeBootCharacter = useMemo(() => {
@@ -1731,9 +1827,16 @@ const TablePage = () => {
     </>
   ) : null;
 
-  const gmSpawnTools = (
+  const gmSpawnTools = isGm ? (
     <>
-      <HudButton onClick={spawnRoster}>Spawn roster</HudButton>
+      <GmTokenSpawnList
+        roster={roster}
+        npcs={campaignNpcs}
+        onTableCharacterIds={onTableCharacterIds}
+        placement={spawnPlacement}
+        onSelectPlacement={setSpawnPlacement}
+      />
+      <HudButton onClick={spawnRoster}>Spawn roster (todos)</HudButton>
       <HudButton
         variant="ghost"
         onClick={() =>
@@ -1766,7 +1869,7 @@ const TablePage = () => {
         + Hidden
       </HudButton>
     </>
-  );
+  ) : null;
 
   const gmDeviceTools = (
     <>
@@ -2284,12 +2387,47 @@ const TablePage = () => {
             <div
               ref={stageRef}
               className={styles.mapStage}
+              data-spawn-place={spawnPlacement ? '1' : '0'}
               style={{
                 width: boardViewW,
                 height: boardViewH,
               }}
               onContextMenu={(e) => e.preventDefault()}
+              onDragOver={(e) => {
+                if (!isGm) return;
+                if (
+                  e.dataTransfer.types.includes(VTT_SPAWN_DRAG_MIME) ||
+                  e.dataTransfer.types.includes('text/plain')
+                ) {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'copy';
+                }
+              }}
+              onDrop={(e) => {
+                if (!isGm) return;
+                e.preventDefault();
+                const raw =
+                  e.dataTransfer.getData(VTT_SPAWN_DRAG_MIME) ||
+                  e.dataTransfer.getData('text/plain');
+                const payload = parseSpawnDragPayload(raw);
+                if (!payload) return;
+                const c = cellFromClient(e.clientX, e.clientY);
+                placeSpawnToken(payload, c.x, c.y);
+              }}
               onMouseDown={(e) => {
+                if (
+                  isGm &&
+                  spawnPlacement &&
+                  e.button === 0 &&
+                  !e.shiftKey &&
+                  tool !== 'fog' &&
+                  tool !== 'wall' &&
+                  tool !== 'pan'
+                ) {
+                  const c = cellFromEvent(e);
+                  placeSpawnToken(spawnPlacement, c.x, c.y);
+                  return;
+                }
                 if (e.shiftKey) {
                   const c = cellFromEvent(e);
                   setRuler({ x1: c.x, y1: c.y, x2: c.x, y2: c.y });
