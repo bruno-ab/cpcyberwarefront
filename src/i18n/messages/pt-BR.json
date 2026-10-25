@@ -110,6 +110,28 @@
       "chrome": "Chrome",
       "recursos": "Recursos",
       "inventario": "Inventário"
+    },
+    "roleTheme": {
+      "pickerLabel": "Tema da ficha",
+      "variantGroup": "Variante visual",
+      "variants": {
+        "default": "Padrão",
+        "alt": "Alternativo",
+        "extreme": "Extremo"
+      },
+      "roles": {
+        "nightcity": "Night City",
+        "solo": "Solo",
+        "netrunner": "Netrunner",
+        "tech": "Tech",
+        "fixer": "Fixer",
+        "nomad": "Nomad",
+        "media": "Media",
+        "exec": "Exec",
+        "lawman": "Lawman",
+        "medtech": "Medtech",
+        "rockerboy": "Rockerboy"
+      }
     }
   },
   "book": {

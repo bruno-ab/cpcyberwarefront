@@ -4,6 +4,7 @@
   inset: 0;
   z-index: 40;
   overflow: hidden;
+  opacity: var(--sheet-ambient-opacity, 1);
 }
 
 .glitch {
@@ -17,11 +18,11 @@
   background: linear-gradient(
     180deg,
     transparent,
-    color-mix(in srgb, var(--cp-cyan) 55%, transparent),
+    color-mix(in srgb, var(--sheet-glitch-primary, var(--cp-cyan)) 55%, transparent),
     transparent
   );
   animation: scanPop 0.55s ease-out forwards;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--cp-cyan) 40%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--sheet-glitch-primary, var(--cp-cyan)) 40%, transparent);
 }
 
 .tear {
@@ -29,7 +30,7 @@
     90deg,
     transparent,
     transparent 2px,
-    color-mix(in srgb, var(--cp-magenta, #ff2a6d) 70%, transparent) 3px,
+    color-mix(in srgb, var(--sheet-glitch-secondary, var(--cp-magenta, #ff2a6d)) 70%, transparent) 3px,
     transparent 5px
   );
   animation: tearSlide 0.45s steps(4) forwards;
@@ -46,20 +47,20 @@
 .chromatic {
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, #ff0040 50%, transparent),
-    color-mix(in srgb, var(--cp-cyan) 50%, transparent),
-    color-mix(in srgb, var(--cp-yellow) 45%, transparent)
+    color-mix(in srgb, var(--sheet-magenta, #ff0040) 50%, transparent),
+    color-mix(in srgb, var(--sheet-glitch-primary, var(--cp-cyan)) 50%, transparent),
+    color-mix(in srgb, var(--sheet-glitch-tertiary, var(--cp-yellow)) 45%, transparent)
   );
   animation: chromaShift 0.5s ease-in-out forwards;
   mix-blend-mode: color-dodge;
 }
 
 .corrupt {
-  border: 1px solid var(--cp-yellow);
+  border: 1px solid var(--sheet-glitch-tertiary, var(--cp-yellow));
   background: color-mix(in srgb, var(--cp-bg-0, #0a0a0a) 40%, transparent);
   box-shadow:
-    2px 0 0 color-mix(in srgb, var(--cp-cyan) 60%, transparent),
-    -2px 0 0 color-mix(in srgb, var(--cp-magenta, #ff2a6d) 60%, transparent);
+    2px 0 0 color-mix(in srgb, var(--sheet-glitch-primary, var(--cp-cyan)) 60%, transparent),
+    -2px 0 0 color-mix(in srgb, var(--sheet-glitch-secondary, var(--cp-magenta, #ff2a6d)) 60%, transparent);
   animation: corruptJitter 0.35s steps(3) forwards;
 }
 
@@ -78,7 +79,7 @@
 }
 
 .flash {
-  background: color-mix(in srgb, var(--cp-cyan) 25%, transparent);
+  background: color-mix(in srgb, var(--sheet-glitch-primary, var(--cp-cyan)) 25%, transparent);
   animation: flashPop 0.25s ease-out forwards;
   inset: auto;
 }

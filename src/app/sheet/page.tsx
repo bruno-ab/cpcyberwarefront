@@ -12,8 +12,11 @@ import VitalityField from './vitality';
 import CyberCapacity from './CyberCapacity';
 import RoleAbilities from './RoleAbilities';
 import SheetAmbientGlitches from './SheetAmbientGlitches';
+import SheetThemePicker from './SheetThemePicker';
 import SheetPhone from './SheetPhone';
 import SheetRoster from './SheetRoster';
+import { useSheetRoleTheme } from '../../theme/useSheetRoleTheme';
+import { DEFAULT_SHEET_ROLE_ID } from '../../theme/sheetRoleThemes';
 import { CyberpsychosisMeter } from '../../components/sheet/CyberpsychosisMeter';
 import styles from './page.module.css';
 import { apiUrl, authHeaders } from '../../lib/api';
@@ -78,9 +81,28 @@ const Sheet = () => {
     fetchCharacterData();
   }, [id]);
 
+  const roleName =
+    characterData?.role || characterData?.sheet?.header?.role || null;
+  const { roleId, variant, setVariant } = useSheetRoleTheme(
+    characterData?.id != null ? String(characterData.id) : undefined,
+    roleName,
+  );
+
+  const sheetRoot = {
+    'data-sheet-root': true,
+    'data-role': roleId,
+    'data-sheet-theme': variant,
+  } as const;
+
+  const rosterRoot = {
+    'data-sheet-root': true,
+    'data-role': DEFAULT_SHEET_ROLE_ID,
+    'data-sheet-theme': 'default' as const,
+  };
+
   if (!mounted) {
     return (
-      <section className={styles.sheetPage}>
+      <section className={styles.sheetPage} {...rosterRoot}>
         <Header />
         <p className={styles.loading}>Carregando ficha…</p>
       </section>
@@ -89,7 +111,7 @@ const Sheet = () => {
 
   if (!id) {
     return (
-      <section className={styles.sheetPage}>
+      <section className={styles.sheetPage} {...rosterRoot}>
         <Header />
         <SheetRoster />
       </section>
@@ -98,7 +120,7 @@ const Sheet = () => {
 
   if (error && !characterData) {
     return (
-      <section className={styles.sheetPage}>
+      <section className={styles.sheetPage} {...rosterRoot}>
         <Header />
         <p className={styles.error}>{error}</p>
         <p className={styles.hint}>
@@ -110,7 +132,7 @@ const Sheet = () => {
 
   if (!characterData) {
     return (
-      <section className={styles.sheetPage}>
+      <section className={styles.sheetPage} {...rosterRoot}>
         <Header />
         <p className={styles.loading}>Carregando ficha…</p>
       </section>
@@ -121,12 +143,17 @@ const Sheet = () => {
   const credits = characterData.credits ?? 0;
 
   return (
-    <section className={styles.sheetPage}>
-      <SheetAmbientGlitches />
+    <section className={styles.sheetPage} {...sheetRoot}>
+      <SheetAmbientGlitches roleId={roleId} themeVariant={variant} />
       <Header />
       <p className={styles.backRow}>
         <Link href="/sheet">← Campanha / missões</Link>
       </p>
+      <SheetThemePicker
+        roleId={roleId}
+        variant={variant}
+        onVariantChange={setVariant}
+      />
       <div className={styles.glitchHeader}>
         <CHeader characterData={characterData} />
       </div>

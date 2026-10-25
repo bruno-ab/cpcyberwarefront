@@ -10,10 +10,10 @@
   text-align: left;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--cp-yellow);
+  color: var(--sheet-section-color, var(--cp-yellow));
   font-family: var(--cp-font-display);
   font-size: 0.95rem;
-  text-shadow: var(--cp-glow-yellow);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--sheet-section-color, var(--cp-yellow)) 55%, transparent);
 }
 
 .backRow {
@@ -56,7 +56,7 @@
   padding: 0.85rem 1rem;
   max-width: 1100px;
   margin: 0.75rem auto 0;
-  border-bottom: 1px solid rgba(0, 243, 255, 0.25);
+  border-bottom: 1px solid var(--sheet-border, rgba(0, 243, 255, 0.25));
 }
 
 .tab,
@@ -77,14 +77,14 @@
 }
 
 .tab:hover {
-  border-color: var(--cp-cyan);
-  color: var(--cp-cyan);
+  border-color: var(--sheet-accent, var(--cp-cyan));
+  color: var(--sheet-accent, var(--cp-cyan));
 }
 
 .tabActive {
-  border-color: var(--cp-cyan);
-  color: var(--cp-cyan);
-  box-shadow: var(--cp-glow-cyan);
+  border-color: var(--sheet-accent, var(--cp-cyan));
+  color: var(--sheet-accent, var(--cp-cyan));
+  box-shadow: var(--sheet-tab-glow, var(--cp-glow-cyan));
 }
 
 .tabBody {
@@ -119,11 +119,11 @@
 .summaryCard {
   position: relative;
   overflow: hidden;
-  border: 1px solid #2be4ea88;
+  border: 1px solid var(--sheet-border, #2be4ea88);
   background: var(--cp-bg-panel);
   padding: 0.85rem;
   text-align: center;
-  box-shadow: inset 0 0 18px rgba(43, 228, 234, 0.12);
+  box-shadow: inset 0 0 18px var(--sheet-panel-glow, rgba(43, 228, 234, 0.12));
   clip-path: polygon(0 0, 100% 0, 100% 78%, 92% 100%, 0 100%);
   animation: sheetSoftGlitch 3.6s steps(2, end) infinite;
 }

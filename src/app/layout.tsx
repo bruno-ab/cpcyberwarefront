@@ -6,6 +6,7 @@ import '../styles/hud-base.css';
 import '../styles/bg-glitch.css';
 import '../styles/motion.css';
 import '../styles/font-scale.css';
+import '../styles/sheet-role-themes.css';
 import './globals.css';
 import { BgGlitch } from '../components/layout/BgGlitch';
 import { Providers } from '../components/layout/Providers';

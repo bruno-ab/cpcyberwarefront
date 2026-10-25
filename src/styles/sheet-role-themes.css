@@ -1,0 +1,276 @@
+/**
+ * Role-based character sheet skin — scoped via [data-sheet-root].
+ * Variants: data-sheet-theme="default" | "alt" | "extreme"
+ */
+
+[data-sheet-root] {
+  --sheet-accent: var(--cp-cyan, #2be4ea);
+  --sheet-accent-soft: color-mix(in srgb, var(--sheet-accent) 55%, transparent);
+  --sheet-accent-strong: color-mix(in srgb, var(--sheet-accent) 85%, #fff);
+  --sheet-secondary: var(--cp-yellow, #fed33f);
+  --sheet-magenta: var(--cp-magenta, #ff2a6d);
+  --sheet-panel-glow: color-mix(in srgb, var(--sheet-accent) 18%, transparent);
+  --sheet-border: color-mix(in srgb, var(--sheet-accent) 53%, transparent);
+  --sheet-tab-glow: var(--cp-glow-cyan, 0 0 12px #2be4ea88);
+  --sheet-section-color: var(--sheet-secondary);
+  --sheet-glitch-primary: var(--sheet-accent);
+  --sheet-glitch-secondary: var(--sheet-magenta);
+  --sheet-glitch-tertiary: var(--sheet-secondary);
+  --sheet-ambient-opacity: 1;
+  --sheet-scan-opacity: 0.28;
+  --sheet-glitch-intensity: 1;
+}
+
+[data-sheet-root][data-sheet-theme='alt'] {
+  --sheet-ambient-opacity: 0.85;
+  --sheet-scan-opacity: 0.34;
+  --sheet-glitch-intensity: 1.15;
+}
+
+[data-sheet-root][data-sheet-theme='extreme'] {
+  --sheet-ambient-opacity: 1;
+  --sheet-scan-opacity: 0.42;
+  --sheet-glitch-intensity: 1.45;
+  --sheet-tab-glow: 0 0 18px var(--sheet-accent-soft), 0 0 4px var(--sheet-accent);
+}
+
+/* Night City fallback (unknown / missing role) */
+[data-sheet-root][data-role='nightcity'] {
+  --sheet-accent: #2be4ea;
+  --sheet-secondary: #fed33f;
+  --sheet-magenta: #ff2bd6;
+}
+
+[data-sheet-root][data-role='solo'] {
+  --sheet-accent: #ff4d6d;
+  --sheet-secondary: #c1121f;
+  --sheet-magenta: #ff003c;
+}
+
+[data-sheet-root][data-role='solo'][data-sheet-theme='alt'] {
+  --sheet-accent: #e63946;
+  --sheet-secondary: #ffb703;
+}
+
+[data-sheet-root][data-role='solo'][data-sheet-theme='extreme'] {
+  --sheet-accent: #ff003c;
+  --sheet-secondary: #ffffff;
+  --sheet-magenta: #00f5ff;
+}
+
+[data-sheet-root][data-role='netrunner'] {
+  --sheet-accent: #00f5ff;
+  --sheet-secondary: #7b2cbf;
+  --sheet-magenta: #ff00ff;
+}
+
+[data-sheet-root][data-role='netrunner'][data-sheet-theme='alt'] {
+  --sheet-accent: #48cae4;
+  --sheet-secondary: #06d6a0;
+}
+
+[data-sheet-root][data-role='netrunner'][data-sheet-theme='extreme'] {
+  --sheet-accent: #00ffff;
+  --sheet-secondary: #ff006e;
+  --sheet-magenta: #8338ec;
+}
+
+[data-sheet-root][data-role='tech'] {
+  --sheet-accent: #ffb703;
+  --sheet-secondary: #fb8500;
+  --sheet-magenta: #2be4ea;
+}
+
+[data-sheet-root][data-role='tech'][data-sheet-theme='alt'] {
+  --sheet-accent: #8ecae6;
+  --sheet-secondary: #219ebc;
+}
+
+[data-sheet-root][data-role='tech'][data-sheet-theme='extreme'] {
+  --sheet-accent: #ffea00;
+  --sheet-secondary: #00b4d8;
+}
+
+[data-sheet-root][data-role='fixer'] {
+  --sheet-accent: #d4a373;
+  --sheet-secondary: #ccd5ae;
+  --sheet-magenta: #2be4ea;
+}
+
+[data-sheet-root][data-role='fixer'][data-sheet-theme='alt'] {
+  --sheet-accent: #e9c46a;
+  --sheet-secondary: #f4a261;
+}
+
+[data-sheet-root][data-role='fixer'][data-sheet-theme='extreme'] {
+  --sheet-accent: #ffd166;
+  --sheet-secondary: #06d6a0;
+}
+
+[data-sheet-root][data-role='nomad'] {
+  --sheet-accent: #e85d04;
+  --sheet-secondary: #6a994e;
+  --sheet-magenta: #bc4749;
+}
+
+[data-sheet-root][data-role='nomad'][data-sheet-theme='alt'] {
+  --sheet-accent: #f77f00;
+  --sheet-secondary: #fcbf49;
+}
+
+[data-sheet-root][data-role='nomad'][data-sheet-theme='extreme'] {
+  --sheet-accent: #d00000;
+  --sheet-secondary: #ffba08;
+}
+
+[data-sheet-root][data-role='media'] {
+  --sheet-accent: #f72585;
+  --sheet-secondary: #4cc9f0;
+  --sheet-magenta: #7209b7;
+}
+
+[data-sheet-root][data-role='media'][data-sheet-theme='alt'] {
+  --sheet-accent: #ff006e;
+  --sheet-secondary: #ffbe0b;
+}
+
+[data-sheet-root][data-role='media'][data-sheet-theme='extreme'] {
+  --sheet-accent: #ff0099;
+  --sheet-secondary: #00f5ff;
+}
+
+[data-sheet-root][data-role='exec'] {
+  --sheet-accent: #b5179e;
+  --sheet-secondary: #560bad;
+  --sheet-magenta: #ffd60a;
+}
+
+[data-sheet-root][data-role='exec'][data-sheet-theme='alt'] {
+  --sheet-accent: #9d4edd;
+  --sheet-secondary: #c77dff;
+}
+
+[data-sheet-root][data-role='exec'][data-sheet-theme='extreme'] {
+  --sheet-accent: #e0aaff;
+  --sheet-secondary: #ffd60a;
+}
+
+[data-sheet-root][data-role='lawman'] {
+  --sheet-accent: #4895ef;
+  --sheet-secondary: #ffd60a;
+  --sheet-magenta: #ef233c;
+}
+
+[data-sheet-root][data-role='lawman'][data-sheet-theme='alt'] {
+  --sheet-accent: #0077b6;
+  --sheet-secondary: #caf0f8;
+}
+
+[data-sheet-root][data-role='lawman'][data-sheet-theme='extreme'] {
+  --sheet-accent: #03045e;
+  --sheet-secondary: #ff0040;
+}
+
+[data-sheet-root][data-role='medtech'] {
+  --sheet-accent: #06d6a0;
+  --sheet-secondary: #ef476f;
+  --sheet-magenta: #ffffff;
+}
+
+[data-sheet-root][data-role='medtech'][data-sheet-theme='alt'] {
+  --sheet-accent: #2dc653;
+  --sheet-secondary: #0077b6;
+}
+
+[data-sheet-root][data-role='medtech'][data-sheet-theme='extreme'] {
+  --sheet-accent: #00ff88;
+  --sheet-secondary: #ff006e;
+}
+
+[data-sheet-root][data-role='rockerboy'] {
+  --sheet-accent: #ff006e;
+  --sheet-secondary: #8338ec;
+  --sheet-magenta: #ffbe0b;
+}
+
+[data-sheet-root][data-role='rockerboy'][data-sheet-theme='alt'] {
+  --sheet-accent: #fb5607;
+  --sheet-secondary: #ff006e;
+}
+
+[data-sheet-root][data-role='rockerboy'][data-sheet-theme='extreme'] {
+  --sheet-accent: #ff0090;
+  --sheet-secondary: #00ffff;
+  --sheet-magenta: #ffff00;
+}
+
+/* Role-specific ambient atmosphere (extreme = stronger scan on root pseudo) */
+[data-sheet-root][data-sheet-theme='extreme']::before {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  opacity: calc(0.06 * var(--sheet-glitch-intensity));
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    color-mix(in srgb, var(--sheet-accent) 35%, transparent) 3px
+  );
+  mix-blend-mode: screen;
+  animation: sheetRoleScanlines 8s linear infinite;
+}
+
+[data-sheet-root][data-role='netrunner'][data-sheet-theme='extreme']::before,
+[data-sheet-root][data-role='netrunner'][data-sheet-theme='alt']::before {
+  animation-duration: 5s;
+}
+
+[data-sheet-root][data-role='solo'][data-sheet-theme='extreme']::after {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 36;
+  opacity: 0.04;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--sheet-magenta) 40%, transparent),
+    transparent 40%,
+    color-mix(in srgb, var(--sheet-accent) 40%, transparent)
+  );
+  animation: sheetRoleChroma 4.2s steps(3, end) infinite;
+}
+
+@keyframes sheetRoleScanlines {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 120px;
+  }
+}
+
+@keyframes sheetRoleChroma {
+  0%,
+  88%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.03;
+  }
+  90% {
+    transform: translateX(4px);
+    opacity: 0.08;
+  }
+  94% {
+    transform: translateX(-3px);
+    opacity: 0.06;
+  }
+}
+
+html[data-motion='off'] [data-sheet-root][data-sheet-theme='extreme']::before,
+html[data-motion='off'] [data-sheet-root][data-sheet-theme='extreme']::after {
+  animation: none !important;
+  opacity: 0.03;
+}
