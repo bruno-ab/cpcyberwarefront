@@ -73,7 +73,18 @@
     "intro": "Peças com custo em Edges (E), dificuldade de Hack e carga de Implante.",
     "slot": "Slot",
     "source": "Fonte",
-    "all": "Todos"
+    "all": "Todos",
+    "both": "Ambos",
+    "rarity": "Raridade",
+    "view": "Visualização",
+    "viewGrid": "Grid",
+    "viewList": "Lista",
+    "viewCategory": "Categorias",
+    "viewRarity": "Raridades",
+    "pieces": "peças",
+    "searchPlaceholder": "Buscar nome, slot, efeito…",
+    "emptyTitle": "Nada encontrado",
+    "empty": "Nenhum implante com esses filtros. Limpe a busca ou troque a visualização."
   },
   "sheet": {
     "title": "Ficha",

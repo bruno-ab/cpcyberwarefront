@@ -73,7 +73,18 @@
     "intro": "Pieces with Edges (E) cost, Hack difficulty and Implant load.",
     "slot": "Slot",
     "source": "Source",
-    "all": "All"
+    "all": "All",
+    "both": "Both",
+    "rarity": "Rarity",
+    "view": "View",
+    "viewGrid": "Grid",
+    "viewList": "List",
+    "viewCategory": "Categories",
+    "viewRarity": "Rarities",
+    "pieces": "pieces",
+    "searchPlaceholder": "Search name, slot, effect…",
+    "emptyTitle": "Nothing found",
+    "empty": "No implants match these filters. Clear search or switch view."
   },
   "sheet": {
     "title": "Sheet",
