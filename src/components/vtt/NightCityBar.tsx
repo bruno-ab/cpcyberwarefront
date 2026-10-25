@@ -32,6 +32,8 @@ type NightCityBarProps = {
   onRequestRoll: () => void;
   onKiroshiScan: (opts?: { bypass?: boolean }) => void;
   onClearScan: () => void;
+  canSpawnDrone?: boolean;
+  onSpawnDrone?: (profileId: string) => void;
 };
 
 export const NightCityBar = ({
@@ -58,6 +60,8 @@ export const NightCityBar = ({
   onRequestRoll,
   onKiroshiScan,
   onClearScan,
+  canSpawnDrone,
+  onSpawnDrone,
 }: NightCityBarProps) => (
   <div className={styles.wrap}>
     <div className={styles.row}>
@@ -147,6 +151,27 @@ export const NightCityBar = ({
         </HudButton>
         <HudButton variant="ghost" onClick={onRequestRoll}>
           Pedir rolagem
+        </HudButton>
+      </div>
+    )}
+
+    {canSpawnDrone && onSpawnDrone && (
+      <div className={styles.row}>
+        <span className={styles.label}>Drones</span>
+        <HudButton variant="ghost" onClick={() => onSpawnDrone('watcher')}>
+          Watcher
+        </HudButton>
+        <HudButton variant="ghost" onClick={() => onSpawnDrone('scout')}>
+          Scout
+        </HudButton>
+        <HudButton variant="ghost" onClick={() => onSpawnDrone('combat')}>
+          Combat
+        </HudButton>
+        <HudButton variant="ghost" onClick={() => onSpawnDrone('tech-bot')}>
+          Tech-bot
+        </HudButton>
+        <HudButton variant="ghost" onClick={() => onSpawnDrone('summon-ice')}>
+          ICE summon
         </HudButton>
       </div>
     )}

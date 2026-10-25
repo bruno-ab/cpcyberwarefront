@@ -39,6 +39,7 @@ import {
   QuickhackMenu,
   type NetMenuPayload,
 } from '../../components/vtt/QuickhackMenu';
+import { DroneHud } from '../../components/vtt/DroneHud';
 import { API_BASE_URL, apiUrl, authHeaders } from '../../lib/api';
 import { useCampaign } from '../../lib/campaign';
 import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
@@ -58,15 +59,37 @@ type Token = {
   y: number;
   color: string;
   hidden?: boolean;
-  bars?: { hp: number; hpMax: number; humanity?: number; edges?: number };
+  bars?: {
+    hp: number;
+    hpMax: number;
+    humanity?: number;
+    edges?: number;
+    battery?: number;
+    batteryMax?: number;
+    signal?: number;
+    ram?: number;
+    ramMax?: number;
+  };
   ownerPlayerId?: number;
   controllerPlayerId?: number;
+  parentTokenId?: string;
   characterId?: number | string;
   portraitUrl?: string | null;
   kind?: string;
   floor?: number;
   auras?: string[];
   gmNotes?: string;
+  signalJammed?: boolean;
+  droneSheet?: {
+    profileId?: string;
+    label?: string;
+    role?: string;
+    physical?: Record<string, number>;
+    mental?: Record<string, number>;
+    skills?: Record<string, number>;
+    weapons?: string[];
+    notes?: string;
+  };
 };
 
 type VttDevice = {
@@ -732,6 +755,26 @@ const TablePage = () => {
         window.setTimeout(() => setScanToast(null), 2800);
       },
     );
+    socket.on(
+      'vtt:drone',
+      (payload: {
+        ok?: boolean;
+        error?: string;
+        message?: string;
+        action?: string;
+        band?: string;
+      }) => {
+        if (!payload?.ok) {
+          playCyberSound('deny', { volume: 0.4 });
+          setScanToast(payload?.message || payload?.error || 'Drone offline');
+          window.setTimeout(() => setScanToast(null), 2800);
+          return;
+        }
+        if (payload.action === 'spawn' || payload.action === 'jam') {
+          playCyberSound('ui', { volume: 0.35 });
+        }
+      },
+    );
     socket.on('vtt:attack', (card: any) => setLastAttack(card));
     socket.on(
       'vtt:roll-request',
@@ -1008,6 +1051,59 @@ const TablePage = () => {
       (myRosterChar?.sheetSummary?.opticsChrome?.length ?? 0) > 0)
   );
 
+  const canSpawnDrone = useMemo(() => {
+    if (isGm) return true;
+    const role = String(
+      myRosterChar?.role || myRosterChar?.sheetSummary?.role || '',
+    ).toLowerCase();
+    return (
+      role.includes('net') ||
+      role.includes('tech') ||
+      role.includes('runner')
+    );
+  }, [isGm, myRosterChar]);
+
+  const spawnDrone = useCallback(
+    (profileId: string) => {
+      const parent =
+        selectedTokenId &&
+        state?.tokens?.find(
+          (t) =>
+            t.id === selectedTokenId &&
+            t.kind !== 'drone' &&
+            t.kind !== 'summon',
+        );
+      const anchor =
+        parent ||
+        state?.tokens?.find(
+          (t) =>
+            Number(t.ownerPlayerId) === Number(myPlayerId) &&
+            t.kind !== 'drone' &&
+            t.kind !== 'summon',
+        );
+      intent('drone:spawn', {
+        profileId,
+        x: (anchor?.x ?? 6) + 1,
+        y: anchor?.y ?? 6,
+        floor: currentFloor,
+        parentTokenId: anchor?.id,
+        characterId: myRosterChar?.id,
+        role: myRosterChar?.role,
+        ownerPlayerId: myPlayerId,
+        controllerPlayerId: myPlayerId,
+      });
+      playCyberSound('ui', { volume: 0.3 });
+    },
+    [
+      intent,
+      selectedTokenId,
+      state?.tokens,
+      myPlayerId,
+      currentFloor,
+      myRosterChar,
+    ],
+  );
+
   const scanDeviceById = useMemo(() => {
     const map = new Map<string, ScanIntelTag>();
     for (const d of scanResult?.devices || []) map.set(d.id, d);
@@ -1237,6 +1333,8 @@ const TablePage = () => {
             }}
             onKiroshiScan={activateKiroshi}
             onClearScan={clearScan}
+            canSpawnDrone={canSpawnDrone}
+            onSpawnDrone={spawnDrone}
           />
           {scanToast && (
             <div className={styles.scanToast} role="status">
@@ -1514,6 +1612,13 @@ const TablePage = () => {
           {selectedToken && (
             <div className={styles.selectionBar}>
               Selecionado: <strong>{selectedToken.name}</strong>
+              {selectedToken.kind ? ` · ${selectedToken.kind}` : ''}
+              {selectedToken.bars?.battery != null
+                ? ` · BAT ${selectedToken.bars.battery}/${selectedToken.bars.batteryMax ?? '?'}`
+                : ''}
+              {selectedToken.bars?.signal != null
+                ? ` · SIG ${selectedToken.bars.signal}%`
+                : ''}
               {selectedToken.hidden ? ' · oculto' : ''}
               {isGm && (
                 <>
@@ -1872,7 +1977,22 @@ const TablePage = () => {
                             : intel?.tag || t.name
                         }
                         data-net={
-                          viewMode === 'net' && t.kind === 'drone' ? '1' : '0'
+                          viewMode === 'net' &&
+                          (t.kind === 'drone' || t.kind === 'summon')
+                            ? '1'
+                            : '0'
+                        }
+                        data-drone={
+                          t.kind === 'drone' || t.kind === 'summon' ? '1' : '0'
+                        }
+                        data-signal={
+                          t.bars?.signal == null
+                            ? ''
+                            : t.bars.signal <= 0
+                              ? 'lost'
+                              : t.bars.signal <= 55
+                                ? 'weak'
+                                : 'ok'
                         }
                       >
                         {portrait ? (
@@ -1904,6 +2024,19 @@ const TablePage = () => {
                             }}
                           />
                         )}
+                        {(t.kind === 'drone' || t.kind === 'summon') &&
+                          t.bars?.batteryMax != null && (
+                            <span
+                              className={styles.tokenBat}
+                              style={{
+                                width: `${
+                                  (Number(t.bars.battery) /
+                                    Math.max(1, t.bars.batteryMax)) *
+                                  100
+                                }%`,
+                              }}
+                            />
+                          )}
                       </button>
                     );
                   })}
@@ -1923,6 +2056,48 @@ const TablePage = () => {
         </HudPanel>
 
         <aside className={styles.side}>
+          {selectedToken &&
+            (selectedToken.kind === 'drone' ||
+              selectedToken.kind === 'summon') && (
+              <HudPanel title="Drone / Summon">
+                <DroneHud
+                  drone={selectedToken}
+                  presence={state?.presence || []}
+                  isGm={isGm}
+                  canControl={
+                    isGm ||
+                    Number(selectedToken.ownerPlayerId) ===
+                      Number(myPlayerId) ||
+                    Number(selectedToken.controllerPlayerId) ===
+                      Number(myPlayerId)
+                  }
+                  onAssign={(controllerPlayerId) =>
+                    intent('drone:assign', {
+                      tokenId: selectedToken.id,
+                      controllerPlayerId,
+                      parentTokenId:
+                        state?.tokens?.find(
+                          (t) =>
+                            Number(t.ownerPlayerId) ===
+                              Number(controllerPlayerId) &&
+                            t.kind !== 'drone' &&
+                            t.kind !== 'summon',
+                        )?.id || selectedToken.parentTokenId,
+                    })
+                  }
+                  onRecharge={() =>
+                    intent('drone:recharge', { tokenId: selectedToken.id })
+                  }
+                  onJam={(jammed) =>
+                    intent('drone:jam', {
+                      tokenId: selectedToken.id,
+                      jammed,
+                    })
+                  }
+                  onRefresh={() => intent('drone:refresh', {})}
+                />
+              </HudPanel>
+            )}
           {isGm && (
             <HudPanel title="Notas GM">
               <GmNotesPanel
@@ -2232,58 +2407,108 @@ const TablePage = () => {
           >
             Selecionar
           </button>
-          {isGm && (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  const t = state?.tokens?.find(
-                    (x) => x.id === ctxMenu.tokenId,
-                  );
-                  intent('token:update', {
-                    tokenId: ctxMenu.tokenId,
-                    hidden: !t?.hidden,
-                  });
-                  setCtxMenu(null);
-                }}
-              >
-                Toggle oculto
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  intent('token:remove', { tokenId: ctxMenu.tokenId });
-                  setSelectedTokenId(null);
-                  setCtxMenu(null);
-                }}
-              >
-                Remover
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const t = state?.tokens?.find(
-                    (x) => x.id === ctxMenu.tokenId,
-                  );
-                  if (!t) return;
-                  const order = [
-                    {
-                      tokenId: t.id,
-                      name: t.name,
-                      score: 99,
-                    },
-                    ...(state?.initiative || []).filter(
-                      (i) => i.tokenId !== t.id,
-                    ),
-                  ];
-                  intent('initiative:set', { order });
-                  setCtxMenu(null);
-                }}
-              >
-                Destacar turno
-              </button>
-            </>
-          )}
+          {(() => {
+            const t = state?.tokens?.find((x) => x.id === ctxMenu.tokenId);
+            const isDrone =
+              t?.kind === 'drone' || t?.kind === 'summon';
+            const canPilot =
+              isGm ||
+              Number(t?.ownerPlayerId) === Number(myPlayerId) ||
+              Number(t?.controllerPlayerId) === Number(myPlayerId);
+            return (
+              <>
+                {isDrone && canPilot && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        intent('drone:assign', {
+                          tokenId: ctxMenu.tokenId,
+                          controllerPlayerId: myPlayerId,
+                        });
+                        setCtxMenu(null);
+                      }}
+                    >
+                      Assumir controle
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        intent('drone:recharge', {
+                          tokenId: ctxMenu.tokenId,
+                        });
+                        setCtxMenu(null);
+                      }}
+                    >
+                      Recarregar bateria
+                    </button>
+                  </>
+                )}
+                {isGm && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        intent('token:update', {
+                          tokenId: ctxMenu.tokenId,
+                          hidden: !t?.hidden,
+                        });
+                        setCtxMenu(null);
+                      }}
+                    >
+                      Toggle oculto
+                    </button>
+                    {isDrone && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          intent('drone:jam', {
+                            tokenId: ctxMenu.tokenId,
+                            jammed: !t?.signalJammed,
+                          });
+                          setCtxMenu(null);
+                        }}
+                      >
+                        {t?.signalJammed ? 'Limpar jam' : 'Jam sinal'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        intent('token:remove', {
+                          tokenId: ctxMenu.tokenId,
+                        });
+                        setSelectedTokenId(null);
+                        setCtxMenu(null);
+                      }}
+                    >
+                      Remover
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!t) return;
+                        const order = [
+                          {
+                            tokenId: t.id,
+                            name: t.name,
+                            score: 99,
+                          },
+                          ...(state?.initiative || []).filter(
+                            (i) => i.tokenId !== t.id,
+                          ),
+                        ];
+                        intent('initiative:set', { order });
+                        setCtxMenu(null);
+                      }}
+                    >
+                      Destacar turno
+                    </button>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
     </PageFrame>

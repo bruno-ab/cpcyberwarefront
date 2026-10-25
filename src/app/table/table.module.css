@@ -326,6 +326,30 @@
   box-shadow: 0 0 0 2px var(--cp-cyan, #02d7f2);
 }
 
+.token[data-drone='1'] {
+  outline: 1px dashed var(--cp-cyan, #02d7f2);
+}
+
+.token[data-signal='weak'] {
+  outline-color: #ff9f1c;
+}
+
+.token[data-signal='lost'] {
+  outline-color: var(--cp-magenta, #ff2a6d);
+  opacity: 0.65;
+  filter: grayscale(0.4);
+}
+
+.tokenBat {
+  position: absolute;
+  left: 2px;
+  right: auto;
+  bottom: 3px;
+  height: 2px;
+  background: var(--cp-yellow, #fed33f);
+  pointer-events: none;
+}
+
 .layout[data-view='scan'] .device {
   outline: 1px solid var(--cp-yellow, #fed33f);
 }
