@@ -16,6 +16,24 @@
   align-items: start;
 }
 
+.portraitCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  align-items: stretch;
+}
+
+.hiddenFile {
+  display: none;
+}
+
+.uploadErr {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--cp-magenta, #ff2a6d);
+  font-family: var(--cp-font-mono, monospace);
+}
+
 .portraitFrame {
   width: 120px;
   height: 150px;

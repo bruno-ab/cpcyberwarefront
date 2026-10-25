@@ -19,6 +19,8 @@ export type CombatHotbarProps = {
   onDodge: () => void;
   onUseItem: () => void;
   onPassTurn: () => void;
+  /** When true, sits in bottom chrome instead of floating over the map. */
+  docked?: boolean;
 };
 
 export const CombatHotbar = ({
@@ -37,8 +39,13 @@ export const CombatHotbar = ({
   onDodge,
   onUseItem,
   onPassTurn,
+  docked,
 }: CombatHotbarProps) => (
-  <div className={styles.wrap} role="toolbar" aria-label="Ações de combate">
+  <div
+    className={docked ? `${styles.wrap} ${styles.wrapDocked}` : styles.wrap}
+    role="toolbar"
+    aria-label="Ações de combate"
+  >
     <div className={styles.status}>
       <span className={styles.label}>
         {combatActive ? `Combate · R${round}` : 'Fora de combate'}

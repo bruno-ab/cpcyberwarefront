@@ -155,7 +155,14 @@ const Sheet = () => {
         onVariantChange={setVariant}
       />
       <div className={styles.glitchHeader}>
-        <CHeader characterData={characterData} />
+        <CHeader
+          characterData={characterData}
+          onPortraitUpdated={(image) =>
+            setCharacterData((prev: any) =>
+              prev ? { ...prev, image } : prev,
+            )
+          }
+        />
       </div>
 
       <nav className={styles.tabs} aria-label="Seções da ficha">

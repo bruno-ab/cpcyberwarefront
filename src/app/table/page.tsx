@@ -45,6 +45,11 @@ import {
   type CampaignNpc,
 } from '../../lib/campaignsApi';
 import { CombatHotbar } from '../../components/vtt/CombatHotbar';
+import { InitiativeTimeline } from '../../components/vtt/InitiativeTimeline';
+import {
+  BoardNavToolbar,
+  type BoardNavTool,
+} from '../../components/vtt/BoardNavToolbar';
 import {
   ReactionBar,
   type ReactionId,
@@ -185,6 +190,7 @@ type VttState = {
     gridSize: number;
     name: string;
     backgroundUrl?: string | null;
+    backgroundScale?: number;
   };
   tokens: Token[];
   walls: Array<{
@@ -301,6 +307,7 @@ type CtxMenu = {
 
 const GRID = 36;
 const CHAT_MAX = 500;
+const INITIATIVE_TIMELINE_PREF = 'cp-vtt-initiative-timeline';
 const TOKEN_COLORS = [
   '#FCEE0A',
   '#02d7f2',
@@ -386,6 +393,17 @@ const TablePage = () => {
   const [replay, setReplay] = useState<any[]>([]);
   const [dragging, setDragging] = useState<string | null>(null);
   const [tool, setTool] = useState<ToolMode>('select');
+  const [boardNavTool, setBoardNavTool] = useState<BoardNavTool>('select');
+  const [initiativeTimelineVisible, setInitiativeTimelineVisible] =
+    useState(true);
+  const [netWireMode, setNetWireMode] = useState(false);
+  const [netLinkFrom, setNetLinkFrom] = useState<string | null>(null);
+  const [selectedNetLink, setSelectedNetLink] = useState<{
+    a: string;
+    b: string;
+  } | null>(null);
+  const spaceHeldRef = useRef(false);
+  const spacePanUsedRef = useRef(false);
   const [fogMode, setFogMode] = useState<FogMode>('reveal');
   const [fogRadius, setFogRadius] = useState(1);
   const [panning, setPanning] = useState(false);
@@ -447,6 +465,24 @@ const TablePage = () => {
   const lastFogCell = useRef<string | null>(null);
 
   const isGm = myRole === 'gm';
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const raw = localStorage.getItem(INITIATIVE_TIMELINE_PREF);
+    if (raw === '0') setInitiativeTimelineVisible(false);
+  }, []);
+
+  const toggleInitiativeTimeline = useCallback(() => {
+    setInitiativeTimelineVisible((v) => {
+      const next = !v;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(INITIATIVE_TIMELINE_PREF, next ? '1' : '0');
+      }
+      return next;
+    });
+  }, []);
+
+  const [spaceHeld, setSpaceHeld] = useState(false);
   const selectedChar = useMemo(
     () => roster.find((c) => c.id === selectedCharId) || null,
     [roster, selectedCharId],
@@ -1705,6 +1741,44 @@ const TablePage = () => {
     return 'none';
   }, [leftHudCollapsed, rightHudCollapsed]);
 
+  const tokenPortraitById = useMemo(() => {
+    const map: Record<string, string | null | undefined> = {};
+    for (const t of state?.tokens || []) {
+      map[t.id] = t.portraitUrl;
+    }
+    return map;
+  }, [state?.tokens]);
+
+  const bgScale = useMemo(() => {
+    const s = Number(state?.map?.backgroundScale);
+    if (!Number.isFinite(s) || s <= 0) return 1;
+    return Math.min(3, Math.max(0.25, s));
+  }, [state?.map?.backgroundScale]);
+
+  const netEditLinks =
+    isGm && viewMode === 'net' && gmTab === 'map' && netWireMode;
+
+  const onNetDevicePress = useCallback(
+    (deviceId: string) => {
+      if (netEditLinks) {
+        if (!netLinkFrom) {
+          setNetLinkFrom(deviceId);
+          setSelectedNetLink(null);
+          return;
+        }
+        if (netLinkFrom === deviceId) {
+          setNetLinkFrom(null);
+          return;
+        }
+        intent('device:link', { fromId: netLinkFrom, toId: deviceId });
+        setNetLinkFrom(null);
+        return;
+      }
+      openNetNode({ deviceId });
+    },
+    [netEditLinks, netLinkFrom, intent, openNetNode],
+  );
+
   const combatCurrent = state?.initiative?.[state?.turnIndex ?? 0];
   const combatMyTurn = useMemo(() => {
     if (!combatCurrent) return false;
@@ -1746,9 +1820,29 @@ const TablePage = () => {
         return;
       }
       if (e.key === ' ' || e.code === 'Space') {
+        if (e.type === 'keydown' && !e.repeat) {
+          e.preventDefault();
+          spaceHeldRef.current = true;
+          spacePanUsedRef.current = false;
+          setSpaceHeld(true);
+        }
+        return;
+      }
+      if (e.key === 'v' || e.key === 'V') {
+        setBoardNavTool('select');
+        return;
+      }
+      if (e.key === 'h' || e.key === 'H') {
+        setBoardNavTool('hand');
+        return;
+      }
+      if (selectedNetLink && (e.key === 'Delete' || e.key === 'Backspace')) {
         e.preventDefault();
-        if (isGm) intent('initiative:next', {});
-        else if (combatMyTurn) intent('initiative:delay', {});
+        intent('device:unlink', {
+          fromId: selectedNetLink.a,
+          toId: selectedNetLink.b,
+        });
+        setSelectedNetLink(null);
         return;
       }
       if (e.key === '1') {
@@ -1771,8 +1865,23 @@ const TablePage = () => {
         if (isGm || myTokenIds.length > 0) setSafeVision((v) => !v);
       }
     };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key !== ' ' && e.code !== 'Space') return;
+      e.preventDefault();
+      spaceHeldRef.current = false;
+      setSpaceHeld(false);
+      if (!spacePanUsedRef.current) {
+        if (isGm) intent('initiative:next', {});
+        else if (combatMyTurn) intent('initiative:delay', {});
+      }
+      spacePanUsedRef.current = false;
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKeyUp);
+    };
   }, [
     isGm,
     combatMyTurn,
@@ -1784,6 +1893,7 @@ const TablePage = () => {
     activateKiroshi,
     toggleBothHuds,
     spawnPlacement,
+    selectedNetLink,
   ]);
 
   const chromeBootCharacter = useMemo(() => {
@@ -2066,13 +2176,48 @@ const TablePage = () => {
         }}
       />
       {mapBgSrc && (
+        <>
+          <label className={styles.inlineLabel}>
+            Escala BG
+            <input
+              type="range"
+              min={0.25}
+              max={3}
+              step={0.05}
+              value={bgScale}
+              onChange={(e) =>
+                intent('map:background', {
+                  backgroundScale: Number(e.target.value),
+                })
+              }
+              aria-label="Escala do background"
+            />
+            <span className={styles.scaleHint}>{bgScale.toFixed(2)}×</span>
+          </label>
+          <HudButton
+            variant="ghost"
+            onClick={() => intent('map:background', { url: null })}
+          >
+            Limpar BG
+          </HudButton>
+        </>
+      )}
+      {viewMode === 'net' && (
         <HudButton
-          variant="ghost"
-          onClick={() => intent('map:background', { url: null })}
+          variant={netWireMode ? 'primary' : 'ghost'}
+          onClick={() => {
+            setNetWireMode((v) => !v);
+            setNetLinkFrom(null);
+            setSelectedNetLink(null);
+          }}
+          title="Modo cabeamento — clique em dois nós para ligar"
         >
-          Limpar BG
+          {netWireMode ? 'Cabear NET (ativo)' : 'Cabear NET'}
         </HudButton>
       )}
+      {netLinkFrom ? (
+        <span className={styles.wireHint}>Nó A · clique no nó B</span>
+      ) : null}
     </>
   );
 
@@ -2267,47 +2412,6 @@ const TablePage = () => {
             />
           )}
 
-            <CombatHotbar
-              combatActive={!!state?.combat?.active}
-              round={state?.combat?.round || 1}
-              currentTurnName={combatCurrent?.name}
-              myTurn={combatMyTurn}
-              isGm={isGm}
-              aimMode={aimMode}
-              aimReady={!!aimPreview?.canShoot}
-              aimSummary={aimPreview?.summary || null}
-              canNet={
-                isGm || (myTokenIds.length > 0 && hasNetDeck)
-              }
-              canShoot={
-                !!state?.combat?.active &&
-                (combatMyTurn || isGm) &&
-                (!!selectedTokenId || !!aimTarget)
-              }
-              onShoot={() => {
-                if (!aimMode) {
-                  setAimMode(true);
-                  setAimHoverId(null);
-                  playCyberSound('ui', { volume: 0.25 });
-                  return;
-                }
-                fireAttack();
-              }}
-              onQuickhack={() => setViewModeShortcut('net')}
-              onDodge={() =>
-                rollDice({
-                  attr: 'dexterity',
-                  skill: 'athletics',
-                  label: 'Reflexos + Esquiva',
-                })
-              }
-              onUseItem={() => {}}
-              onPassTurn={() => {
-                if (isGm) intent('initiative:next', {});
-                else if (combatMyTurn) intent('initiative:delay', {});
-              }}
-            />
-
             <GmToolBar
               isGm={isGm}
               gmTab={gmTab}
@@ -2370,6 +2474,7 @@ const TablePage = () => {
             className={styles.canvasWrap}
             onWheel={onWheel}
           >
+            <BoardNavToolbar tool={boardNavTool} onTool={setBoardNavTool} />
             <DiceGlitchOverlay
               active={diceOverlay.active}
               reveal={diceOverlay.reveal}
@@ -2388,6 +2493,8 @@ const TablePage = () => {
               ref={stageRef}
               className={styles.mapStage}
               data-spawn-place={spawnPlacement ? '1' : '0'}
+              data-nav-tool={boardNavTool}
+              data-space-pan={spaceHeld ? '1' : '0'}
               style={{
                 width: boardViewW,
                 height: boardViewH,
@@ -2433,7 +2540,13 @@ const TablePage = () => {
                   setRuler({ x1: c.x, y1: c.y, x2: c.x, y2: c.y });
                   return;
                 }
-                if (tool === 'pan' || e.button === 1) {
+                if (
+                  tool === 'pan' ||
+                  boardNavTool === 'hand' ||
+                  spaceHeldRef.current ||
+                  e.button === 1
+                ) {
+                  if (spaceHeldRef.current) spacePanUsedRef.current = true;
                   setPanning(true);
                   panStart.current = {
                     x: e.clientX,
@@ -2521,6 +2634,10 @@ const TablePage = () => {
                     src={mapBgSrc}
                     alt=""
                     className={styles.mapBackground}
+                    style={{
+                      transform: `scale(${bgScale})`,
+                      transformOrigin: '0 0',
+                    }}
                     draggable={false}
                   />
                 )}
@@ -2628,19 +2745,46 @@ const TablePage = () => {
                 {viewMode === 'net' && (
                   <svg
                     className={styles.netLinkLayer}
+                    data-edit={netEditLinks ? '1' : '0'}
                     width={stageW}
                     height={stageH}
                   >
-                    {netLinks.map(({ a, b }) => (
-                      <line
-                        key={`${a.id}-${b.id}`}
-                        x1={a.x * GRID + GRID / 2}
-                        y1={a.y * GRID + GRID / 2}
-                        x2={b.x * GRID + GRID / 2}
-                        y2={b.y * GRID + GRID / 2}
-                        className={styles.netLinkLine}
-                      />
-                    ))}
+                    {netLinks.map(({ a, b }) => {
+                      const linkKey =
+                        a.id < b.id ? `${a.id}|${b.id}` : `${b.id}|${a.id}`;
+                      const selected =
+                        selectedNetLink &&
+                        ((selectedNetLink.a === a.id &&
+                          selectedNetLink.b === b.id) ||
+                          (selectedNetLink.a === b.id &&
+                            selectedNetLink.b === a.id));
+                      return (
+                        <line
+                          key={linkKey}
+                          x1={a.x * GRID + GRID / 2}
+                          y1={a.y * GRID + GRID / 2}
+                          x2={b.x * GRID + GRID / 2}
+                          y2={b.y * GRID + GRID / 2}
+                          className={styles.netLinkLine}
+                          data-selected={selected ? '1' : '0'}
+                          onClick={(e) => {
+                            if (!netEditLinks) return;
+                            e.stopPropagation();
+                            setSelectedNetLink({ a: a.id, b: b.id });
+                          }}
+                          onContextMenu={(e) => {
+                            if (!netEditLinks) return;
+                            e.preventDefault();
+                            e.stopPropagation();
+                            intent('device:unlink', {
+                              fromId: a.id,
+                              toId: b.id,
+                            });
+                            setSelectedNetLink(null);
+                          }}
+                        />
+                      );
+                    })}
                   </svg>
                 )}
                 <div className={styles.deviceLayer} data-view={viewMode}>
@@ -2697,7 +2841,7 @@ const TablePage = () => {
                           {...shared}
                           onClick={(e) => {
                             e.stopPropagation();
-                            openNetNode({ deviceId: d.id });
+                            onNetDevicePress(d.id);
                           }}
                         >
                           {body}
@@ -2804,7 +2948,13 @@ const TablePage = () => {
                             openNetNode({ targetTokenId: t.id });
                             return;
                           }
-                          if (!mine || tool !== 'select') return;
+                          if (
+                            !mine ||
+                            boardNavTool !== 'select' ||
+                            tool !== 'select'
+                          ) {
+                            return;
+                          }
                           setDragging(t.id);
                         }}
                         onContextMenu={(e) => {
@@ -2914,6 +3064,59 @@ const TablePage = () => {
                 ? ` · MIRA${aimPreview ? ` · ${aimPreview.summary}` : ''}`
                 : ''}
             </div>
+          </div>
+          <div className={styles.bottomChrome}>
+            <InitiativeTimeline
+              visible={initiativeTimelineVisible}
+              combatActive={!!state?.combat?.active}
+              round={state?.combat?.round || 1}
+              turnIndex={state?.turnIndex || 0}
+              initiative={state?.initiative || []}
+              tokenPortraitById={tokenPortraitById}
+              myTokenIds={myTokenIds}
+              isGm={isGm}
+              onToggleVisible={toggleInitiativeTimeline}
+              onNext={() => intent('initiative:next', {})}
+            />
+            <CombatHotbar
+              docked
+              combatActive={!!state?.combat?.active}
+              round={state?.combat?.round || 1}
+              currentTurnName={combatCurrent?.name}
+              myTurn={combatMyTurn}
+              isGm={isGm}
+              aimMode={aimMode}
+              aimReady={!!aimPreview?.canShoot}
+              aimSummary={aimPreview?.summary || null}
+              canNet={isGm || (myTokenIds.length > 0 && hasNetDeck)}
+              canShoot={
+                !!state?.combat?.active &&
+                (combatMyTurn || isGm) &&
+                (!!selectedTokenId || !!aimTarget)
+              }
+              onShoot={() => {
+                if (!aimMode) {
+                  setAimMode(true);
+                  setAimHoverId(null);
+                  playCyberSound('ui', { volume: 0.25 });
+                  return;
+                }
+                fireAttack();
+              }}
+              onQuickhack={() => setViewModeShortcut('net')}
+              onDodge={() =>
+                rollDice({
+                  attr: 'dexterity',
+                  skill: 'athletics',
+                  label: 'Reflexos + Esquiva',
+                })
+              }
+              onUseItem={() => {}}
+              onPassTurn={() => {
+                if (isGm) intent('initiative:next', {});
+                else if (combatMyTurn) intent('initiative:delay', {});
+              }}
+            />
           </div>
           </div>
         </div>

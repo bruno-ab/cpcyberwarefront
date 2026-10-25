@@ -178,6 +178,14 @@
   font-size: 0.78rem;
 }
 
+.bottomChrome {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  z-index: 24;
+}
+
 .canvasWrap {
   position: relative;
   flex: 1;
@@ -197,11 +205,21 @@
   position: relative;
   overflow: hidden;
   touch-action: none;
-  cursor: crosshair;
+  cursor: default;
   background: #050608;
   max-width: 100%;
   width: 100%;
   height: 100%;
+}
+
+.mapStage[data-nav-tool='hand'],
+.mapStage[data-space-pan='1'] {
+  cursor: grab;
+}
+
+.mapStage[data-nav-tool='hand']:active,
+.mapStage[data-space-pan='1']:active {
+  cursor: grabbing;
 }
 
 .mapStage[data-spawn-place='1'] {
@@ -455,11 +473,23 @@
   overflow: visible;
 }
 
+.netLinkLayer[data-edit='1'] {
+  pointer-events: auto;
+}
+
 .netLinkLine {
   stroke: var(--cp-cyan, #02d7f2);
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
   opacity: 0.85;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.netLinkLine[data-selected='1'] {
+  stroke: var(--cp-yellow, #fed33f);
+  stroke-width: 3;
+  opacity: 1;
 }
 
 .netTag {
@@ -666,6 +696,23 @@
   padding: 0.2rem 0.25rem;
   font-family: var(--cp-font-mono, monospace);
   font-size: 0.75rem;
+}
+
+.inlineLabel input[type='range'] {
+  width: min(7rem, 28vw);
+}
+
+.scaleHint,
+.wireHint {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  color: var(--cp-cyan, #02d7f2);
+  text-transform: none;
+}
+
+.wireHint {
+  color: var(--cp-yellow, #fed33f);
 }
 
 .hiddenInput {
