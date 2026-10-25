@@ -33,6 +33,34 @@
   background: color-mix(in srgb, #fed33f 18%, transparent);
 }
 
+.overlay[data-verdict='success'] {
+  --dice-accent: var(--cp-ok, #2bfea0);
+}
+
+.overlay[data-verdict='failure'] {
+  --dice-accent: var(--cp-alert, #ff2a6d);
+}
+
+.overlay[data-verdict='botch'] {
+  --dice-accent: var(--cp-alert, #ff2a6d);
+}
+
+.overlay[data-verdict='exceptional'] {
+  --dice-accent: var(--cp-cyan, #02d7f2);
+}
+
+.overlay[data-verdict='failure'][data-phase='verdict'],
+.overlay[data-verdict='failure'][data-phase='cancel'],
+.overlay[data-verdict='failure'][data-phase='fadeout'] {
+  background: color-mix(in srgb, var(--cp-alert, #ff2a6d) 14%, transparent);
+}
+
+.overlay[data-verdict='success'][data-phase='verdict'],
+.overlay[data-verdict='success'][data-phase='cancel'],
+.overlay[data-verdict='success'][data-phase='fadeout'] {
+  background: color-mix(in srgb, var(--cp-ok, #2bfea0) 12%, transparent);
+}
+
 .panel {
   position: relative;
   overflow: hidden;
@@ -77,6 +105,81 @@
 .overlay[data-phase='fadeout'] .panel {
   opacity: 0;
   transform: translateY(6px) scale(0.98);
+}
+
+.panel[data-verdict='success'] {
+  border-color: var(--cp-ok, #2bfea0);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--cp-ok, #2bfea0) 32%, transparent);
+}
+
+.panel[data-verdict='failure'] {
+  border-color: var(--cp-alert, #ff2a6d);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--cp-alert, #ff2a6d) 28%, transparent);
+}
+
+.panel[data-verdict='botch'] {
+  border-color: var(--cp-alert, #ff2a6d);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--cp-alert, #ff2a6d) 45%, transparent);
+  animation: botchBorderPulse 1.35s ease-in-out infinite;
+}
+
+.panel[data-verdict='botch']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.55;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 1px,
+    rgba(255, 42, 109, 0.12) 2px,
+    rgba(0, 0, 0, 0.35) 3px
+  );
+  mix-blend-mode: multiply;
+  animation: botchGlitch 0.28s steps(3, end) infinite;
+}
+
+.panel[data-verdict='exceptional'] {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(6, 10, 16, 0.92), rgba(6, 10, 16, 0.92)) padding-box,
+    linear-gradient(
+      125deg,
+      var(--cp-cyan, #02d7f2),
+      var(--cp-yellow, #fed33f),
+      var(--cp-cyan, #02d7f2)
+    )
+      border-box;
+  box-shadow:
+    0 0 20px color-mix(in srgb, var(--cp-cyan, #02d7f2) 35%, transparent),
+    0 0 14px color-mix(in srgb, var(--cp-yellow, #fed33f) 30%, transparent);
+}
+
+.panel[data-verdict='exceptional']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.5;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--cp-cyan, #02d7f2) 22%, transparent) 42%,
+    color-mix(in srgb, var(--cp-yellow, #fed33f) 18%, transparent) 58%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+  animation: exceptionalShimmer 1.6s ease-in-out infinite;
+}
+
+.panel[data-verdict='success'] .eyebrow,
+.panel[data-verdict='failure'] .eyebrow,
+.panel[data-verdict='botch'] .eyebrow,
+.panel[data-verdict='exceptional'] .eyebrow {
+  color: var(--dice-accent);
 }
 
 .close {
@@ -272,11 +375,13 @@
 }
 
 .verdictBlock[data-verdict='failure'] .verdictTitle {
-  color: #8a9aa8;
+  color: var(--cp-alert-soft, #ff6aad);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--cp-alert, #ff2a6d) 40%, transparent);
 }
 
 .verdictBlock[data-verdict='success'] .verdictTitle {
-  color: var(--dice-accent, #02d7f2);
+  color: var(--cp-ok, #2bfea0);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--cp-ok, #2bfea0) 45%, transparent);
 }
 
 .verdictDetail {
@@ -382,18 +487,95 @@
   }
 }
 
+@keyframes botchBorderPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 18px color-mix(in srgb, var(--cp-alert, #ff2a6d) 35%, transparent);
+    filter: none;
+  }
+  50% {
+    box-shadow: 0 0 32px color-mix(in srgb, var(--cp-alert, #ff2a6d) 65%, transparent);
+    filter: brightness(1.15) contrast(1.08);
+  }
+}
+
+@keyframes botchGlitch {
+  0% {
+    transform: translate(0, 0);
+    clip-path: inset(0 0 0 0);
+  }
+  33% {
+    transform: translate(-2px, 1px);
+    clip-path: inset(8% 0 62% 0);
+  }
+  66% {
+    transform: translate(2px, -1px);
+    clip-path: inset(48% 0 18% 0);
+  }
+  100% {
+    transform: translate(0, 0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes exceptionalShimmer {
+  0%,
+  100% {
+    transform: translateY(6px);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 0.65;
+  }
+}
+
+.overlay[data-verdict='botch'][data-phase='verdict'],
+.overlay[data-verdict='botch'][data-phase='cancel'] {
+  animation: botchOverlayJitter 0.32s steps(2, end) 3;
+}
+
+@keyframes botchOverlayJitter {
+  25% {
+    transform: translateX(-1px);
+    filter: hue-rotate(-8deg) saturate(1.2);
+  }
+  75% {
+    transform: translateX(1px);
+    filter: hue-rotate(6deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay[data-phase='scramble'],
   .overlay[data-phase='scramble'] .panel::after,
   .die[data-locked='0'],
-  .die[data-cancel='1'] {
+  .die[data-cancel='1'],
+  .panel[data-verdict='botch'],
+  .panel[data-verdict='botch']::after,
+  .panel[data-verdict='exceptional']::after,
+  .overlay[data-verdict='botch'][data-phase='verdict'],
+  .overlay[data-verdict='botch'][data-phase='cancel'] {
     animation: none;
+  }
+
+  .panel[data-verdict='botch'] {
+    box-shadow: 0 0 22px color-mix(in srgb, var(--cp-alert, #ff2a6d) 40%, transparent);
   }
 }
 
 :global(html[data-motion='off']) .overlay[data-phase='scramble'],
 :global(html[data-motion='off']) .overlay[data-phase='scramble'] .panel::after,
 :global(html[data-motion='off']) .die[data-locked='0'],
-:global(html[data-motion='off']) .die[data-cancel='1'] {
+:global(html[data-motion='off']) .die[data-cancel='1'],
+:global(html[data-motion='off']) .panel[data-verdict='botch'],
+:global(html[data-motion='off']) .panel[data-verdict='botch']::after,
+:global(html[data-motion='off']) .panel[data-verdict='exceptional']::after,
+:global(html[data-motion='off']) .overlay[data-verdict='botch'][data-phase='verdict'],
+:global(html[data-motion='off']) .overlay[data-verdict='botch'][data-phase='cancel'] {
   animation: none;
+}
+
+:global(html[data-motion='off']) .panel[data-verdict='botch'] {
+  box-shadow: 0 0 22px color-mix(in srgb, var(--cp-alert, #ff2a6d) 40%, transparent);
 }

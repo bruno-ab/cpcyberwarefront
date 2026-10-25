@@ -18,6 +18,7 @@ import {
   rawSuccessCount,
   readDiceFastMode,
   REDUCED_HOLD_MS,
+  computeVerdict,
   resolveRoleAccent,
   scrambleFace,
   writeDiceFastMode,
@@ -96,15 +97,7 @@ export const DiceDecodeOverlay = ({
   );
 
   const verdict = useMemo(
-    () =>
-      reveal
-        ? ((): DiceVerdict => {
-            if (reveal.botch) return 'botch';
-            if (reveal.successes >= 5) return 'exceptional';
-            if (reveal.successes <= 0) return 'failure';
-            return 'success';
-          })()
-        : null,
+    () => (reveal ? computeVerdict(reveal) : null),
     [reveal],
   );
 
@@ -251,7 +244,10 @@ export const DiceDecodeOverlay = ({
       role="status"
       aria-live="polite"
     >
-      <div className={styles.panel}>
+      <div
+        className={styles.panel}
+        data-verdict={showingResult && verdict ? verdict : undefined}
+      >
         <button
           type="button"
           className={styles.close}
