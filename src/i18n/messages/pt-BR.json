@@ -248,6 +248,40 @@
         "med": "MÉDIA",
         "high": "ALTA"
       }
+    },
+    "tokenEmote": {
+      "groupLabel": "Emote no token",
+      "ctxHeading": "Emote no token",
+      "ok": {
+        "label": "OK / sorriso",
+        "short": "OK",
+        "hint": "Sinal positivo no mapa"
+      },
+      "alerta": {
+        "label": "Alerta",
+        "short": "Alerta",
+        "hint": "Perigo ou atenção"
+      },
+      "cobertura": {
+        "label": "Preciso de cobertura",
+        "short": "Cobertura",
+        "hint": "Pedir cobertura no combate"
+      },
+      "espera": {
+        "label": "Espera",
+        "short": "Espera",
+        "hint": "Segura — não avança"
+      },
+      "ferido": {
+        "label": "Ferido",
+        "short": "Ferido",
+        "hint": "Preciso de cura ou extração"
+      },
+      "pronto": {
+        "label": "Pronto",
+        "short": "Pronto",
+        "hint": "Posição tomada — pode seguir"
+      }
     }
   }
 }

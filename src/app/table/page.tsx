@@ -34,6 +34,18 @@ import {
   EmoteToasts,
   type EmoteToast,
 } from '../../components/vtt/EmoteToasts';
+import {
+  TokenEmoteBubbles,
+  type TokenEmoteBubble,
+} from '../../components/vtt/TokenEmoteBubbles';
+import {
+  TokenEmotePicker,
+  TOKEN_EMOTE_COOLDOWN_MS,
+} from '../../components/vtt/TokenEmotePicker';
+import {
+  TOKEN_EMOTE_GLYPH,
+  type TokenEmoteId,
+} from '../../lib/vttTokenEmotes';
 import { GmNotesPanel } from '../../components/vtt/GmNotesPanel';
 import {
   QuickhackMenu,
@@ -309,6 +321,7 @@ const parseJwt = (token: string) => {
 const TablePage = () => {
   const { campaignId, campaign } = useCampaign();
   const { t: tAr } = useTranslations('vtt.ar');
+  const { t: tTokenEmote } = useTranslations('vtt.tokenEmote');
 
   const [scenes, setScenes] = useState<VttSceneSummary[]>([]);
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
@@ -376,6 +389,10 @@ const TablePage = () => {
   } | null>(null);
   const [lastAttack, setLastAttack] = useState<any>(null);
   const [emoteToasts, setEmoteToasts] = useState<EmoteToast[]>([]);
+  const [tokenEmoteBubbles, setTokenEmoteBubbles] = useState<
+    TokenEmoteBubble[]
+  >([]);
+  const [tokenEmoteCooldownUntil, setTokenEmoteCooldownUntil] = useState(0);
   const [presenceMood, setPresenceMood] = useState<
     Record<number, string>
   >({});
@@ -420,6 +437,41 @@ const TablePage = () => {
       });
     },
     [sessionId, state?.version],
+  );
+
+  const pushTokenEmoteBubble = useCallback((bubble: TokenEmoteBubble) => {
+    setTokenEmoteBubbles((prev) => [...prev.slice(-12), bubble]);
+    window.setTimeout(() => {
+      setTokenEmoteBubbles((prev) => prev.filter((b) => b.id !== bubble.id));
+    }, 2800);
+  }, []);
+
+  const fireTokenEmote = useCallback(
+    (tokenId: string, emote: TokenEmoteId) => {
+      if (Date.now() < tokenEmoteCooldownUntil) return;
+      intent('token:emote', { tokenId, emote });
+      setTokenEmoteCooldownUntil(Date.now() + TOKEN_EMOTE_COOLDOWN_MS);
+      playCyberSound('ui', { volume: 0.28 });
+      const tok = state?.tokens?.find((t) => t.id === tokenId);
+      if (tok) {
+        pushTokenEmoteBubble({
+          id: `te_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          tokenId,
+          glyph: TOKEN_EMOTE_GLYPH[emote],
+          label: tTokenEmote(`${emote}.short`),
+          x: tok.x,
+          y: tok.y,
+          floor: tok.floor ?? 0,
+        });
+      }
+    },
+    [
+      intent,
+      pushTokenEmoteBubble,
+      state?.tokens,
+      tTokenEmote,
+      tokenEmoteCooldownUntil,
+    ],
   );
 
   const applySceneList = useCallback(
@@ -864,6 +916,37 @@ const TablePage = () => {
       },
     );
     socket.on(
+      'vtt:token-emote',
+      (payload: {
+        tokenId?: string;
+        emote?: string;
+        label?: string;
+        glyph?: string;
+        x?: number;
+        y?: number;
+        floor?: number;
+        playerId?: number;
+      }) => {
+        if (!payload.tokenId) return;
+        if (
+          payload.playerId != null &&
+          Number(payload.playerId) === Number(playerId)
+        ) {
+          return;
+        }
+        playCyberSound('ui', { volume: 0.2 });
+        pushTokenEmoteBubble({
+          id: `te_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          tokenId: payload.tokenId,
+          glyph: payload.glyph || '·',
+          label: payload.label || payload.emote || '…',
+          x: Number(payload.x) || 0,
+          y: Number(payload.y) || 0,
+          floor: Number(payload.floor) || 0,
+        });
+      },
+    );
+    socket.on(
       'vtt:emote',
       (payload: {
         playerId?: number;
@@ -895,7 +978,7 @@ const TablePage = () => {
     return () => {
       socket.disconnect();
     };
-  }, [sessionId, campaignId, sceneId, loadScenes]);
+  }, [sessionId, campaignId, sceneId, loadScenes, pushTokenEmoteBubble]);
 
   useEffect(() => {
     setSceneNotesDraft(state?.sceneGmNotes || '');
@@ -1037,6 +1120,9 @@ const TablePage = () => {
       Number(t.controllerPlayerId) === Number(myPlayerId)
     );
   };
+
+  const canEmitTokenEmoteOn = (t: Token) =>
+    isGm || Number(t.ownerPlayerId) === Number(myPlayerId);
 
   const fogActive =
     (state?.fog?.length || 0) > 0 && layerVisible('fog');
@@ -1895,6 +1981,12 @@ const TablePage = () => {
                   </HudButton>
                 </>
               )}
+              {canEmitTokenEmoteOn(selectedToken) && (
+                <TokenEmotePicker
+                  cooldownUntil={tokenEmoteCooldownUntil}
+                  onEmote={(id) => fireTokenEmote(selectedToken.id, id)}
+                />
+              )}
             </div>
           )}
 
@@ -2204,6 +2296,11 @@ const TablePage = () => {
                     display: layerVisible('tokens') ? undefined : 'none',
                   }}
                 >
+                  <TokenEmoteBubbles
+                    items={tokenEmoteBubbles}
+                    grid={GRID}
+                    floor={currentFloor}
+                  />
                   {(viewMode === 'net'
                     ? floorTokens.filter(
                         (t) =>
@@ -2787,8 +2884,35 @@ const TablePage = () => {
               isGm ||
               Number(t?.ownerPlayerId) === Number(myPlayerId) ||
               Number(t?.controllerPlayerId) === Number(myPlayerId);
+            const canEmote = t && canEmitTokenEmoteOn(t);
             return (
               <>
+                {canEmote && (
+                  <>
+                    <span className={styles.ctxHeading}>
+                      {tTokenEmote('ctxHeading')}
+                    </span>
+                    {(
+                      [
+                        'ok',
+                        'alerta',
+                        'cobertura',
+                        'espera',
+                      ] as TokenEmoteId[]
+                    ).map((emoteId) => (
+                      <button
+                        key={emoteId}
+                        type="button"
+                        onClick={() => {
+                          fireTokenEmote(ctxMenu.tokenId, emoteId);
+                          setCtxMenu(null);
+                        }}
+                      >
+                        {TOKEN_EMOTE_GLYPH[emoteId]} {tTokenEmote(`${emoteId}.short`)}
+                      </button>
+                    ))}
+                  </>
+                )}
                 {isDrone && canPilot && (
                   <>
                     <button

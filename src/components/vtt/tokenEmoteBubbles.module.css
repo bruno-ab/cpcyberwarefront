@@ -1,0 +1,63 @@
+.bubble {
+  position: absolute;
+  z-index: 12;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.2rem 0.45rem 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 55%, transparent);
+  background: rgba(6, 10, 18, 0.92);
+  box-shadow: 0 0 12px rgba(2, 215, 242, 0.15);
+  animation: tokenEmoteFloat 2.6s ease-out forwards;
+}
+
+.glyph {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.label {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.52rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cp-yellow, #fed33f);
+  max-width: 5.5rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes tokenEmoteFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -70%);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -165%);
+  }
+}
+
+:global(html[data-motion='off']) .bubble {
+  animation: tokenEmoteFade 1.8s ease-out forwards;
+}
+
+@keyframes tokenEmoteFade {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

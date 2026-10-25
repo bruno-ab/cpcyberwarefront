@@ -582,6 +582,16 @@
   padding: 0.2rem;
 }
 
+.ctxHeading {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-yellow, #fed33f);
+  padding: 0.35rem 0.55rem 0.15rem;
+  pointer-events: none;
+}
+
 .ctxMenu button {
   appearance: none;
   background: transparent;

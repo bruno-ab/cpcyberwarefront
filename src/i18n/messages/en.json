@@ -248,6 +248,40 @@
         "med": "MED",
         "high": "HIGH"
       }
+    },
+    "tokenEmote": {
+      "groupLabel": "Token emote",
+      "ctxHeading": "Token emote",
+      "ok": {
+        "label": "OK / smile",
+        "short": "OK",
+        "hint": "Positive ping on the map"
+      },
+      "alerta": {
+        "label": "Alert",
+        "short": "Alert",
+        "hint": "Danger or heads-up"
+      },
+      "cobertura": {
+        "label": "Need cover",
+        "short": "Cover",
+        "hint": "Request cover in a fight"
+      },
+      "espera": {
+        "label": "Wait",
+        "short": "Wait",
+        "hint": "Hold — do not push"
+      },
+      "ferido": {
+        "label": "Hurt",
+        "short": "Hurt",
+        "hint": "Need meds or extraction"
+      },
+      "pronto": {
+        "label": "Ready",
+        "short": "Ready",
+        "hint": "In position — go"
+      }
     }
   }
 }
