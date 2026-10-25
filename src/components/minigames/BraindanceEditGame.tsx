@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import shell from './MinigameShell.module.css';
 import styles from './BraindanceEditGame.module.css';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 
 type Status = 'menu' | 'playing' | 'won' | 'lost';
 type Clip = { id: string; label: string; tag: 'hook' | 'fact' | 'fluff' | 'spin' };
@@ -20,6 +22,7 @@ const POOL: Clip[] = [
 
 /** Media: edite um braindance para a manchete certa. */
 export const BraindanceEditGame = () => {
+  const { campaignId, refresh } = useCampaign();
   const [status, setStatus] = useState<Status>('menu');
   const [deck, setDeck] = useState<Clip[]>([]);
   const [cut, setCut] = useState<Clip[]>([]);
@@ -44,16 +47,23 @@ export const BraindanceEditGame = () => {
     return Math.min(100, s);
   }, [cut]);
 
-  const publish = () => {
+  const publish = async () => {
     if (cut.length < 3) return;
-    setHeadline(
+    const hl =
       score >= 70
-        ? 'MANCHETE: “Noite sangrenta — quem cobriu os rastros?”'
+        ? 'Noite sangrenta — quem cobriu os rastros?'
         : score >= 45
-          ? 'MANCHETE: “Caos em Watson; versões conflitam”'
-          : 'MANCHETE: “Mais um vídeo viral sem contexto”',
-    );
-    setStatus(score >= 60 ? 'won' : 'lost');
+          ? 'Caos em Watson; versões conflitam'
+          : 'Mais um vídeo viral sem contexto';
+    setHeadline(`MANCHETE: “${hl}”`);
+    const outcome = score >= 60 ? 'won' : 'lost';
+    setStatus(outcome);
+    await reportMinigameResult(campaignId, 'braindance', outcome, {
+      score,
+      headline: hl,
+      body: `Edição Media montada com ${cut.length} clips. Impacto ${score}%.`,
+    });
+    await refresh();
   };
 
   const add = (clip: Clip) => {

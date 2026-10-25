@@ -1,0 +1,47 @@
+.strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--cp-yellow) 45%, transparent);
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--cp-text-dim);
+  text-decoration: none;
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  max-width: 100%;
+}
+
+.strip:hover {
+  border-color: var(--cp-yellow);
+  color: var(--cp-yellow);
+  box-shadow: var(--cp-glow-yellow);
+}
+
+.stars {
+  color: var(--cp-yellow);
+  letter-spacing: 0.08em;
+  text-shadow: var(--cp-glow-yellow);
+  white-space: nowrap;
+}
+
+.meta {
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cta {
+  color: var(--cp-cyan);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .meta {
+    display: none;
+  }
+}

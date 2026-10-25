@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import shell from './MinigameShell.module.css';
 import styles from './RockerboyShowGame.module.css';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 
 type Status = 'menu' | 'playing' | 'won' | 'lost';
 type Note = { id: number; lane: number; y: number };
@@ -12,6 +14,7 @@ const KEYS = ['d', 'f', 'j', 'k'];
 
 /** Rockerboy: show ao vivo — ritmo em 4 pistas. */
 export const RockerboyShowGame = () => {
+  const { campaignId, refresh } = useCampaign();
   const [status, setStatus] = useState<Status>('menu');
   const [notes, setNotes] = useState<Note[]>([]);
   const [crowd, setCrowd] = useState(20);
@@ -20,6 +23,7 @@ export const RockerboyShowGame = () => {
   const [remaining, setRemaining] = useState(30);
   const seq = useRef(0);
   const hitZone = 82;
+  const reported = useRef(false);
 
   const start = () => {
     setNotes([]);
@@ -27,8 +31,18 @@ export const RockerboyShowGame = () => {
     setFame(0);
     setCombo(0);
     setRemaining(30);
+    reported.current = false;
     setStatus('playing');
   };
+
+  useEffect(() => {
+    if ((status !== 'won' && status !== 'lost') || reported.current) return;
+    reported.current = true;
+    reportMinigameResult(campaignId, 'rocker', status, {
+      fame,
+      crowd,
+    }).then(() => refresh());
+  }, [status, fame, crowd, campaignId, refresh]);
 
   useEffect(() => {
     if (status !== 'playing') return;

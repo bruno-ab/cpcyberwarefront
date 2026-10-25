@@ -12,6 +12,7 @@ import {
   DEFAULT_HEAT,
   wantedLabel,
 } from '../../lib/heat';
+import { useCampaign } from '../../lib/campaign';
 import styles from './news.module.css';
 
 type NewsItem = {
@@ -27,7 +28,7 @@ type NewsItem = {
 };
 
 const NewsPage = () => {
-  const campaignId = 1;
+  const { campaignId, refresh: refreshCampaign } = useCampaign();
   const [heat, setHeat] = useState<CampaignHeat>(DEFAULT_HEAT);
   const [effects, setEffects] = useState<HeatEffects | null>(null);
   const [feed, setFeed] = useState<NewsItem[]>([]);
@@ -49,7 +50,8 @@ const NewsPage = () => {
     if (h?.heat) setHeat(h.heat);
     if (h?.effects) setEffects(h.effects);
     setFeed(Array.isArray(n) ? n : []);
-  }, []);
+    await refreshCampaign();
+  }, [campaignId, refreshCampaign]);
 
   useEffect(() => {
     reload();

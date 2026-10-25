@@ -5,6 +5,7 @@ import { ReactNode } from 'react';
 import { useTranslations } from '../../i18n/useTranslations';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { MotionToggle } from './MotionToggle';
+import { HeatStrip } from './HeatStrip';
 import styles from './AppShell.module.css';
 
 const NAV = [
@@ -52,6 +53,7 @@ export const AppNav = () => {
         ))}
       </nav>
       <div className={styles.controls}>
+        <HeatStrip />
         <ThemeSwitcher />
         <MotionToggle />
         <div className={styles.locale}>

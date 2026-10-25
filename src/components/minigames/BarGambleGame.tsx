@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import shell from './MinigameShell.module.css';
 import styles from './BarGambleGame.module.css';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 
 type Status = 'menu' | 'playing' | 'round' | 'done';
 type Choice = 'high' | 'low' | 'bluff';
@@ -11,6 +13,7 @@ const roll = () => 1 + Math.floor(Math.random() * 6);
 
 /** Jogo rápido de bar: dados + blefe por eddies. */
 export const BarGambleGame = () => {
+  const { campaignId, refresh } = useCampaign();
   const [status, setStatus] = useState<Status>('menu');
   const [eddies, setEddies] = useState(100);
   const [bet, setBet] = useState(10);
@@ -18,14 +21,30 @@ export const BarGambleGame = () => {
   const [npc, setNpc] = useState(0);
   const [msg, setMsg] = useState('');
   const [rounds, setRounds] = useState(0);
+  const startBank = useRef(100);
+  const reported = useRef(false);
 
   const start = () => {
     setEddies(100);
+    startBank.current = 100;
+    reported.current = false;
     setBet(10);
     setRounds(0);
     setMsg('Aposte eddies. High / Low vs NPC, ou Blefe.');
     setStatus('playing');
   };
+
+  useEffect(() => {
+    if (status !== 'done' || reported.current) return;
+    reported.current = true;
+    const eddieDelta = eddies - startBank.current;
+    reportMinigameResult(
+      campaignId,
+      'bar',
+      eddieDelta >= 0 ? 'won' : 'lost',
+      { eddieDelta },
+    ).then(() => refresh());
+  }, [status, eddies, campaignId, refresh]);
 
   const play = (choice: Choice) => {
     if (status !== 'playing' || bet > eddies || bet < 1) return;

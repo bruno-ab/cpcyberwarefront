@@ -7,6 +7,7 @@ import '../styles/bg-glitch.css';
 import '../styles/motion.css';
 import './globals.css';
 import { BgGlitch } from '../components/layout/BgGlitch';
+import { Providers } from '../components/layout/Providers';
 
 const rajdhani = Rajdhani({
   subsets: ['latin'],
@@ -44,7 +45,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
         }}
       />
       <BgGlitch />
-      {children}
+      <Providers>{children}</Providers>
       <script
         dangerouslySetInnerHTML={{
           __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}))}`,

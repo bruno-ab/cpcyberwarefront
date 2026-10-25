@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import {
@@ -23,6 +23,8 @@ import { BraindanceEditGame } from '../../components/minigames/BraindanceEditGam
 import { PasswordMastermindGame } from '../../components/minigames/PasswordMastermindGame';
 import { CyberdeckMemoryGame } from '../../components/minigames/CyberdeckMemoryGame';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 import styles from './breach.module.css';
 
 type Challenge = {
@@ -109,6 +111,7 @@ const GROUPS: Array<{
 ];
 
 const BreachPage = () => {
+  const { campaignId, refresh } = useCampaign();
   const [group, setGroup] = useState<GroupId>('netrun');
   const [mode, setMode] = useState<Mode>('protocol');
   const [difficulties, setDifficulties] = useState<Difficulties>({});
@@ -118,6 +121,7 @@ const BreachPage = () => {
   const [state, setState] = useState<BreachState | null>(null);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const reportedBreach = useRef<string | null>(null);
 
   const activeGroup = GROUPS.find((g) => g.id === group) || GROUPS[0];
 
@@ -134,6 +138,21 @@ const BreachPage = () => {
         setMsg('Não foi possível carregar os desafios. API offline?');
       });
   }, []);
+
+  useEffect(() => {
+    if (!state || state.status === 'active') return;
+    const key = `${state.id}:${state.status}`;
+    if (reportedBreach.current === key) return;
+    reportedBreach.current = key;
+    const outcome =
+      state.status === 'success' || state.status === 'partial' ? 'won' : 'lost';
+    reportMinigameResult(campaignId, 'breach', outcome, {
+      difficulty: state.difficulty,
+      challengeName: state.challengeName,
+      rewardHint: state.rewardHint,
+      status: state.status,
+    }).then(() => refresh());
+  }, [state, campaignId, refresh]);
 
   const tabs = useMemo(() => {
     const keys = Object.keys(difficulties);

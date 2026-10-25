@@ -1,11 +1,12 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import { HudButton } from '../../components/ui/HudButton';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { useCampaign } from '../../lib/campaign';
 import styles from './adventure.module.css';
 
 type Act = {
@@ -34,19 +35,20 @@ type Recap = {
 };
 
 const AdventurePage = () => {
+  const { campaignId, refresh } = useCampaign();
   const [adv, setAdv] = useState<Adventure | null>(null);
   const [recaps, setRecaps] = useState<Recap[]>([]);
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [busy, setBusy] = useState(false);
-  const campaignId = 1;
+  const [lastHeadline, setLastHeadline] = useState('');
 
-  const loadRecaps = () => {
+  const loadRecaps = useCallback(() => {
     fetch(apiUrl(`/api/campaigns/${campaignId}/recaps`))
       .then((r) => (r.ok ? r.json() : []))
       .then((d) => setRecaps(Array.isArray(d) ? d : []))
       .catch(() => setRecaps([]));
-  };
+  }, [campaignId]);
 
   useEffect(() => {
     fetch(apiUrl('/api/adventures/adv-neon-debt'))
@@ -63,7 +65,7 @@ const AdventurePage = () => {
       })
       .catch(() => setAdv(null));
     loadRecaps();
-  }, []);
+  }, [loadRecaps]);
 
   const submitRecap = async (e: FormEvent) => {
     e.preventDefault();
@@ -76,9 +78,14 @@ const AdventurePage = () => {
         body: JSON.stringify({ title: title.trim(), summary: summary.trim() }),
       });
       if (res.ok) {
+        const data = await res.json().catch(() => null);
         setTitle('');
         setSummary('');
         loadRecaps();
+        if (data?.news?.headline) {
+          setLastHeadline(String(data.news.headline));
+        }
+        await refresh();
       }
     } finally {
       setBusy(false);
@@ -155,6 +162,15 @@ const AdventurePage = () => {
               </li>
             ))}
           </ol>
+
+          {lastHeadline && (
+            <p className={styles.timelineIntro}>
+              Última manchete N54:{' '}
+              <Link href="/news">
+                <strong>{lastHeadline}</strong>
+              </Link>
+            </p>
+          )}
 
           <form className={styles.form} onSubmit={submitRecap}>
             <h3>Novo resumo (GM)</h3>

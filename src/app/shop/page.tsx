@@ -13,6 +13,7 @@ import {
 } from '../../lib/shopPricing';
 import type { CampaignHeat } from '../../lib/heat';
 import { heatShopMarkup } from '../../lib/heat';
+import { useCampaign } from '../../lib/campaign';
 import styles from './shop.module.css';
 
 type Gear = { id: string; name: string; price: number; rarity?: string; category?: string };
@@ -43,6 +44,7 @@ type Character = {
 
 const ShopPage = () => {
   const router = useRouter();
+  const { campaignId, refresh: refreshCampaign } = useCampaign();
   const [gear, setGear] = useState<Gear[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [cyberware, setCyberware] = useState<any[]>([]);
@@ -51,7 +53,6 @@ const ShopPage = () => {
   const [characterId, setCharacterId] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
-  const campaignId = 1;
 
   const selected = useMemo(
     () => characters.find((c) => String(c.id) === String(characterId)) || null,
@@ -89,12 +90,13 @@ const ShopPage = () => {
     const list = Array.isArray(chars) ? chars : [];
     setCharacters(list);
     if (!characterId && list[0]) setCharacterId(String(list[0].id));
+    await refreshCampaign();
   };
 
   useEffect(() => {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [campaignId]);
 
   const buy = async (itemId: string, kind: 'gear' | 'vehicle' | 'cyberware') => {
     if (!characterId) {
