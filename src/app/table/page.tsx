@@ -1121,8 +1121,8 @@ const TablePage = () => {
     );
   };
 
-  const mapW = state?.map?.width || 30;
-  const mapH = state?.map?.height || 20;
+  const mapW = Math.max(10, Math.min(80, Number(state?.map?.width) || 30));
+  const mapH = Math.max(10, Math.min(80, Number(state?.map?.height) || 20));
   const stageW = mapW * GRID;
   const stageH = mapH * GRID;
   const currentFloor = state?.floor ?? 0;
@@ -2466,7 +2466,11 @@ const TablePage = () => {
             </HudPanel>
           )}
 
-          <HudPanel title="Chat / Dice" className={styles.chatPanel}>
+          <HudPanel
+            title="Chat / Dice"
+            className={styles.chatPanel}
+            bodyClassName={styles.chatPanelBody}
+          >
             <div className={styles.chatStack}>
               <div className={styles.chat} ref={chatLogRef}>
                 {(state?.chat || []).length === 0 ? (

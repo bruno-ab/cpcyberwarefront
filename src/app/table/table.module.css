@@ -1,12 +1,13 @@
 .layout {
   display: grid;
-  grid-template-columns: minmax(180px, 220px) 1fr minmax(280px, 340px);
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) minmax(280px, 340px);
   gap: 1rem;
+  align-items: start;
 }
 
 @media (max-width: 1100px) {
   .layout {
-    grid-template-columns: 1fr minmax(260px, 320px);
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
   }
 
   .runnerCol {
@@ -22,6 +23,7 @@
 .stage {
   min-height: 560px;
   position: relative;
+  min-width: 0;
 }
 
 .toolbar {
@@ -94,6 +96,7 @@
   border: 1px solid var(--cp-border);
   background: #050608;
   max-height: 560px;
+  width: 100%;
 }
 
 .mapStage {
@@ -102,6 +105,7 @@
   touch-action: none;
   cursor: crosshair;
   background: #050608;
+  max-width: 100%;
 }
 
 .mapWorld {
@@ -608,6 +612,7 @@
   max-height: 90vh;
   overflow: auto;
   min-height: 0;
+  min-width: 0;
 }
 
 .plainList {
@@ -618,16 +623,15 @@
 
 .chatPanel {
   flex: 1 1 auto;
-  min-height: 340px;
+  min-height: 280px;
   max-height: min(58vh, 480px);
   min-width: 0;
   display: flex;
   flex-direction: column;
-  /* Contain composer/dice — without this, overflow paints over siblings. */
   overflow: hidden;
 }
 
-.chatPanel > div:last-child {
+.chatPanelBody {
   flex: 1;
   min-height: 0;
   display: flex;

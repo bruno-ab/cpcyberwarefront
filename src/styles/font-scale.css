@@ -12,3 +12,11 @@ html[data-font='lg'] {
 html[data-font='lg'] body {
   letter-spacing: 0.01em;
 }
+
+/* Mesa VTT: keep grid/panel geometry in px — rem scaling is for copy only. */
+html[data-font='lg'] [class*='table_layout'],
+html[data-font='lg'] [class*='table_canvasWrap'],
+html[data-font='lg'] [class*='table_mapStage'],
+html[data-font='lg'] [class*='table_chatPanel'] {
+  font-size: 16px;
+}
