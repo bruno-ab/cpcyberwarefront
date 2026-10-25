@@ -2442,6 +2442,30 @@ const TablePage = () => {
             </ol>
           </HudPanel>
 
+          {replay.length > 0 && (
+            <HudPanel
+              title="Braindance replay"
+              className={styles.replayPanel}
+            >
+              <div className={styles.replayHead}>
+                <p>{replay.length} eventos</p>
+                <HudButton
+                  variant="ghost"
+                  onClick={() => setReplay([])}
+                >
+                  Fechar
+                </HudButton>
+              </div>
+              <ul className={styles.replay}>
+                {replay.slice(-40).map((e) => (
+                  <li key={e.id}>
+                    {e.at?.slice(11, 19)} — {e.type}
+                  </li>
+                ))}
+              </ul>
+            </HudPanel>
+          )}
+
           <HudPanel title="Chat / Dice" className={styles.chatPanel}>
             <div className={styles.chatStack}>
               <div className={styles.chat} ref={chatLogRef}>
@@ -2614,17 +2638,6 @@ const TablePage = () => {
                 setState((s) => (s ? { ...s, breach: null } : s))
               }
             />
-          )}
-          {replay.length > 0 && (
-            <HudPanel title="Braindance replay">
-              <ul className={styles.replay}>
-                {replay.slice(-40).map((e) => (
-                  <li key={e.id}>
-                    {e.at?.slice(11, 19)} — {e.type}
-                  </li>
-                ))}
-              </ul>
-            </HudPanel>
           )}
         </aside>
       </div>
