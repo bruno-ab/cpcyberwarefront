@@ -25,6 +25,12 @@ const BREACH_TARGET = 400;
 const TERM_MAX = 48;
 const DEFENDER_MIN_MS = 7000;
 const DEFENDER_MAX_MS = 16000;
+/** Chance base de ⚡ em cada peça (antes era ~12% só no gem A). */
+const CRASH_CHANCE = 0.26;
+/** Sem ⚡ por N peças → força um (pity). */
+const CRASH_PITY = 4;
+/** A cada N crashes, próxima peça vem com ⚡ garantido. */
+const CRASH_BONUS_EVERY = 3;
 
 type Cell = {
   color: GemColor;
@@ -66,16 +72,39 @@ const emptyGrid = (): (Cell | null)[][] =>
 const cloneGrid = (g: (Cell | null)[][]) =>
   g.map((row) => row.map((c) => (c ? { ...c } : null)));
 
-const makeCrash = (): GemKind => ({ color: randColor(), crash: true });
-const makeGem = (): GemKind => ({ color: randColor() });
-
-const newPiece = (forceCrash = false): Piece => ({
-  x: 2,
-  y: 0,
-  a: forceCrash || Math.random() < 0.12 ? makeCrash() : makeGem(),
-  b: makeGem(),
-  rot: 0,
+const makeCrash = (color?: GemColor): GemKind => ({
+  color: color ?? randColor(),
+  crash: true,
 });
+const makeGem = (color?: GemColor): GemKind => ({
+  color: color ?? randColor(),
+});
+
+const newPiece = (forceCrash = false): Piece => {
+  let a = makeGem();
+  let b = makeGem();
+  if (forceCrash || Math.random() < CRASH_CHANCE) {
+    if (Math.random() < 0.5) a = makeCrash(a.color);
+    else b = makeCrash(b.color);
+  }
+  return { x: 2, y: 0, a, b, rot: 0 };
+};
+
+const pieceHasCrash = (p: Piece) => Boolean(p.a.crash || p.b.crash);
+
+const paintBottomRow = (
+  g: (Cell | null)[][],
+  color: GemColor,
+): (Cell | null)[][] => {
+  const next = cloneGrid(g);
+  const y = ROWS - 1;
+  for (let x = 0; x < COLS; x++) {
+    next[y][x] = { color, power: 1 };
+  }
+  mergePowers(next);
+  applyGravity(next);
+  return next;
+};
 
 const pieceCells = (
   p: Piece,
@@ -232,8 +261,11 @@ export const PuzzleCrashGame = () => {
   const [speed, setSpeed] = useState<PuzzleSpeed>('rua');
   const [mode, setMode] = useState<Mode>('endless');
   const [timerSec, setTimerSec] = useState(90);
+  const [startAdvantages, setStartAdvantages] = useState<1 | 2 | 3>(2);
+  const [advantages, setAdvantages] = useState(0);
   const [grid, setGrid] = useState(emptyGrid);
   const [piece, setPiece] = useState<Piece | null>(null);
+  const [nextPiece, setNextPiece] = useState<Piece | null>(null);
   const [score, setScore] = useState(0);
   const [combos, setCombos] = useState(0);
   const [remaining, setRemaining] = useState(90);
@@ -247,7 +279,20 @@ export const PuzzleCrashGame = () => {
   const termId = useRef(0);
   const termEndRef = useRef<HTMLDivElement>(null);
   const scoreRef = useRef(0);
+  const combosRef = useRef(0);
+  const dryStreakRef = useRef(0);
+  const forceNextCrashRef = useRef(false);
   const defenderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const spawnPiece = useCallback((force = false): Piece => {
+    const pity = dryStreakRef.current >= CRASH_PITY;
+    const forced = force || forceNextCrashRef.current || pity;
+    forceNextCrashRef.current = false;
+    const p = newPiece(forced);
+    if (pieceHasCrash(p)) dryStreakRef.current = 0;
+    else dryStreakRef.current += 1;
+    return p;
+  }, []);
 
   const pushTerm = useCallback(
     (kind: TermKind, text: string, extra?: Partial<TermLine>) => {
@@ -273,10 +318,17 @@ export const PuzzleCrashGame = () => {
 
   const start = () => {
     setGrid(emptyGrid());
-    setPiece(newPiece());
-    setScore(0);
     scoreRef.current = 0;
+    combosRef.current = 0;
+    dryStreakRef.current = 0;
+    forceNextCrashRef.current = false;
+    const first = spawnPiece();
+    const upcoming = spawnPiece();
+    setPiece(first);
+    setNextPiece(upcoming);
+    setScore(0);
     setCombos(0);
+    setAdvantages(startAdvantages);
     setMoveCount(0);
     setRemaining(timerSec);
     setStatus('playing');
@@ -284,7 +336,7 @@ export const PuzzleCrashGame = () => {
     setGlitchColor(null);
     setLastCrash(null);
     setTermGlitch(false);
-    termId.current = 4;
+    termId.current = 5;
     setTermLines([
       {
         id: 1,
@@ -294,15 +346,68 @@ export const PuzzleCrashGame = () => {
       {
         id: 2,
         kind: 'sys',
-        text: `link.open --speed=${speed} --mode=${mode}`,
+        text: `link.open --speed=${speed} --mode=${mode} --edges=${startAdvantages}`,
       },
       {
         id: 3,
         kind: 'ok',
         text: 'shell ready. drop payloads to breach perimeter.',
       },
-      { id: 4, kind: 'progress', text: `breach ${bar(0)}`, progress: 0 },
+      {
+        id: 4,
+        kind: 'sys',
+        text: `edge.load ${startAdvantages} — side ops unlocked (row paint / next ⚡).`,
+      },
+      { id: 5, kind: 'progress', text: `breach ${bar(0)}`, progress: 0 },
     ]);
+  };
+
+  const spendAdvantage = useCallback(
+    (label: string, apply: () => boolean) => {
+      if (status !== 'playing' || advantages <= 0 || lock.current) return;
+      if (!apply()) return;
+      const left = advantages - 1;
+      setAdvantages(left);
+      pushTerm('ok', `edge.spend --op ${label} --left ${left}`);
+    },
+    [status, advantages, pushTerm],
+  );
+
+  const useRowPaint = () => {
+    spendAdvantage('row_paint', () => {
+      const color = randColor();
+      setGrid((prev) => paintBottomRow(prev, color));
+      triggerGlitch(color, false);
+      pushTerm(
+        'warn',
+        `edge.paint --row bottom --color ${GEM_LABELS[color]}`,
+        { color: GEM_HEX[color] },
+      );
+      return true;
+    });
+  };
+
+  const armCrashOnPiece = (p: Piece): Piece => {
+    if (pieceHasCrash(p)) return p;
+    const which = Math.random() < 0.5 ? 'a' : 'b';
+    return {
+      ...p,
+      a: which === 'a' ? makeCrash(p.a.color) : p.a,
+      b: which === 'b' ? makeCrash(p.b.color) : p.b,
+    };
+  };
+
+  const useNextCrash = () => {
+    spendAdvantage('next_crash', () => {
+      if (nextPiece && pieceHasCrash(nextPiece)) {
+        pushTerm('warn', 'edge.queue rejected — next packet already armed');
+        return false;
+      }
+      setNextPiece((prev) => armCrashOnPiece(prev ?? newPiece(true)));
+      dryStreakRef.current = 0;
+      pushTerm('warn', 'edge.queue --payload CRASH_GEM // next packet armed');
+      return true;
+    });
   };
 
   const lockPiece = useCallback((g: (Cell | null)[][], p: Piece) => {
@@ -356,7 +461,13 @@ export const PuzzleCrashGame = () => {
       const nextScore = scoreRef.current + gained;
       scoreRef.current = nextScore;
       setScore(nextScore);
-      setCombos((c) => c + 1);
+      const nextCombos = combosRef.current + 1;
+      combosRef.current = nextCombos;
+      setCombos(nextCombos);
+      if (nextCombos % CRASH_BONUS_EVERY === 0) {
+        forceNextCrashRef.current = true;
+        pushTerm('sys', 'combo.charge — next packet gets ⚡');
+      }
       setLastCrash(boomColor);
       triggerGlitch(boomColor, gained >= 80);
       const pct = Math.min(100, (nextScore / BREACH_TARGET) * 100);
@@ -396,14 +507,22 @@ export const PuzzleCrashGame = () => {
     if (next[0].some(Boolean)) {
       setStatus('lost');
       setPiece(null);
+      setNextPiece(null);
       lock.current = false;
       pushTerm('err', 'FATAL: stack overflow — ICE reclaiming buffer.');
       triggerGlitch('alert', true);
       return;
     }
-    setPiece(newPiece(combos > 0 && combos % 4 === 3));
+    let upcoming = nextPiece ?? spawnPiece();
+    if (forceNextCrashRef.current) {
+      upcoming = armCrashOnPiece(upcoming);
+      forceNextCrashRef.current = false;
+      dryStreakRef.current = 0;
+    }
+    setPiece(upcoming);
+    setNextPiece(spawnPiece());
     lock.current = false;
-  }, [status, piece, grid, lockPiece, combos, pushTerm]);
+  }, [status, piece, nextPiece, grid, lockPiece, pushTerm, spawnPiece]);
 
   useEffect(() => {
     scoreRef.current = score;
@@ -573,8 +692,9 @@ export const PuzzleCrashGame = () => {
         <p>
           Monte power gems 2×2. O <strong>⚡</strong> nasce com uma cor neon e
           apaga <em>todas</em> as peças dessa cor — quanto maior o power, mais
-          score. Blocos <strong>cinza</strong> são NETDEF: indestrutíveis até o
-          timer acabar.
+          score. Use <strong>vantagens (edges)</strong> na barra lateral: pintar
+          a última linha ou armar ⚡ na próxima peça. Blocos{' '}
+          <strong>cinza</strong> são NETDEF.
         </p>
         <div className={styles.legend}>
           {GEM_COLORS.map((c) => (
@@ -625,6 +745,19 @@ export const PuzzleCrashGame = () => {
               </select>
             </label>
           )}
+          <label>
+            Vantagens iniciais
+            <select
+              value={startAdvantages}
+              onChange={(e) =>
+                setStartAdvantages(Number(e.target.value) as 1 | 2 | 3)
+              }
+            >
+              <option value={1}>1 edge</option>
+              <option value={2}>2 edges</option>
+              <option value={3}>3 edges</option>
+            </select>
+          </label>
           <button type="button" className={styles.start} onClick={start}>
             Jackar puzzle
           </button>
@@ -637,6 +770,7 @@ export const PuzzleCrashGame = () => {
             <span>SCORE {score}</span>
             <span>CRASH {combos}</span>
             <span>PKT {moveCount}</span>
+            <span>EDGE {advantages}</span>
             <span>{SPEED_LABELS[speed].toUpperCase()}</span>
             {lastCrash && (
               <span style={{ color: GEM_HEX[lastCrash] }}>
@@ -704,6 +838,64 @@ export const PuzzleCrashGame = () => {
                 ← → mover · ↑/Espaço girar · ↓ acelerar
               </p>
             </div>
+
+            <aside className={styles.ops} aria-label="Vantagens e próxima peça">
+              <div className={styles.opsHead}>EDGE OPS</div>
+              <div className={styles.nextBox}>
+                <span className={styles.nextLabel}>NEXT</span>
+                <div className={styles.nextGems}>
+                  {nextPiece ? (
+                    <>
+                      {[nextPiece.a, nextPiece.b].map((g, i) => (
+                        <div
+                          key={i}
+                          className={styles.nextGem}
+                          data-crash={g.crash ? '1' : '0'}
+                          style={{
+                            background: g.crash
+                              ? `radial-gradient(circle, #0a0a0f 30%, ${GEM_HEX[g.color]} 100%)`
+                              : GEM_HEX[g.color],
+                            color: g.crash ? GEM_HEX[g.color] : '#0a0a0f',
+                            boxShadow: GEM_GLOW[g.color],
+                          }}
+                        >
+                          {g.crash ? '⚡' : ''}
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <span className={styles.nextEmpty}>—</span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.opBtn}
+                disabled={advantages <= 0 || status !== 'playing'}
+                onClick={useRowPaint}
+                title="Gasta 1 edge: última linha vira uma cor só"
+              >
+                Linha = cor
+              </button>
+              <button
+                type="button"
+                className={styles.opBtn}
+                data-crash="1"
+                disabled={
+                  advantages <= 0 ||
+                  status !== 'playing' ||
+                  Boolean(nextPiece && pieceHasCrash(nextPiece))
+                }
+                onClick={useNextCrash}
+                title="Gasta 1 edge: próxima peça ganha ⚡"
+              >
+                Next ⚡
+              </button>
+              <p className={styles.opsHint}>
+                {advantages} edge{advantages === 1 ? '' : 's'} restante
+                {advantages === 1 ? '' : 's'}
+              </p>
+            </aside>
 
             <aside
               className={styles.terminal}
