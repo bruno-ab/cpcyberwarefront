@@ -190,5 +190,32 @@
       "militech": "Militech Gold",
       "traumateam": "Trauma Team"
     }
+  },
+  "vtt": {
+    "chromeBoot": {
+      "title": "Chrome boot",
+      "subtitle": "Personal neural stack · read-only",
+      "firmware": "Stack firmware",
+      "implants": "Installed chrome",
+      "warningsLabel": "Diagnostics",
+      "noImplants": "No implants on file — factory baseline.",
+      "noRole": "Unassigned",
+      "noChromeLinked": "No chrome linked",
+      "noChromeHint": "Link a character to this campaign roster to sync implants.",
+      "skip": "Skip",
+      "skipHint": "Esc · Enter · click backdrop",
+      "warnings": {
+        "loadHigh": "Implant load near capacity — thermal throttling possible.",
+        "psychoCritical": "Cyberpsychosis risk: CRITICAL — empathy buffer low.",
+        "psychoElevated": "Humanity margin thin — monitor for chrome drift.",
+        "opticsOffline": "Optics package offline — Kiroshi handshake failed.",
+        "sandevistanCalib": "Sandevistan: calibration pending.",
+        "kerenzikovSync": "Kerenzikov: reflex sync drift detected.",
+        "deckIce": "Cyberdeck: ICE profile stale — refresh before netrun.",
+        "biomonitorLag": "Biomonitor: vitals sync delayed.",
+        "actuatorTest": "Actuator chain: self-test due before combat.",
+        "restrictedFw": "Restricted firmware — corp audit flag set."
+      }
+    }
   }
 }

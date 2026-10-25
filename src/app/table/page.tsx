@@ -59,6 +59,7 @@ import {
   formatStatOption,
 } from '../../lib/sheetPool';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
+import { ChromeBootSequence } from '../../components/vtt/ChromeBootSequence';
 import styles from './table.module.css';
 
 type Token = {
@@ -314,6 +315,10 @@ const TablePage = () => {
   const [attrKey, setAttrKey] = useState<string>('dexterity');
   const [skillKey, setSkillKey] = useState<string>('firearms');
   const [roster, setRoster] = useState<RosterChar[]>([]);
+  const [rosterHydrated, setRosterHydrated] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const [chromeBootOpen, setChromeBootOpen] = useState(false);
+  const tableBootShownRef = useRef(false);
   const [selectedCharId, setSelectedCharId] = useState('');
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
@@ -647,7 +652,14 @@ const TablePage = () => {
       payload?.name || payload?.username || '',
     ).slice(0, 48);
     if (name) setMyName(name);
+    setAuthReady(true);
   }, []);
+
+  useEffect(() => {
+    setRosterHydrated(false);
+    tableBootShownRef.current = false;
+    setChromeBootOpen(false);
+  }, [campaignId]);
 
   useEffect(() => {
     if (!sceneId) return;
@@ -900,9 +912,16 @@ const TablePage = () => {
           setSelectedCharId(mine.id);
         }
       })
-      .catch(() => setRoster([]));
+      .catch(() => setRoster([]))
+      .finally(() => setRosterHydrated(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId, myPlayerId]);
+
+  useEffect(() => {
+    if (!authReady || !rosterHydrated || tableBootShownRef.current) return;
+    tableBootShownRef.current = true;
+    setChromeBootOpen(true);
+  }, [authReady, rosterHydrated]);
 
   const onWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -1381,8 +1400,23 @@ const TablePage = () => {
 
   const runnerForPanel = myRosterChar;
 
+  const chromeBootCharacter = useMemo(() => {
+    if (!myRosterChar) return null;
+    return {
+      id: myRosterChar.id,
+      name: myRosterChar.name,
+      role: myRosterChar.role,
+      sheetSummary: myRosterChar.sheetSummary,
+    };
+  }, [myRosterChar]);
+
   return (
     <PageFrame>
+      <ChromeBootSequence
+        active={chromeBootOpen}
+        character={chromeBootCharacter}
+        onDone={() => setChromeBootOpen(false)}
+      />
       <div
         className={styles.layout}
         data-view={viewMode}
