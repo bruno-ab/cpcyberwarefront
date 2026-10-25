@@ -238,6 +238,16 @@
         "actuatorTest": "Cadeia de atuadores: autoteste pendente antes do combate.",
         "restrictedFw": "Firmware restrito — flag de auditoria corp ativa."
       }
+    },
+    "ar": {
+      "threatLabel": "Ameaça",
+      "weapons": "Armas",
+      "unknownToken": "Contato",
+      "threat": {
+        "low": "BAIXA",
+        "med": "MÉDIA",
+        "high": "ALTA"
+      }
     }
   }
 }

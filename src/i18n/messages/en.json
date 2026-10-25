@@ -238,6 +238,16 @@
         "actuatorTest": "Actuator chain: self-test due before combat.",
         "restrictedFw": "Restricted firmware — corp audit flag set."
       }
+    },
+    "ar": {
+      "threatLabel": "Threat",
+      "weapons": "Wpn",
+      "unknownToken": "Contact",
+      "threat": {
+        "low": "LOW",
+        "med": "MED",
+        "high": "HIGH"
+      }
     }
   }
 }

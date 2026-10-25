@@ -266,6 +266,10 @@
   pointer-events: none;
 }
 
+.token[data-ar='1'] {
+  z-index: 3;
+}
+
 .tokenBar {
   position: absolute;
   left: 10%;

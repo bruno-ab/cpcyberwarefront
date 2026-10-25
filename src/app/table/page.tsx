@@ -51,6 +51,7 @@ import {
   type AimPreview,
 } from '../../lib/vttAim';
 import { useCampaign } from '../../lib/campaign';
+import { useTranslations } from '../../i18n/useTranslations';
 import { characterImageSrc, resolveMediaSrc } from '../../lib/media';
 import {
   ATTR_OPTIONS,
@@ -60,6 +61,8 @@ import {
 } from '../../lib/sheetPool';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
 import { ChromeBootSequence } from '../../components/vtt/ChromeBootSequence';
+import { TokenArHud } from '../../components/vtt/TokenArHud';
+import { isArTargetToken, tokenShowsNameplate } from '../../lib/vttAr';
 import styles from './table.module.css';
 
 type Token = {
@@ -88,6 +91,13 @@ type Token = {
   kind?: string;
   floor?: number;
   auras?: string[];
+  affiliation?: string;
+  arIntel?: {
+    name: string;
+    affiliation?: string;
+    threat?: 'low' | 'med' | 'high';
+    weapons?: string[];
+  };
   gmNotes?: string;
   signalJammed?: boolean;
   droneSheet?: {
@@ -298,6 +308,7 @@ const parseJwt = (token: string) => {
 
 const TablePage = () => {
   const { campaignId, campaign } = useCampaign();
+  const { t: tAr } = useTranslations('vtt.ar');
 
   const [scenes, setScenes] = useState<VttSceneSummary[]>([]);
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
@@ -1160,6 +1171,7 @@ const TablePage = () => {
     (Array.isArray(myRosterChar?.sheetSummary?.opticsChrome) &&
       (myRosterChar?.sheetSummary?.opticsChrome?.length ?? 0) > 0)
   );
+  const showArHud = isGm || hasOptics;
 
   const canSpawnDrone = useMemo(() => {
     if (isGm) return true;
@@ -1640,6 +1652,10 @@ const TablePage = () => {
                   onClick={() =>
                     intent('token:add', {
                       name: 'NPC',
+                      kind: 'npc',
+                      affiliation: 'Unknown',
+                      arThreat: 'med',
+                      visibleWeapons: ['Sidearm (visible)'],
                       x: 8,
                       y: 8,
                       color: '#ff2a6d',
@@ -2209,6 +2225,15 @@ const TablePage = () => {
                       (!!intel ||
                         t.hidden ||
                         (t.auras || []).length > 0);
+                    const showNameplate = tokenShowsNameplate(t, {
+                      showAr: showArHud,
+                      myPlayerId,
+                    });
+                    const labelText = showNameplate
+                      ? (t.arIntel?.name || t.name || '').trim()
+                      : '';
+                    const arIntel =
+                      showArHud && t.arIntel ? t.arIntel : null;
                     return (
                       <button
                         type="button"
@@ -2274,12 +2299,15 @@ const TablePage = () => {
                             tokenId: t.id,
                           });
                         }}
-                        aria-label={t.name}
+                        aria-label={labelText || tAr('unknownToken')}
                         title={
                           viewMode === 'net' && t.kind === 'drone'
                             ? `${t.name} · drone · quickhack`
-                            : intel?.tag || t.name
+                            : arIntel
+                              ? `${arIntel.name}${arIntel.affiliation ? ` · ${arIntel.affiliation}` : ''}`
+                              : intel?.tag || labelText || tAr('unknownToken')
                         }
+                        data-ar={arIntel ? '1' : '0'}
                         data-net={
                           viewMode === 'net' &&
                           (t.kind === 'drone' || t.kind === 'summon')
@@ -2304,12 +2332,21 @@ const TablePage = () => {
                           <img src={portrait} alt="" draggable={false} />
                         ) : (
                           <span className={styles.tokenInitial}>
-                            {t.name.slice(0, 2).toUpperCase()}
+                            {(
+                              labelText ||
+                              (!isArTargetToken(t) ? t.name : '') ||
+                              ''
+                            )
+                              .slice(0, 2)
+                              .toUpperCase() || '·'}
                           </span>
                         )}
-                        <span className={styles.tokenName}>
-                          {t.name.slice(0, 8)}
-                        </span>
+                        {arIntel ? <TokenArHud intel={arIntel} /> : null}
+                        {showNameplate && labelText && !arIntel ? (
+                          <span className={styles.tokenName}>
+                            {labelText.slice(0, 8)}
+                          </span>
+                        ) : null}
                         {viewMode === 'scan' && (
                           <span
                             className={styles.scanTag}
