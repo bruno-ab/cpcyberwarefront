@@ -14,11 +14,12 @@ import { useMotion } from '../../motion/useMotion';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
 import { HomeCyberGrid } from './HomeCyberGrid';
 import {
-  HOME_NEWS,
   TERMINAL_BOOT,
   resolveTerminalCommand,
   type TerminalLine,
 } from './homeTerminalCommands';
+import { HomeMarketTape } from './HomeMarketTape';
+import { HOME_NETWATCH_ALERTS, HOME_WIRE_FEED } from './homeWireFeed';
 import styles from './homeLanding.module.css';
 
 const toneClass = (tone?: TerminalLine['tone']) => {
@@ -196,8 +197,10 @@ export const HomeLanding = () => {
 
   const rotateNews = () => {
     beep();
-    setNewsIdx((i) => (i + 1) % HOME_NEWS.length);
+    setNewsIdx((i) => (i + 1) % HOME_WIRE_FEED.length);
   };
+
+  const wireItem = HOME_WIRE_FEED[newsIdx];
 
   const tableHref =
     loggedIn && (tableLoading || canOpenTable) ? '/table' : '/login';
@@ -387,6 +390,18 @@ export const HomeLanding = () => {
                 Abrir campanhas → Procurados
               </p>
             </Link>
+            <div className={styles.alertTickerWrap} aria-label="Alertas NetWatch fictícios">
+              <span className={styles.alertTickerTag}>NETWATCH</span>
+              <div className={styles.alertTickerTrack}>
+                <div className={styles.alertTickerInner}>
+                  {[...HOME_NETWATCH_ALERTS, ...HOME_NETWATCH_ALERTS].map((line, i) => (
+                    <span key={`${line}-${i}`} className={styles.alertTickerItem}>
+                      {line}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
             <button type="button" className={styles.modBtn} onClick={triggerNcpd}>
               SIMULAR ALERTA MAXTAC
             </button>
@@ -397,15 +412,14 @@ export const HomeLanding = () => {
               <span>NOTÍCIAS N54</span>
               <span>GLOBAL FEED</span>
             </div>
-            <p className={styles.newsBody}>{HOME_NEWS[newsIdx]}</p>
-            <div className={styles.stocks}>
-              <span>
-                Ações Militech: <span className={styles.ok}>▲ +4.2%</span>
-              </span>
-              <span>
-                Ações Trauma: <span className={styles.pipeRed}>▼ -1.8%</span>
-              </span>
+            <div className={styles.newsMeta}>
+              <span className={styles.newsRegion}>{wireItem.regionLabel}</span>
+              {wireItem.kicker ? (
+                <span className={styles.newsKicker}>{wireItem.kicker}</span>
+              ) : null}
             </div>
+            <p className={styles.newsBody}>{wireItem.headline}</p>
+            <HomeMarketTape compact />
             <button type="button" className={styles.modBtnYellow} onClick={rotateNews}>
               PRÓXIMA NOTÍCIA
             </button>

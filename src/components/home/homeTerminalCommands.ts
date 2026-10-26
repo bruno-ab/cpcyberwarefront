@@ -11,12 +11,6 @@ export const TERMINAL_BOOT: TerminalLine[] = [
   { text: 'Criptografia de canal: 4096-bit AES / Quantum Resistance.', tone: 'yellow' },
 ];
 
-export const HOME_NEWS = [
-  '[ARASAKA]: Novas atualizações no implante relíquia prometem imortalidade digital.',
-  '[COMBAT ZONE]: Conflitos entre Maelstrom e Valentinos bloqueiam Heywood.',
-  '[TRAUMA TEAM]: Assinaturas da Categoria Platina aumentam 15% este mês.',
-] as const;
-
 export const resolveTerminalCommand = (
   raw: string,
 ): { lines: TerminalLine[]; sideEffects?: ('breach' | 'ncpd' | 'clear') } => {
