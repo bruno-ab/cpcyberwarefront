@@ -95,8 +95,8 @@ Derivado de `docs/26-10-2026-product-rules.md`. Evidência: testes automatizados
 
 | ID | Cenário | Resultado | Evidência |
 |----|---------|-----------|-----------|
-| I1 | `GET /api/vtt/sessions/:id` público | FAIL | `vtt.controller.ts` L65–68 sem `@UseGuards` — **dívida documentada**, não corrigido nesta rodada |
-| I2 | Mutations campanha sem auth uniforme | FAIL | `26-10-2026-authorization.md` lacunas |
+| I1 | `GET /api/vtt/sessions/:id` público | PASS | `@UseGuards(AuthGuard)` + `snapshotVttSessionForViewer` (`vtt-session-access.ts`); testes `vtt.controller.spec.ts` (401/403/200), `vtt-session-access.spec.ts` |
+| I2 | Mutations campanha sem auth uniforme | PASS | `campaign.controller.ts` — `@UseGuards` + `assertGmHttp` / `assertCampaignAccessHttp` (`campaign-http-auth.ts`); testes `campaign-http-auth.spec.ts`; commit `70d9ab6` + helpers |
 | I3 | Player snapshot omite hidden/fog | PASS | Coberto em specs scan/cover parcial; hardening P2.6 pendente |
 | I4 | CORS / TS build front | BLOCKED | Roadmap |
 
@@ -106,29 +106,29 @@ Derivado de `docs/26-10-2026-product-rules.md`. Evidência: testes automatizados
 
 | Resultado | Contagem |
 |-----------|----------|
-| **PASS** | 38 |
-| **FAIL** | 2 |
+| **PASS** | 40 |
+| **FAIL** | 0 |
 | **BLOCKED** | 11 |
 | **Total** | 51 |
 
-Taxa verificável automatizada/review: **38/40** cenários PASS entre itens não-BLOCKED (95%). FAILs são dívida de segurança conhecida, não regressão funcional nova.
+Taxa verificável automatizada/review: **40/40** cenários PASS entre itens não-BLOCKED (100%).
 
 ---
 
 ## Gaps críticos (prioridade)
 
-1. **I1 — Sessão VTT HTTP pública:** vazamento de estado de mesa por `sessionId` adivinhável. Mitigação: `AuthGuard` + membership + snapshot filtrado (quick fix possível; fora do escopo “critical FAIL quick” se exige testes de contrato — documentado).
-2. **I2 — Auth em mutações de campanha:** risco em deploy exposto; roadmap crítico.
-3. **E5/E6 — Combate ataque sem testes automatizados:** risco de regressão; adicionar spec gateway recomendado.
-4. **E2E mesa:** Campanhas → Abrir mesa → join (BLOCKED); maior lacuna de confiança de produto.
+1. **E5/E6 — Combate ataque sem testes automatizados:** risco de regressão; adicionar spec gateway recomendado.
+2. **E2E mesa:** Campanhas → Abrir mesa → join (BLOCKED); maior lacuna de confiança de produto.
+3. **I3 / snapshot hardening:** fog/hidden audit contínuo (P1).
+4. **Parity roadmap:** `docs/26-10-2026-vtt-parity-roll20-foundry.md`.
 
 ---
 
 ## Comandos executados (evidência)
 
 ```text
-# API (F:\projetos\cpcyberware)
-pnpm test  → 31 passed, 111 passed
+# API (F:\projetos\cpcyberware) — após fix I1/I2
+pnpm test -- vtt-session-access vtt.controller campaign-http-auth
 
 # Front (F:\projetos\cpcyberwarefront)
 pnpm test:dice  → 8 passed
@@ -136,4 +136,4 @@ pnpm test:dice  → 8 passed
 
 ---
 
-*QA rodada: 26-10-2026. Sem correções de código nesta rodada — FAILs são dívida pré-existente alinhada ao doc de autorização.*
+*QA rodada: 26-10-2026. I1/I2 corrigidos nesta rodada; evidência nos specs acima.*

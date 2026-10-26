@@ -114,6 +114,22 @@ export const fetchCampaignScenes = async (
   }
 };
 
+/** Authenticated session snapshot (role-filtered; same rules as VTT join membership). */
+export const fetchVttSession = async (
+  sessionId: string,
+): Promise<Record<string, unknown> | null> => {
+  const res = await apiFetch(
+    `/api/vtt/sessions/${encodeURIComponent(sessionId)}`,
+    { headers: authJsonHeaders() },
+  );
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+};
+
 export const createScene = async (
   campaignId: number,
   body: { name: string; description?: string },

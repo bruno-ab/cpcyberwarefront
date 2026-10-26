@@ -118,8 +118,7 @@ Implementação principal: `cpcyberware/src/vtt/vtt.gateway.ts`, helpers `vtt-mo
 
 | Área | Notas |
 |------|--------|
-| **Auth REST incompleto** | Vários `POST/PUT` de campanha (gigs, shop, heat, wiki) sem `AuthGuard` dedicado. |
-| **VTT HTTP público** | `GET /api/vtt/sessions/:id` sem JWT (estado bruto). |
+| **Auth REST** | Campanha/VTT session HTTP com JWT + membership (26-10); breach/dice HTTP ainda públicos. |
 | **Minigames HTTP** | Breach/dice roll públicos (sem campanha). |
 | **E2E** | Sem Playwright no CI do front; smoke manual 2 browsers. |
 | **P2 combate doc** | Attack cards UI, templates de área, psychosis na mesa, snapshot hardening — parcial vs `plano-mesa-p2-combate.md`. |
