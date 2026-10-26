@@ -26,11 +26,14 @@ const CharactersPage = () => {
   const [rows, setRows] = useState<CharacterRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
+  const [hasToken, setHasToken] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setMsg('');
-    if (!getAccessToken()) {
+    const token = getAccessToken();
+    setHasToken(!!token);
+    if (!token) {
       setRows([]);
       setLoading(false);
       return;
@@ -90,7 +93,7 @@ const CharactersPage = () => {
           </Link>
         </header>
 
-        {!getAccessToken() && (
+        {!hasToken && (
           <HudPanel title="Sessão">
             <p className={styles.status}>Faça login para ver suas fichas.</p>
             <Link href="/login?next=/characters">

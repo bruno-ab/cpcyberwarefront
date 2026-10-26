@@ -680,11 +680,20 @@
 }
 
 .wantedBox {
+  display: block;
+  text-decoration: none;
+  color: inherit;
   background: color-mix(in srgb, var(--home-red) 12%, transparent);
   border-left: 2px solid var(--home-red);
   padding: 0.45rem;
   font-size: 0.65rem;
   margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.wantedBox:hover {
+  background: color-mix(in srgb, var(--home-red) 22%, transparent);
 }
 
 .wantedName {

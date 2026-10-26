@@ -375,7 +375,7 @@ export const HomeLanding = () => {
               <span>NCPD WIRE ALERT</span>
               <span className={styles.modLive}>AO VIVO</span>
             </div>
-            <div className={styles.wantedBox}>
+            <Link href="/campaigns" className={styles.wantedBox} title="Mural de procurados por campanha">
               <p className={styles.wantedName}>PROCURADO: &quot;CYBER-JACK&quot;</p>
               <p className={styles.dim}>
                 Recompensa: <span className={styles.brandLine}>€$ 50,000</span>
@@ -383,7 +383,10 @@ export const HomeLanding = () => {
               <p className={styles.pipeRed} style={{ fontSize: '0.55rem', marginTop: '0.25rem' }}>
                 Crimes: Invasão de Sub-rede Arasaka e Roubo de Ciberware.
               </p>
-            </div>
+              <p className={styles.dim} style={{ fontSize: '0.5rem', marginTop: '0.35rem' }}>
+                Abrir campanhas → Procurados
+              </p>
+            </Link>
             <button type="button" className={styles.modBtn} onClick={triggerNcpd}>
               SIMULAR ALERTA MAXTAC
             </button>

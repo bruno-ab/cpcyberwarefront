@@ -358,6 +358,9 @@ const CampaignDetailPage = () => {
               <HudButton type="button" onClick={() => openTable(activeScene || undefined)}>
                 Abrir mesa
               </HudButton>
+              <Link href={`/campaigns/${campaignId}/wanted`}>
+                <HudButton variant="ghost">Procurados</HudButton>
+              </Link>
               {isGm ? (
                 <Link href="#convites-campanha">
                   <HudButton variant="ghost">Convidar jogadores</HudButton>
