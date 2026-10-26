@@ -35,6 +35,21 @@
   color: var(--cp-text-dim, #8a9aa8);
 }
 
+.speedLine {
+  font-size: 0.68rem;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.speedLine b {
+  color: var(--cp-text, #e8f0f8);
+}
+
+.speedBoost {
+  font-style: normal;
+  color: var(--cp-cyan, #02d7f2);
+  font-weight: 600;
+}
+
 .portraitBtn {
   position: relative;
   appearance: none;

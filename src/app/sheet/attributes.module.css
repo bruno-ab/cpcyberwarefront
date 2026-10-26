@@ -1,3 +1,47 @@
+.speedBlock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin: 0 auto 0.85rem;
+  max-width: 1100px;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(2, 215, 242, 0.35);
+  background: rgba(2, 215, 242, 0.06);
+  font-family: var(--cp-font-mono, monospace);
+}
+
+.speedLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cp-cyan, #02d7f2);
+}
+
+.speedValue {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--cp-text, #e8f0f8);
+}
+
+.speedHint {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.speedBonus {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--cp-text-dim, #8a9aa8);
+}
+
+.speedBonusEm {
+  color: var(--cp-cyan, #02d7f2);
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(2, 215, 242, 0.55);
+}
+
 .attributestable {
   position: relative;
   overflow: hidden;

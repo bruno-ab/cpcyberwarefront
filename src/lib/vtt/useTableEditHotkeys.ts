@@ -36,6 +36,8 @@ export type TableEditHotkeysArgs = {
   mapW: number;
   mapH: number;
   canDragToken: (t: { id: string }) => boolean;
+  moveSelectedToken?: (dx: number, dy: number) => void;
+  onResetMovement?: () => void;
   spaceHeldRef: MutableRefObject<boolean>;
   spacePanUsedRef: MutableRefObject<boolean>;
   setSpaceHeld: (v: boolean) => void;
@@ -68,6 +70,8 @@ export function useTableEditHotkeys({
   mapW,
   mapH,
   canDragToken,
+  moveSelectedToken,
+  onResetMovement,
   spaceHeldRef,
   spacePanUsedRef,
   setSpaceHeld,
@@ -207,12 +211,22 @@ export function useTableEditHotkeys({
           else return;
         }
       }
+      if (e.key.toLowerCase() === 'r' && onResetMovement) {
+        e.preventDefault();
+        onResetMovement();
+        return;
+      }
+
       if (!selectedTokenId) return;
       const nudgeTok = stateTokens?.find((t) => t.id === selectedTokenId);
       if (!nudgeTok || !canDragToken(nudgeTok)) return;
       if (tool !== 'select' || aimMode || spawnPlacement) return;
       if ((nudgeTok.floor ?? 0) !== currentFloor) return;
       e.preventDefault();
+      if (moveSelectedToken) {
+        moveSelectedToken(dx, dy);
+        return;
+      }
       const nx = Math.max(0, Math.min(mapW - 1, nudgeTok.x + dx));
       const ny = Math.max(0, Math.min(mapH - 1, nudgeTok.y + dy));
       if (nx === nudgeTok.x && ny === nudgeTok.y) return;
@@ -264,6 +278,8 @@ export function useTableEditHotkeys({
     mapW,
     mapH,
     canDragToken,
+    moveSelectedToken,
+    onResetMovement,
     spaceHeldRef,
     spacePanUsedRef,
     setSpaceHeld,

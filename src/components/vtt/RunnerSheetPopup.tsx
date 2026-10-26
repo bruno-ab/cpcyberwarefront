@@ -6,6 +6,7 @@ import { formatStatOption, sheetStatValue } from '../../lib/sheetPool';
 import { characterImageSrc } from '../../lib/media';
 import { ROLE_RULES } from '../../data/roleRules';
 import { defaultAbilities } from '../../app/sheet/defaultSheet';
+import { speedFromSheetSummary } from '../../lib/characterSpeed';
 import type { RunnerChar } from './RunnerPanel';
 import styles from './runnerSheetPopup.module.css';
 
@@ -89,6 +90,7 @@ export const RunnerSheetPopup = ({
 }: RunnerSheetPopupProps) => {
   const [tab, setTab] = useState<PopupTab>('atributos');
   const sheet = character.sheetSummary || {};
+  const speed = speedFromSheetSummary(sheet);
   const ot = sheet.other_traits || {};
   const header = sheet.header || {};
   const roleRule = findRoleRule(character.role || sheet.role);
@@ -120,6 +122,17 @@ export const RunnerSheetPopup = ({
                 {ot.edges != null ? ` · Edges ${ot.edges}` : ''}
                 {ot.willpower != null ? ` · WP ${ot.willpower}` : ''}
                 {character.credits != null ? ` · ¤${character.credits}` : ''}
+              </div>
+              <div className={styles.meta}>
+                Velocidade <b>{speed.speed}</b>
+                {speed.speedBonus > 0 ? (
+                  <span className={styles.speedBoost}>
+                    {' '}
+                    ({speed.speedBase}+{speed.speedBonus} chrome)
+                  </span>
+                ) : (
+                  ' · 5 + Destreza'
+                )}
               </div>
             </div>
           </div>

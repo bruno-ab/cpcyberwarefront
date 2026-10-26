@@ -58,6 +58,11 @@
   color: var(--cp-text, #e8eef5);
 }
 
+.speedBoost {
+  color: var(--cp-cyan, #02d7f2);
+  font-weight: 600;
+}
+
 .meta {
   font-family: var(--cp-font-mono, monospace);
   font-size: 0.58rem;

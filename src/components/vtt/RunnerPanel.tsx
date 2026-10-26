@@ -4,6 +4,7 @@ import { HudButton } from '../ui/HudButton';
 import { computeSheetPool, formatStatOption } from '../../lib/sheetPool';
 import { characterImageSrc } from '../../lib/media';
 import { ROLE_RULES } from '../../data/roleRules';
+import { speedFromSheetSummary } from '../../lib/characterSpeed';
 import styles from './runnerPanel.module.css';
 
 export type RunnerChar = {
@@ -81,6 +82,7 @@ export const RunnerPanel = ({
   }
 
   const sheet = character.sheetSummary || {};
+  const speed = speedFromSheetSummary(sheet);
   const ot = sheet.other_traits || {};
   const roleRule = findRoleRule(character.role || sheet.role);
   const portrait = characterImageSrc(character);
@@ -133,6 +135,18 @@ export const RunnerPanel = ({
           {ot.edges != null ? `Edges ${ot.edges}` : ''}
           {ot.willpower != null ? ` · WP ${ot.willpower}` : ''}
           {character.credits != null ? ` · ¤${character.credits}` : ''}
+        </span>
+        <span className={styles.speedLine}>
+          Velocidade{' '}
+          <b>{speed.speed}</b>
+          {speed.speedBonus > 0 ? (
+            <>
+              {' '}
+              <em className={styles.speedBoost}>
+                ({speed.speedBase}+{speed.speedBonus})
+              </em>
+            </>
+          ) : null}
         </span>
       </div>
 

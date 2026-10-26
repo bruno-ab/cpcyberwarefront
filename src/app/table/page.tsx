@@ -56,6 +56,7 @@ import {
   canMoveTokenForRole,
   tokenMoveBlockedHint,
 } from '../../lib/vtt/turnMoveLock';
+import { canAffordMoveTo, reachableCells } from '../../lib/vtt/movement';
 import {
   ReactionBar,
   type ReactionId,
@@ -242,6 +243,13 @@ type VttState = {
     moveUsed: boolean;
     reactionUsed: boolean;
     extraActions: number;
+  } | null;
+  turnMovement?: {
+    tokenId: string;
+    startX: number;
+    startY: number;
+    remaining: number;
+    max: number;
   } | null;
   initiative: Array<{
     tokenId: string;
@@ -2026,6 +2034,67 @@ const TablePage = () => {
     return isGm || myTokenIds.includes(combatCurrent.tokenId);
   }, [combatCurrent, isGm, myTokenIds]);
 
+  const turnMovementForSelected = useMemo(() => {
+    if (!selectedTokenId || !state?.combat?.active || !state.turnMovement) {
+      return null;
+    }
+    if (state.turnMovement.tokenId !== selectedTokenId) return null;
+    if (combatCurrent?.tokenId !== selectedTokenId) return null;
+    return state.turnMovement;
+  }, [
+    selectedTokenId,
+    state?.combat?.active,
+    state?.turnMovement,
+    combatCurrent?.tokenId,
+  ]);
+
+  const reachableSet = useMemo(() => {
+    if (!turnMovementForSelected || !selectedToken) return null;
+    const cells = reachableCells(
+      selectedToken.x,
+      selectedToken.y,
+      turnMovementForSelected.remaining,
+      mapW,
+      mapH,
+    );
+    return new Set(cells.map((c) => `${c.x},${c.y}`));
+  }, [turnMovementForSelected, selectedToken, mapW, mapH]);
+
+  const requestTokenMove = useCallback(
+    (tokenId: string, x: number, y: number) => {
+      const tok = state?.tokens?.find((t) => t.id === tokenId);
+      if (!tok || !canDragToken(tok)) return;
+      const nx = Math.max(0, Math.min(mapW - 1, Math.floor(x)));
+      const ny = Math.max(0, Math.min(mapH - 1, Math.floor(y)));
+      if (nx === tok.x && ny === tok.y) return;
+      const move = state?.turnMovement;
+      if (
+        state?.combat?.active &&
+        move?.tokenId === tok.id &&
+        !canAffordMoveTo(move, nx, ny)
+      ) {
+        return;
+      }
+      intent('token:move', { tokenId, x: nx, y: ny });
+    },
+    [state?.tokens, state?.combat?.active, state?.turnMovement, canDragToken, mapW, mapH, intent],
+  );
+
+  const moveSelectedToken = useCallback(
+    (dx: number, dy: number) => {
+      if (!selectedTokenId) return;
+      const tok = state?.tokens?.find((t) => t.id === selectedTokenId);
+      if (!tok) return;
+      requestTokenMove(tok.id, tok.x + dx, tok.y + dy);
+    },
+    [selectedTokenId, state?.tokens, requestTokenMove],
+  );
+
+  const resetSelectedMovement = useCallback(() => {
+    if (!selectedTokenId || !turnMovementForSelected) return;
+    intent('token:reset-move', { tokenId: selectedTokenId });
+  }, [selectedTokenId, turnMovementForSelected, intent]);
+
   const boardViewW = boardSize.w;
   const boardViewH = boardSize.h;
 
@@ -2066,6 +2135,8 @@ const TablePage = () => {
     mapW,
     mapH,
     canDragToken,
+    moveSelectedToken,
+    onResetMovement: resetSelectedMovement,
     spaceHeldRef,
     spacePanUsedRef,
     setSpaceHeld,
@@ -2615,6 +2686,18 @@ const TablePage = () => {
                 ? ` · SIG ${selectedToken.bars.signal}%`
                 : ''}
               {selectedToken.hidden ? ' · oculto' : ''}
+              {turnMovementForSelected && (
+                <>
+                  {' '}
+                  · Movimento{' '}
+                  <strong data-low={turnMovementForSelected.remaining <= 0 ? '1' : '0'}>
+                    {turnMovementForSelected.remaining}/{turnMovementForSelected.max}
+                  </strong>
+                  <HudButton variant="ghost" onClick={resetSelectedMovement}>
+                    Resetar movimento (R)
+                  </HudButton>
+                </>
+              )}
               {isGm && (
                 <>
                   <HudButton
@@ -2781,11 +2864,7 @@ const TablePage = () => {
                 }
                 if (dragging && e.buttons === 1) {
                   const c = cellFromEvent(e);
-                  intent('token:move', {
-                    tokenId: dragging,
-                    x: c.x,
-                    y: c.y,
-                  });
+                  requestTokenMove(dragging, c.x, c.y);
                 }
               }}
               onMouseUp={() => {
@@ -2853,6 +2932,21 @@ const TablePage = () => {
                         />
                       )),
                     )}
+                  {layerVisible('grid') &&
+                    reachableSet &&
+                    Array.from(reachableSet).map((key) => {
+                      const [x, y] = key.split(',').map(Number);
+                      return (
+                        <rect
+                          key={`reach-${key}`}
+                          x={x * GRID}
+                          y={y * GRID}
+                          width={GRID}
+                          height={GRID}
+                          className={styles.cellReachable}
+                        />
+                      );
+                    })}
                   {layerVisible('walls') &&
                     (state?.walls || []).map((w) => {
                       const wallSelected = selectedWallId === w.id;

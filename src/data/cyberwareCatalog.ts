@@ -1,5 +1,6 @@
 import { CyberWareSlot } from './cyberwareSlots';
 import { STAT_BOOSTER_CATALOG } from './cyberware-stat-boosters';
+import { SPEED_BOOSTER_CATALOG } from './cyberware-speed-boosters';
 
 export type CyberwareCatalogEntry = {
   name: string;
@@ -622,4 +623,5 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
 export const CYBERWARE_CATALOG: CyberwareCatalogEntry[] = [
   ...BASE_CATALOG,
   ...STAT_BOOSTER_CATALOG,
+  ...SPEED_BOOSTER_CATALOG,
 ];

@@ -4,6 +4,8 @@ import React, { useMemo, useState } from 'react';
 import { defaultAttributes } from './defaultSheet';
 import { apiUrl, authHeaders } from '../../lib/api';
 import { StatPanel } from '../../components/sheet/StatPanel';
+import { computeCharacterSpeed } from '../../lib/characterSpeed';
+import styles from './attributes.module.css';
 
 const toNumberMap = (obj: Record<string, unknown> | undefined) =>
   Object.entries(obj || {}).reduce<Record<string, number>>((acc, [k, v]) => {
@@ -54,6 +56,15 @@ const Attributes = ({ characterData }: Props) => {
   );
   const [mentalValues, setMentalValues] = useState(() =>
     toNumberMap(data.mental || defaultAttributes.mental),
+  );
+
+  const speedInfo = useMemo(
+    () =>
+      computeCharacterSpeed(
+        { physical: physicalValues },
+        bonuses,
+      ),
+    [physicalValues, bonuses],
   );
 
   const columns = useMemo(
@@ -109,7 +120,26 @@ const Attributes = ({ characterData }: Props) => {
     saveDataToApi(characterData.id, data, physicalValues, socialValues, next);
   };
 
-  return <StatPanel columns={columns} bonuses={bonuses} onDotClick={onDotClick} />;
+  return (
+    <>
+      <div className={styles.speedBlock} aria-label="Velocidade">
+        <span className={styles.speedLabel}>Velocidade</span>
+        <span className={styles.speedValue}>
+          {speedInfo.speed}
+          {speedInfo.speedBonus > 0 ? (
+            <small className={styles.speedBonus}>
+              {' '}
+              ({speedInfo.speedBase}
+              <span className={styles.speedBonusEm}>+{speedInfo.speedBonus}</span>)
+            </small>
+          ) : (
+            <small className={styles.speedHint}> · 5 + Destreza</small>
+          )}
+        </span>
+      </div>
+      <StatPanel columns={columns} bonuses={bonuses} onDotClick={onDotClick} />
+    </>
+  );
 };
 
 export default Attributes;

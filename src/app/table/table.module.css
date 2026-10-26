@@ -303,6 +303,13 @@
   stroke-width: 1;
 }
 
+.cellReachable {
+  fill: rgba(254, 211, 63, 0.38);
+  stroke: rgba(2, 215, 242, 0.95);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
 .wall {
   stroke: #ff2a6d;
   stroke-width: 3;
