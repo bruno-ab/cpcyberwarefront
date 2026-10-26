@@ -1254,11 +1254,12 @@ const TablePage = () => {
           kind: 'npc',
           x,
           y,
+          characterId: npc.spawnCharacterId || undefined,
           affiliation: npc.affiliation || undefined,
           arThreat: mapNpcThreat(npc.threat),
           portraitUrl: npcImageSrc(npc),
           color: '#ff2a6d',
-          bars: { hp: 7, hpMax: 7 },
+          bars: { hp: 10, hpMax: 10 },
         });
       }
       playCyberSound('confirm', { volume: 0.35 });

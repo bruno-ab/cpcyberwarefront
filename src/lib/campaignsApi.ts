@@ -143,6 +143,8 @@ export type CampaignNpc = {
   threat: string;
   summary: string;
   image?: string | null;
+  /** Ficha JSON local para chrome/RAM ao spawnar token NPC na mesa. */
+  spawnCharacterId?: string;
 };
 
 export const fetchCampaignNpcs = async (

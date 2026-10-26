@@ -1181,7 +1181,13 @@ const NPC_SHEET_DATA: NpcRecord[] = [
       merits: { 'Apogee Sync': '+3 Iniciativa enquanto Sandevistan ativo.' },
       flaws: { Cyberpsicose: 'Severidade sobe sob uso repetido do OS.' },
       cyberwareLoad: [
-        { name: 'Sandevistan Apogee', slot: 'operating_system', edgeCost: 5, implantCost: 4, hackDifficulty: 8 },
+        {
+          name: 'Sandevistan (Militech Apogee)',
+          slot: 'operating_system',
+          edgeCost: 5,
+          implantCost: 4,
+          hackDifficulty: 8,
+        },
         { name: 'Gorilla Arms', slot: 'arms', edgeCost: 3, implantCost: 3, hackDifficulty: 6 },
         { name: 'Subdermal Armor', slot: 'integumentary_system', edgeCost: 2, implantCost: 2, hackDifficulty: 6 },
         { name: 'Titanium Bones', slot: 'skeleton', edgeCost: 4, implantCost: 3, hackDifficulty: 7 },
