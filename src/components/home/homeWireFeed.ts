@@ -4,7 +4,9 @@ export type WireRegion =
   | 'eurasia'
   | 'israel'
   | 'japan'
-  | 'markets';
+  | 'markets'
+  | 'medtech'
+  | 'trauma';
 
 export type HomeWireItem = {
   id: string;
@@ -93,10 +95,76 @@ export const HOME_WIRE_FEED: HomeWireItem[] = [
   },
   {
     id: 'mk-trauma',
-    region: 'night-city',
-    regionLabel: 'NIGHT CITY',
+    region: 'trauma',
+    regionLabel: 'TRAUMA TEAM · NIGHT CITY',
     headline:
       '[TRAUMA TEAM]: Assinaturas Platina +15% — “mortes evitáveis” viram métrica de luxo em Watson.',
+  },
+  {
+    id: 'mt-heal-chrome',
+    region: 'medtech',
+    regionLabel: 'MEDTECH · PACIFICA R&D',
+    kicker: 'EVOLUÇÃO CLÍNICA',
+    headline:
+      'Implantes de segunda geração “autocicatrizam” microfissuras — fixers já cobram upgrade antes da bula sair do lab.',
+  },
+  {
+    id: 'mt-nanite-saline',
+    region: 'medtech',
+    regionLabel: 'MEDTECH · BIOTECH WIRE',
+    headline:
+      'Nanites de reparo entram em soro salino de rua: Trauma Team nega patente; ripperdocs vendem “versão beta” em containers.',
+  },
+  {
+    id: 'mt-clone-farm',
+    region: 'medtech',
+    regionLabel: 'MEDTECH · BADLANDS',
+    kicker: 'N54 INVESTIGA',
+    headline:
+      'Fazendas de clone ilegais exportam órgãos “sem histórico” — corpos descartados aparecem com tags de pesquisa Arasaka-Militech.',
+  },
+  {
+    id: 'tr-blood-pump',
+    region: 'trauma',
+    regionLabel: 'TRAUMA TEAM · TRIAL WIRE',
+    headline:
+      'Fase III do blood-pump sintético: sobreviventes relatam batida “fora de sync” — Medtech promete patch neural em 72h.',
+  },
+  {
+    id: 'mt-synthskin',
+    region: 'medtech',
+    regionLabel: 'MEDTECH · NIGHT CITY',
+    headline:
+      'Pele sintética com nervos embutidos passa teste de choque térmico; gangues de chrome disputam fila na clínica de Japantown.',
+  },
+  {
+    id: 'tr-av-response',
+    region: 'trauma',
+    regionLabel: 'TRAUMA TEAM · WATSON',
+    kicker: 'RESPOSTA RÁPIDA',
+    headline:
+      'Novos AVs médicos decolam em 90s com IA triagem — NCPD acusa “priorizar assinantes” em tiroteios do Combat Zone.',
+  },
+  {
+    id: 'mt-neurograft',
+    region: 'medtech',
+    regionLabel: 'MEDTECH · CHOLOMBIA',
+    headline:
+      'Neuroenxertos de memória curta reduzem trauma de combate — NetWatch vê spike de “soldados que esquecem a missão”.',
+  },
+  {
+    id: 'tr-platinum-black',
+    region: 'trauma',
+    regionLabel: 'TRAUMA TEAM · CORP WIRE',
+    headline:
+      'Plano Platina Black inclui ressuscitação on-site e nanite de coagulação — fila de espera vira mercado negro de slots.',
+  },
+  {
+    id: 'mt-organ-printer',
+    region: 'medtech',
+    regionLabel: 'MEDTECH · SÃO PAULO STACK',
+    headline:
+      'Bioimpressora de córnea comercial falha lote: pacientes enxergam anúncios AR fantasma — megacorp culpa “driver pirata”.',
   },
 ];
 
@@ -105,4 +173,6 @@ export const HOME_NETWATCH_ALERTS: readonly string[] = [
   'ALERTA · TEL AVIV NETNODE — ICE LV.7 · TRÁFEGO ANÔMALO',
   'NETWATCH: spike daemon · corredor Levante · spoof N54 detectado',
   'NCPD WIRE: proxy-war corp · sem identificação de alvos civis no feed',
+  'MEDTECH WIRE: lote nanite salino · recall não confirmado · Trauma Team em silêncio',
+  'TRAUMA TEAM: blood-pump trial · sync cardíaco anômalo · 12 AVs redirecionados',
 ] as const;
