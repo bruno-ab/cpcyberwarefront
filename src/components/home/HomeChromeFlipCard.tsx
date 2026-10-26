@@ -51,10 +51,10 @@ export const HomeChromeFlipCard = () => {
     };
   }, []);
 
-  const pool = useMemo(
-    () => (catalog.length ? catalog : CYBERWARE_CATALOG),
-    [catalog],
-  );
+  const pool = useMemo(() => {
+    if (!mounted) return [];
+    return catalog.length ? catalog : CYBERWARE_CATALOG;
+  }, [catalog, mounted]);
 
   const onFlip = useCallback(() => {
     playCyberSound('scan', { volume: 0.28 });
@@ -96,7 +96,9 @@ export const HomeChromeFlipCard = () => {
           <span className={`${styles.face} ${styles.back}`}>
             {back ? (
               <>
-                <span className={styles.backName}>{back.name}</span>
+                <span className={styles.backName} suppressHydrationWarning>
+                  {back.name}
+                </span>
                 <span className={styles.rarity} data-tier={rarityTier(back.rarity)}>
                   {back.rarity}
                 </span>

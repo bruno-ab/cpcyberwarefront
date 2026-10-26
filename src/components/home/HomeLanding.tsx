@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
   useCallback,
@@ -21,7 +20,7 @@ import {
 } from './homeTerminalCommands';
 import { HomeMarketTape } from './HomeMarketTape';
 import { HomeDistrictHolomap } from './HomeDistrictHolomap';
-import { HomeChromeFlipCardSkeleton } from './HomeChromeFlipCardSkeleton';
+import { HomeChromeFlipCardGate } from './HomeChromeFlipCardGate';
 import { HomeNightCityWeather } from './HomeNightCityWeather';
 import { HOME_NETWATCH_ALERTS, HOME_WIRE_FEED } from './homeWireFeed';
 import {
@@ -31,11 +30,6 @@ import {
   type NightCityWeatherMode,
 } from './homeWeatherModes';
 import styles from './homeLanding.module.css';
-
-const HomeChromeFlipCard = dynamic(
-  () => import('./HomeChromeFlipCard').then((m) => m.HomeChromeFlipCard),
-  { ssr: false, loading: () => <HomeChromeFlipCardSkeleton /> },
-);
 
 const toneClass = (tone?: TerminalLine['tone']) => {
   if (tone === 'white') return styles.logWhite;
@@ -417,7 +411,7 @@ export const HomeLanding = () => {
 
         <div className={styles.gadgetStrip}>
           <HomeDistrictHolomap />
-          <HomeChromeFlipCard />
+          <HomeChromeFlipCardGate />
           <HomeNightCityWeather
             mode={weatherMode}
             onModeChange={setWeatherMode}
