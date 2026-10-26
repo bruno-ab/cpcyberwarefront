@@ -32,19 +32,23 @@ export const HomeChromeFlipCard = () => {
   const [featured, setFeatured] = useState<CatalogRow | undefined>(undefined);
 
   useEffect(() => {
+    let alive = true;
     setMounted(true);
-    setCatalog(CYBERWARE_CATALOG);
-    setFeatured(pickRandom(CYBERWARE_CATALOG));
+    const local = CYBERWARE_CATALOG;
+    setCatalog(local);
+    setFeatured(pickRandom(local));
 
     fetch(apiUrl('/api/cyberware/catalog'))
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (data?.items?.length) {
-          setCatalog(data.items);
-          setFeatured((prev) => prev ?? pickRandom(data.items));
-        }
+        if (!alive || !data?.items?.length) return;
+        setCatalog(data.items);
+        setFeatured((prev) => prev ?? pickRandom(data.items));
       })
       .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const pool = useMemo(
