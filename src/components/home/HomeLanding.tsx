@@ -30,6 +30,12 @@ import {
   WEATHER_ROTATE_MS,
   type NightCityWeatherMode,
 } from './homeWeatherModes';
+import {
+  HOME_SPONSORED_AD_PLACEHOLDER,
+  pickHomeSponsoredAd,
+  type HomeSponsoredAd,
+  type HomeSponsoredAdIcon,
+} from './homeSponsoredAds';
 import styles from './homeLanding.module.css';
 
 const toneClass = (tone?: TerminalLine['tone']) => {
@@ -64,6 +70,23 @@ const IconBug = () => (
   </svg>
 );
 
+const AD_ICON_PATHS: Record<HomeSponsoredAdIcon, string> = {
+  optics:
+    'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z',
+  chip: 'M9 3V1h2v2h2V1h2v2h1a2 2 0 0 1 2 2v1h2v2h-2v2h2v2h-2v2h2v2h-2v1a2 2 0 0 1-2 2h-1v2h-2v-2h-2v2H9v-2H7v2H5v-2H4a2 2 0 0 1-2-2v-1H1v-2h2v-2H1v-2h2V9H1V7h2V5a2 2 0 0 1 2-2h1zm1 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6z',
+  ripper:
+    'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
+  music:
+    'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z',
+  bolt: 'M11 21h-1l1-7H7.5c-.58 0-.57-.32-.08-.66L16 3h1l-1 7h3.5c.49 0 .56.33.18.66L11 21z',
+};
+
+const SponsoredAdIcon = ({ kind }: { kind: HomeSponsoredAdIcon }) => (
+  <svg className={styles.adIcon} width="36" height="36" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <path d={AD_ICON_PATHS[kind]} />
+  </svg>
+);
+
 export const HomeLanding = () => {
   const rootRef = useRef<HTMLDivElement>(null);
   const { animationsOn } = useMotion();
@@ -77,6 +100,7 @@ export const HomeLanding = () => {
   const [cyberLoad, setCyberLoad] = useState(78);
   const [psychoRisk, setPsychoRisk] = useState(24);
   const [adVisible, setAdVisible] = useState(false);
+  const [sponsoredAd, setSponsoredAd] = useState<HomeSponsoredAd | null>(null);
   const [hackOpen, setHackOpen] = useState(false);
   const [breachPct, setBreachPct] = useState(100);
   const [glitchFlash, setGlitchFlash] = useState(false);
@@ -168,9 +192,13 @@ export const HomeLanding = () => {
   );
 
   useEffect(() => {
+    const picked = pickHomeSponsoredAd();
+    setSponsoredAd(picked);
     const id = window.setTimeout(() => setAdVisible(true), 3000);
     return () => window.clearTimeout(id);
   }, []);
+
+  const activeSponsoredAd = sponsoredAd ?? HOME_SPONSORED_AD_PLACEHOLDER;
 
   useEffect(
     () => () => {
@@ -521,7 +549,7 @@ export const HomeLanding = () => {
       <div
         className={`${styles.adPopup} ${adVisible ? '' : styles.adHidden}`}
         role="complementary"
-        aria-label="Propaganda Kiroshi"
+        aria-label={activeSponsoredAd.ariaLabel}
       >
         <div className={styles.adHead}>
           <span>[PROPAGANDA PATROCINADA]</span>
@@ -538,17 +566,12 @@ export const HomeLanding = () => {
           </button>
         </div>
         <div className={styles.adBody}>
-          <svg className={styles.adIcon} width="36" height="36" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-          </svg>
+          <SponsoredAdIcon kind={activeSponsoredAd.icon} />
           <div>
-            <h4 className={styles.adTitle}>KIROSHI OPTICS MK.IV</h4>
-            <p className={styles.adCopy}>
-              Enxergue o invisível. Realidade aumentada com scanner de pontos fracos
-              corporal.
-            </p>
-            <Link href="/catalog" className={styles.adBuy} onClick={() => beep()}>
-              COMPRAR NA RIPPERDOC »
+            <h4 className={styles.adTitle}>{activeSponsoredAd.title}</h4>
+            <p className={styles.adCopy}>{activeSponsoredAd.copy}</p>
+            <Link href={activeSponsoredAd.href} className={styles.adBuy} onClick={() => beep()}>
+              {activeSponsoredAd.cta}
             </Link>
           </div>
         </div>

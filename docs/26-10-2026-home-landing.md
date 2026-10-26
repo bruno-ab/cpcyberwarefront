@@ -15,7 +15,7 @@ Landing “deck” Night City alinhada ao mock HTML (Out/2026): grid animado, sc
 | N54 | Rotação manual (capitais/megacidades + mercados) + **tape horizontal** com sparklines neon (Arasaka, Nikkei, Militech, Trauma Team, Kang Tao, Petrochem, NCX, EUR$ + Biotechnica, Night Corp, Zetatech, Budget Arms, Kendachi, Tsunami Defense, Dynalar, NetWatch, Raven — mix ▲/▼, scroll no compact). |
 | NCPD | Ticker NetWatch (alertas Tel Aviv ficção) além do wanted + MaxTac. |
 | Neuralink | Barras demo; sobem após falha no modal ICE. |
-| Kiroshi ad | Após 3s; dismiss com glitch; CTA `/catalog`. |
+| Propaganda patrocinada | Após 3s; sorteia peça do pool (chrome / ripper / Samurai); dismiss com glitch; CTA conforme anúncio. |
 | Modal ICE | Deck scan / comando `breach`; link para minigame `/breach`. |
 | `HomeAmbientGags` | Gags raros (matrix slang, invasão, coelho ASCII, barra sync) — só com FX/motion on; não bloqueia cliques. |
 | `HomeDistrictHolomap` | Holoprojetor SVG (wireframe ciano): Watson, Westbrook, Heywood, Pacifica, City Center, Badlands — lore PT + link (`/lore`, `/wiki`, `/map`, `/gigs`). |
