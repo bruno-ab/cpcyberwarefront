@@ -33,5 +33,8 @@
 ## PWA
 - `public/manifest.json` + `sw.js`; cache ficha/livro; não cacheia socket/API
 
+## Conta
+- `/account` — perfil, senha, opções locais, delete; nav **Conta** só logado — `docs/26-10-2026-account.md`
+
 ## Rotas entregues
-- `/book` `/lore` `/map` `/gigs` `/shop` `/wiki` `/table` `/scanner` `/narrator` `/create` `/adventure` `/id-card`
+- `/book` `/lore` `/map` `/gigs` `/shop` `/wiki` `/table` `/scanner` `/narrator` `/create` `/adventure` `/id-card` `/account`

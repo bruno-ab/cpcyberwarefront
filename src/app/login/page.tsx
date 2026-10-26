@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudButton } from '../../components/ui/HudButton';
 import { apiUrl } from '../../lib/api';
+import { setAccessToken } from '../../lib/authSession';
 import styles from './auth.module.css';
 
 const LoginPage = () => {
@@ -32,7 +33,7 @@ const LoginPage = () => {
         return;
       }
       const data = await response.json();
-      localStorage.setItem('access_token', data.access_token);
+      setAccessToken(data.access_token);
       setOk(true);
       setMessage('Link estabelecido.');
       router.push('/characters');

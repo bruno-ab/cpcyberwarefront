@@ -9,6 +9,7 @@ import { SoundToggle } from './SoundToggle';
 import { FontScaleToggle } from './FontScaleToggle';
 import { HeatStrip } from './HeatStrip';
 import { ShardGlyph } from '../secrets/ShardGlyph';
+import { useIsLoggedIn } from '../../hooks/useIsLoggedIn';
 import styles from './AppShell.module.css';
 
 const NAV = [
@@ -32,11 +33,11 @@ const NAV = [
   { href: '/narrator', key: 'narrator' },
   { href: '/table', key: 'table' },
   { href: '/breach', key: 'breach' },
-  { href: '/account', key: 'account' },
 ] as const;
 
 export const AppNav = () => {
   const { t, locale, changeLocale } = useTranslations('common');
+  const loggedIn = useIsLoggedIn();
 
   return (
     <header className={styles.header}>
@@ -56,6 +57,11 @@ export const AppNav = () => {
             ) : null}
           </Link>
         ))}
+        {loggedIn ? (
+          <Link href="/account" className={styles.navLink}>
+            {t('nav.account')}
+          </Link>
+        ) : null}
       </nav>
       <div className={styles.controls}>
         <HeatStrip />

@@ -58,3 +58,85 @@
 .actions a {
   text-decoration: none;
 }
+
+.profileGrid {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.85rem;
+}
+
+.profileGrid dt {
+  margin: 0;
+  color: var(--cp-cyan);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.profileGrid dd {
+  margin: 0.15rem 0 0;
+  color: var(--cp-text);
+}
+
+.sectionForm {
+  margin-top: 0.25rem;
+}
+
+.optionsHint {
+  margin: 0 0 0.75rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.78rem;
+  color: var(--cp-text-dim);
+}
+
+.optionList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.optionList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.82rem;
+  color: var(--cp-text-dim);
+}
+
+.optionList li > span:first-child {
+  flex: 1 1 140px;
+  color: var(--cp-text);
+}
+
+.localeRow {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.stubNote {
+  flex: 1 1 100%;
+  font-size: 0.72rem;
+  color: var(--cp-text-dim);
+  opacity: 0.85;
+}
+
+.dangerText {
+  margin: 0 0 0.75rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.82rem;
+  color: var(--cp-alert-soft);
+  line-height: 1.45;
+}
+
+.error {
+  margin: 0 0 0.75rem;
+  color: var(--cp-alert-soft);
+  font-family: var(--cp-font-mono);
+  font-size: 0.8rem;
+}
