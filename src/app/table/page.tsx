@@ -3472,13 +3472,20 @@ const TablePage = () => {
           onToggle={toggleRightHud}
         >
           <div className={`${styles.side} ${styles.sideStack}`}>
-            <ReactionBar
-              onReact={(id: ReactionId) => {
-                intent('chat:emote', { emote: id });
-                playCyberSound('ui', { volume: 0.3 });
-              }}
-            />
-            <HudPanel title="Combate" className={styles.combatDock}>
+            <HudPanel title="Reações" sectionKey="reactions">
+              <ReactionBar
+                hideTitle
+                onReact={(id: ReactionId) => {
+                  intent('chat:emote', { emote: id });
+                  playCyberSound('ui', { volume: 0.3 });
+                }}
+              />
+            </HudPanel>
+            <HudPanel
+              title="Combate"
+              sectionKey="combat"
+              className={styles.combatDock}
+            >
               <CombatHud
                 isGm={isGm}
                 combatActive={!!state?.combat?.active}
@@ -3532,7 +3539,7 @@ const TablePage = () => {
           {selectedToken &&
             (selectedToken.kind === 'drone' ||
               selectedToken.kind === 'summon') && (
-              <HudPanel title="Drone / Summon">
+              <HudPanel title="Drone / Summon" sectionKey="drone-summon">
                 <DroneHud
                   drone={selectedToken}
                   presence={state?.presence || []}
@@ -3572,7 +3579,7 @@ const TablePage = () => {
               </HudPanel>
             )}
           {isGm && (
-            <HudPanel title="Notas GM">
+            <HudPanel title="Notas GM" sectionKey="gm-notes">
               <GmNotesPanel
                 sceneNotes={sceneNotesDraft}
                 tokenName={selectedToken?.name || null}
@@ -3592,7 +3599,7 @@ const TablePage = () => {
               />
             </HudPanel>
           )}
-          <HudPanel title="Camadas">
+          <HudPanel title="Camadas" sectionKey="layers">
             <LayersPanel
               layers={layers}
               activeLayer={activeLayer}
@@ -3609,7 +3616,7 @@ const TablePage = () => {
               Clique no nome para ativar · VIS mostra/oculta · LCK trava edição
             </p>
           </HudPanel>
-          <HudPanel title="Presença">
+          <HudPanel title="Presença" sectionKey="presence">
             <ul className={styles.plainList}>
               {(state?.presence || []).map((p, i) => (
                 <li key={`${p.playerId}-${i}`}>
@@ -3624,7 +3631,7 @@ const TablePage = () => {
               ))}
             </ul>
           </HudPanel>
-          <HudPanel title="Iniciativa">
+          <HudPanel title="Iniciativa" sectionKey="initiative">
             <ol className={styles.plainList}>
               {(state?.initiative || []).map((ini, i) => (
                 <li
@@ -3645,6 +3652,7 @@ const TablePage = () => {
           {replay.length > 0 && (
             <HudPanel
               title="Braindance replay"
+              sectionKey="braindance-replay"
               className={styles.replayPanel}
             >
               <div className={styles.replayHead}>
@@ -3668,6 +3676,7 @@ const TablePage = () => {
 
           <HudPanel
             title="Chat / Dice"
+            sectionKey="chat-dice"
             className={styles.chatPanel}
             bodyClassName={styles.chatPanelBody}
           >

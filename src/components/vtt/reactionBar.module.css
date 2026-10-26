@@ -9,6 +9,13 @@
   background: rgba(0, 0, 0, 0.28);
 }
 
+.wrapInset {
+  margin-bottom: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
 .label {
   font-family: var(--cp-font-mono, monospace);
   font-size: 0.58rem;

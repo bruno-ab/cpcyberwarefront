@@ -1,0 +1,43 @@
+.section[data-collapsed='1'] .head {
+  border-bottom: none;
+  padding-bottom: 0.75rem;
+}
+
+.collapseBtn {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.collapseBtn:hover .chevron,
+.collapseBtn:focus-visible .chevron {
+  color: var(--cp-cyan);
+}
+
+.collapseBtn:focus-visible {
+  outline: 1px solid var(--cp-cyan);
+  outline-offset: 2px;
+}
+
+.titleText {
+  flex: 1;
+  min-width: 0;
+}
+
+.chevron {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  color: var(--cp-text-dim, #8a9aa8);
+  line-height: 1;
+}

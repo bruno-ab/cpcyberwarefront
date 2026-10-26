@@ -27,11 +27,21 @@ export const REACTIONS: Array<{ id: ReactionId; label: string; hint: string }> =
 type ReactionBarProps = {
   disabled?: boolean;
   onReact: (id: ReactionId) => void;
+  /** Hide inline title when wrapped in HudPanel / HudCollapsibleSection */
+  hideTitle?: boolean;
 };
 
-export const ReactionBar = ({ disabled, onReact }: ReactionBarProps) => (
-  <div className={styles.wrap} role="group" aria-label="Reações rápidas">
-    <span className={styles.label}>Reações</span>
+export const ReactionBar = ({
+  disabled,
+  onReact,
+  hideTitle = false,
+}: ReactionBarProps) => (
+  <div
+    className={`${styles.wrap} ${hideTitle ? styles.wrapInset : ''}`.trim()}
+    role="group"
+    aria-label="Reações rápidas"
+  >
+    {!hideTitle ? <span className={styles.label}>Reações</span> : null}
     <div className={styles.row}>
       {REACTIONS.map((r) => (
         <button
