@@ -1,0 +1,116 @@
+.deck {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cp-border-strong, var(--cp-cyan));
+}
+
+@media (max-width: 760px) {
+  .deck {
+    grid-template-columns: 1fr;
+  }
+}
+
+.widget {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--cp-line, var(--cp-cyan));
+  clip-path: var(--cp-clip);
+  background: var(--cp-bg-panel);
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.widget:hover {
+  box-shadow: var(--cp-glow-cyan);
+  border-color: var(--cp-cyan);
+}
+
+.widgetLabel {
+  font-family: var(--cp-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cp-magenta);
+}
+
+.widgetValue {
+  font-family: var(--cp-font-display);
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cp-yellow);
+}
+
+.widgetMeta {
+  font-size: 0.78rem;
+  color: var(--cp-text-dim);
+  line-height: 1.35;
+}
+
+.widgetMeta[data-reveal] {
+  color: var(--cp-cyan);
+}
+
+.pulseRing {
+  position: absolute;
+  right: 0.65rem;
+  top: 0.65rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cp-alert);
+  box-shadow: 0 0 8px var(--cp-alert);
+  opacity: 0.85;
+}
+
+:global(html:not([data-motion='off'])) .widget[data-heat] .pulseRing {
+  animation: homeHeatPulse 0.55s ease-out;
+}
+
+:global(html:not([data-motion='off'])) .widget:first-child .pulseRing {
+  animation: homeHeatIdle 2.4s ease-in-out infinite;
+}
+
+@keyframes homeHeatIdle {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+}
+
+@keyframes homeHeatPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 8px var(--cp-alert);
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+    box-shadow: 0 0 18px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget:first-child .pulseRing {
+    animation: none !important;
+  }
+
+  .widget[data-heat] .pulseRing {
+    animation: none !important;
+  }
+}

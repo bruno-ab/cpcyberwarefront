@@ -1,0 +1,55 @@
+.wrap {
+  margin: 1.1rem 0 0.35rem;
+}
+
+.primaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.link {
+  text-decoration: none;
+}
+
+.tableMuted {
+  display: inline-flex;
+}
+
+.secondary {
+  font-family: var(--cp-font-mono);
+  color: var(--cp-magenta);
+  font-size: 0.8rem;
+  margin: 0.45rem 0 0;
+}
+
+.secondary a {
+  color: inherit;
+}
+
+:global(html:not([data-motion='off'])) .glitchBtn {
+  animation: homeCtaGlitch 0.34s steps(2, end);
+}
+
+@keyframes homeCtaGlitch {
+  0% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  50% {
+    transform: translate(-1px, 1px);
+    filter: drop-shadow(2px 0 0 var(--cp-alert))
+      drop-shadow(-2px 0 0 var(--cp-cyan));
+  }
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitchBtn {
+    animation: none !important;
+  }
+}

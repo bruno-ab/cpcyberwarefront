@@ -78,7 +78,39 @@
   "home": {
     "hero": "Chrome, sangue e dados.",
     "sub": "Fichas Storyteller, cyberware, lore de Night City e mesa virtual — tudo no mesmo jack.",
-    "soonTable": "Abrir mesa VTT"
+    "soonTable": "Abrir mesa VTT",
+    "cta": {
+      "openTable": "Abrir mesa",
+      "tableLocked": "Entre em uma campanha em Campanhas para jackar a mesa."
+    },
+    "uplink": {
+      "tag": "Night City uplink",
+      "idle": "standby",
+      "syncing": "sinc…",
+      "hint": "Clique para puxar uma linha do feed — MaxTac não paga aluguel.",
+      "aria": "Terminal uplink de Night City",
+      "feed": [
+        "NETWATCH ping: tráfego limpo no distrito Watson. Mentira clássica.",
+        "Fixer anônimo: gig paga em eurodólares e remorso. Aceita?",
+        "Ripperdoc 24/7: capacidade 10/10 — só não pergunte de onde veio o chrome.",
+        "N54 ticker: corpo subiu, mídia desceu. Negócios como sempre.",
+        "Breach whisper: três da manhã é horário de dado vazado e café frio.",
+        "Trauma Team em standby. Você não está na lista. Ainda."
+      ]
+    },
+    "deck": {
+      "aria": "Widgets do deck",
+      "n54Value": "Heat ↑",
+      "n54Meta": "Pulse N54 — abrir noticiário",
+      "scanLabel": "Deck",
+      "scanIdle": "SCAN",
+      "scanDone": "OK",
+      "scanHint": "Toque para varrer o ambiente",
+      "scanTip": "Dica: Edges no catálogo somam cyberpsicose — roleplay, não planilha.",
+      "chromeLabel": "Chrome",
+      "chromeValue": "10 / 10",
+      "chromeMeta": "Capacidade Storyteller — ver peças no catálogo"
+    }
   },
   "catalog": {
     "title": "Catálogo de Cyberware",

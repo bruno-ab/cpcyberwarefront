@@ -1,0 +1,104 @@
+.wrap {
+  margin: 0.35rem 0 0.75rem;
+}
+
+.brandBtn {
+  display: block;
+  padding: 0;
+  margin: 0 0 0.45rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.brand {
+  position: relative;
+  display: inline-block;
+  font-family: var(--cp-font-display);
+  font-size: clamp(1.35rem, 3.2vw, 2rem);
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cp-cyan);
+  text-shadow: var(--cp-glow-cyan);
+}
+
+.brand::before,
+.brand::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.headline {
+  font-size: clamp(1.65rem, 4vw, 2.75rem);
+  line-height: 1.05;
+  color: var(--cp-yellow);
+  text-shadow: var(--cp-glow-yellow);
+  font-family: var(--cp-font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+:global(html:not([data-motion='off'])) .brandBtn:hover .brand {
+  text-shadow:
+    1px 0 var(--cp-alert),
+    -1px 0 var(--cp-cyan),
+    var(--cp-glow-cyan);
+}
+
+:global(html:not([data-motion='off'])) .brandBtn[data-glitch] .brand {
+  animation: homeTitleJitter 0.38s steps(3, end);
+}
+
+:global(html:not([data-motion='off'])) .brandBtn[data-glitch] .brand::before {
+  opacity: 0.65;
+  color: var(--cp-magenta);
+  transform: translate(-2px, 0);
+  clip-path: inset(12% 0 58% 0);
+  animation: homeTitleJitter 0.38s steps(3, end);
+}
+
+:global(html:not([data-motion='off'])) .brandBtn[data-glitch] .brand::after {
+  opacity: 0.55;
+  color: var(--cp-alert);
+  transform: translate(2px, 0);
+  clip-path: inset(48% 0 8% 0);
+  animation: homeTitleJitter 0.38s steps(3, end) reverse;
+}
+
+@keyframes homeTitleJitter {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(-1px, 1px);
+  }
+  66% {
+    transform: translate(2px, -1px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brandBtn[data-glitch] .brand,
+  .brandBtn[data-glitch] .brand::before,
+  .brandBtn[data-glitch] .brand::after {
+    animation: none !important;
+  }
+
+  .brandBtn[data-glitch] .brand::before,
+  .brandBtn[data-glitch] .brand::after {
+    opacity: 0;
+  }
+}

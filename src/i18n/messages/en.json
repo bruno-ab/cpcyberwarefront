@@ -78,7 +78,39 @@
   "home": {
     "hero": "Chrome, blood and data.",
     "sub": "Storyteller sheets, cyberware, Night City lore and a virtual table — one jack.",
-    "soonTable": "Open VTT table"
+    "soonTable": "Open VTT table",
+    "cta": {
+      "openTable": "Open table",
+      "tableLocked": "Join a campaign under Campaigns to jack into the table."
+    },
+    "uplink": {
+      "tag": "Night City uplink",
+      "idle": "standby",
+      "syncing": "sync…",
+      "hint": "Click to pull a feed line — MaxTac doesn't pay rent.",
+      "aria": "Night City uplink terminal",
+      "feed": [
+        "NetWatch ping: clean traffic in Watson. Classic lie.",
+        "Anonymous fixer: gig pays in eurodollars and regret. In?",
+        "Ripperdoc 24/7: capacity 10/10 — don't ask where the chrome came from.",
+        "N54 ticker: corpo up, media down. Business as usual.",
+        "Breach whisper: 3 a.m. is leaked data and cold coffee hour.",
+        "Trauma Team on standby. You're not on the list. Yet."
+      ]
+    },
+    "deck": {
+      "aria": "Deck widgets",
+      "n54Value": "Heat ↑",
+      "n54Meta": "N54 pulse — open news feed",
+      "scanLabel": "Deck",
+      "scanIdle": "SCAN",
+      "scanDone": "OK",
+      "scanHint": "Tap to sweep the room",
+      "scanTip": "Tip: Edges in the catalog feed cyberpsychosis — roleplay, not spreadsheets.",
+      "chromeLabel": "Chrome",
+      "chromeValue": "10 / 10",
+      "chromeMeta": "Storyteller capacity — browse the catalog"
+    }
   },
   "catalog": {
     "title": "Cyberware Catalog",

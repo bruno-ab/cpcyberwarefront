@@ -1,0 +1,160 @@
+.frame {
+  position: relative;
+  border: 1px solid var(--cp-line, var(--cp-cyan));
+  clip-path: var(--cp-clip);
+  box-shadow: var(--cp-glow-cyan);
+  overflow: hidden;
+  background: var(--cp-bg-panel);
+  min-height: 280px;
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.45) 2px,
+    rgba(0, 0, 0, 0.45) 4px
+  );
+  z-index: 2;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.65);
+  z-index: 2;
+}
+
+.terminal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  z-index: 1;
+}
+
+.termHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--cp-border-strong, var(--cp-cyan));
+  font-family: var(--cp-font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.termTag {
+  color: var(--cp-magenta);
+}
+
+.termStatus {
+  color: var(--cp-cyan-dim);
+}
+
+.termStatus[data-busy] {
+  color: var(--cp-yellow);
+}
+
+.skyline {
+  position: relative;
+  max-height: 140px;
+  overflow: hidden;
+  opacity: 0.92;
+}
+
+.skySvg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.logPane {
+  flex: 1;
+  padding: 0.65rem 0.75rem 0.75rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--cp-text-dim);
+}
+
+.logLine {
+  margin: 0 0 0.25rem;
+  word-break: break-word;
+}
+
+.logLine[data-glitch] {
+  color: var(--cp-alert-soft);
+}
+
+.logLine[data-active] {
+  color: var(--cp-cyan);
+}
+
+.prompt {
+  color: var(--cp-magenta);
+  margin-right: 0.35rem;
+}
+
+.cursor {
+  display: inline-block;
+  margin-left: 1px;
+  animation: homeCursor 1s step-end infinite;
+}
+
+.hint {
+  margin: 0.65rem 0 0;
+  font-size: 0.68rem;
+  color: var(--cp-text-dim);
+  opacity: 0.85;
+}
+
+:global(html:not([data-motion='off'])) .logLine[data-glitch] {
+  animation: homeLogGlitch 0.28s steps(2, end);
+}
+
+@keyframes homeCursor {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes homeLogGlitch {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(2px, 0);
+    filter: hue-rotate(25deg);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor {
+    animation: none;
+  }
+
+  .logLine[data-glitch] {
+    animation: none !important;
+  }
+}
