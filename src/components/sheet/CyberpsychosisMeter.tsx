@@ -17,6 +17,14 @@ type Props = {
 
 const SEGMENTS = 10;
 
+/** Mesmo limiar de `statusLabel` (“Carga crítica”) — barras vermelhas a partir da 8ª. */
+export const CYBERPSYCHOSIS_CRITICAL_RATIO = 0.75;
+
+export const isCyberpsychosisCritical = (
+  ratio: number,
+  inPsycho: boolean,
+): boolean => inPsycho || ratio >= CYBERPSYCHOSIS_CRITICAL_RATIO;
+
 /** Cor por posição na escala (0 = verde … 1 = vermelho). */
 const segmentColor = (t: number) => {
   const clamped = Math.max(0, Math.min(1, t));
@@ -63,13 +71,24 @@ export const CyberpsychosisMeter = ({
     SEGMENTS,
     Math.max(0, Math.ceil(Math.min(ratio, 1.25) * SEGMENTS)),
   );
+  const isCritical = isCyberpsychosisCritical(ratio, inPsycho);
 
   return (
     <section
-      className={styles.wrap}
+      className={`${styles.wrap}${isCritical ? ` ${styles.critical}` : ''}`}
       data-psycho={inPsycho ? '1' : '0'}
+      data-severity={isCritical ? 'red' : 'normal'}
       aria-label="Medidor de cyberpsicose"
     >
+      {isCritical ? (
+        <div className={styles.alertRow} role="status">
+          <span className={styles.alertBadge}>Alerta · Cyberpsicose</span>
+          <span className={styles.alertHint}>
+            {inPsycho ? 'Psicose ativa — estabilize na mesa' : 'Risco crítico'}
+          </span>
+        </div>
+      ) : null}
+
       <header className={styles.head}>
         <h3 className={styles.title}>Cyberpsicose</h3>
         <span className={styles.meta}>
@@ -108,7 +127,11 @@ export const CyberpsychosisMeter = ({
         })}
       </div>
 
-      <p className={styles.status} data-warn={inPsycho ? '1' : '0'}>
+      <p
+        className={styles.status}
+        data-warn={inPsycho ? '1' : '0'}
+        data-critical={isCritical ? '1' : '0'}
+      >
         {statusLabel(ratio, inPsycho, severity)}
       </p>
     </section>

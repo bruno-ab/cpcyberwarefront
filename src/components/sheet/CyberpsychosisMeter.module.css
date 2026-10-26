@@ -9,29 +9,169 @@
   overflow: hidden;
 }
 
-.wrap[data-psycho='1'] {
-  border-color: color-mix(in srgb, #ff2a2a 70%, transparent);
-  box-shadow: 0 0 18px rgba(255, 42, 42, 0.22);
-  animation: psychoPulse 1.8s ease-in-out infinite;
+.wrap.critical,
+.wrap[data-severity='red'] {
+  border-color: color-mix(in srgb, #ff2a2a 72%, transparent);
+  box-shadow:
+    0 0 16px rgba(255, 42, 42, 0.22),
+    inset 0 0 24px rgba(255, 42, 42, 0.04);
+  animation: criticalBorderPulse 2.4s ease-in-out infinite;
 }
 
-@keyframes psychoPulse {
+.wrap.critical::before,
+.wrap[data-severity='red']::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0.12;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 42, 42, 0.35) 2px,
+    rgba(255, 42, 42, 0.35) 3px
+  );
+  animation: scanlineFlicker 3.5s steps(2) infinite;
+  mix-blend-mode: screen;
+}
+
+.wrap.critical::after,
+.wrap[data-severity='red']::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: -2px;
+  z-index: 1;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 0, 64, 0.22),
+    rgba(0, 240, 255, 0.12),
+    rgba(255, 42, 42, 0.2)
+  );
+  animation: chromaVeil 4.2s ease-in-out infinite;
+  mix-blend-mode: color-dodge;
+}
+
+@keyframes criticalBorderPulse {
   0%,
   100% {
-    box-shadow: 0 0 12px rgba(255, 42, 42, 0.18);
+    box-shadow:
+      0 0 12px rgba(255, 42, 42, 0.18),
+      inset 0 0 20px rgba(255, 42, 42, 0.03);
   }
   50% {
-    box-shadow: 0 0 22px rgba(255, 42, 42, 0.4);
+    box-shadow:
+      0 0 24px rgba(255, 42, 42, 0.38),
+      inset 0 0 28px rgba(255, 42, 42, 0.07);
   }
+}
+
+@keyframes scanlineFlicker {
+  0%,
+  88%,
+  100% {
+    opacity: 0.08;
+  }
+  90% {
+    opacity: 0.2;
+  }
+  92% {
+    opacity: 0.06;
+  }
+}
+
+@keyframes chromaVeil {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  48% {
+    opacity: 0.14;
+    transform: translateX(-1px);
+  }
+  50% {
+    opacity: 0.22;
+    transform: translateX(2px);
+  }
+  52% {
+    opacity: 0.1;
+    transform: translateX(-2px);
+  }
+}
+
+@keyframes titleGlitch {
+  0%,
+  96%,
+  100% {
+    transform: translate(0, 0);
+    text-shadow: var(--cp-glow-yellow);
+  }
+  97% {
+    transform: translate(-1px, 0);
+    text-shadow:
+      2px 0 rgba(255, 42, 42, 0.65),
+      -2px 0 rgba(0, 240, 255, 0.45),
+      var(--cp-glow-yellow);
+  }
+  98% {
+    transform: translate(1px, 1px);
+    text-shadow:
+      -1px 0 rgba(255, 42, 42, 0.5),
+      1px 0 rgba(0, 240, 255, 0.35),
+      var(--cp-glow-yellow);
+  }
+}
+
+.alertRow {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  margin: -0.15rem 0 0.55rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid color-mix(in srgb, #ff2a2a 55%, transparent);
+  background: color-mix(in srgb, #ff2a2a 12%, rgba(0, 0, 0, 0.55));
+}
+
+.alertBadge {
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #ff5c5c;
+  text-shadow: 0 0 10px rgba(255, 42, 42, 0.55);
+}
+
+.alertHint {
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, #ffb4b4 85%, var(--cp-text-dim));
 }
 
 .head {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.35rem 1rem;
   margin-bottom: 0.65rem;
+}
+
+.wrap.critical .title,
+.wrap[data-severity='red'] .title {
+  color: color-mix(in srgb, var(--cp-yellow) 55%, #ff5c5c);
+  animation: titleGlitch 5.5s steps(1) infinite;
 }
 
 .title {
@@ -53,11 +193,32 @@
 }
 
 .track {
+  position: relative;
+  z-index: 3;
   display: grid;
   grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 0.35rem;
   width: 100%;
   min-height: 1.35rem;
+}
+
+.wrap.critical .track,
+.wrap[data-severity='red'] .track {
+  animation: trackJitter 4.8s steps(2) infinite;
+}
+
+@keyframes trackJitter {
+  0%,
+  94%,
+  100% {
+    transform: translate(0, 0);
+  }
+  95% {
+    transform: translate(1px, 0);
+  }
+  96% {
+    transform: translate(-1px, 0);
+  }
 }
 
 .bar {
@@ -75,6 +236,8 @@
 }
 
 .status {
+  position: relative;
+  z-index: 3;
   margin: 0.55rem 0 0;
   font-family: var(--cp-font-mono);
   font-size: 0.72rem;
@@ -82,9 +245,68 @@
   color: #1db954;
 }
 
+.status[data-critical='1'] {
+  color: #ff6b35;
+  text-shadow: 0 0 8px rgba(255, 107, 53, 0.35);
+}
+
 .status[data-warn='1'] {
   color: #ff2a2a;
   text-shadow: 0 0 8px rgba(255, 42, 42, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap.critical,
+  .wrap[data-severity='red'],
+  .wrap.critical .title,
+  .wrap[data-severity='red'] .title,
+  .wrap.critical .track,
+  .wrap[data-severity='red'] .track,
+  .wrap.critical::before,
+  .wrap[data-severity='red']::before,
+  .wrap.critical::after,
+  .wrap[data-severity='red']::after {
+    animation: none;
+  }
+
+  .wrap.critical::before,
+  .wrap[data-severity='red']::before {
+    opacity: 0.1;
+  }
+
+  .wrap.critical .title,
+  .wrap[data-severity='red'] .title {
+    text-shadow:
+      1px 0 rgba(255, 42, 42, 0.45),
+      -1px 0 rgba(0, 240, 255, 0.25),
+      var(--cp-glow-yellow);
+  }
+}
+
+:global(html[data-motion='off']) .wrap.critical,
+:global(html[data-motion='off']) .wrap[data-severity='red'],
+:global(html[data-motion='off']) .wrap.critical .title,
+:global(html[data-motion='off']) .wrap[data-severity='red'] .title,
+:global(html[data-motion='off']) .wrap.critical .track,
+:global(html[data-motion='off']) .wrap[data-severity='red'] .track,
+:global(html[data-motion='off']) .wrap.critical::before,
+:global(html[data-motion='off']) .wrap[data-severity='red']::before,
+:global(html[data-motion='off']) .wrap.critical::after,
+:global(html[data-motion='off']) .wrap[data-severity='red']::after {
+  animation: none;
+}
+
+:global(html[data-motion='off']) .wrap.critical::before,
+:global(html[data-motion='off']) .wrap[data-severity='red']::before {
+  opacity: 0.1;
+}
+
+:global(html[data-motion='off']) .wrap.critical .title,
+:global(html[data-motion='off']) .wrap[data-severity='red'] .title {
+  text-shadow:
+    1px 0 rgba(255, 42, 42, 0.45),
+    -1px 0 rgba(0, 240, 255, 0.25),
+    var(--cp-glow-yellow);
 }
 
 @media (max-width: 640px) {
