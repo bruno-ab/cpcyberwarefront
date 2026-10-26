@@ -251,6 +251,12 @@ html[data-motion='off'] .panel[data-glitch='true'] .panelTitle {
   color: var(--cp-text-dim);
 }
 
+.nextPath {
+  color: var(--auth-yellow);
+  font-weight: 600;
+  word-break: break-all;
+}
+
 .fieldError {
   margin: 0;
   font-size: 0.72rem;

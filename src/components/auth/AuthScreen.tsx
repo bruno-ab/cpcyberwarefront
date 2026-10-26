@@ -25,7 +25,7 @@ export const AuthScreen = ({
       <div className={styles.scanlines} aria-hidden />
       <div className={styles.gridGlow} aria-hidden />
       <main className={styles.main}>
-        <Link href="/login" className={styles.logo} aria-label="Cyberpunk Storyteller">
+        <Link href="/" className={styles.logo} aria-label="Cyberpunk Storyteller — início">
           <span className={styles.logoMark}>NC</span>
           <span className={styles.logoText}>
             <strong>Cyberpunk Storyteller</strong>

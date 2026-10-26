@@ -23,7 +23,12 @@ export const VttAccessGate = ({
   <div className={styles.wrap}>
     <HudPanel title={title}>
       {loading ? (
-        <div className={styles.loadingBlock} aria-busy="true">
+        <div
+          className={styles.loadingBlock}
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
           <span className={styles.spinner} aria-hidden />
           <p className={styles.msg}>{message}</p>
         </div>

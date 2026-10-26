@@ -16,6 +16,7 @@ import {
   type CampaignRow,
   type MineCampaignsResponse,
 } from '../../lib/campaignsApi';
+import { authLoginHref } from '../../lib/authRoutes';
 import styles from './campaigns.module.css';
 
 const CampaignCard = ({
@@ -147,7 +148,7 @@ const CampaignsPage = () => {
               Faça login para ver campanhas vinculadas à sua conta.
             </p>
             <div className={styles.actions}>
-              <Link href="/login">
+              <Link href={authLoginHref('/campaigns')}>
                 <HudButton>Entrar na conta</HudButton>
               </Link>
             </div>

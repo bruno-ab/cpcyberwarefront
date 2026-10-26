@@ -120,11 +120,12 @@ const RegisterForm = () => {
             }}
             className={`${ui.input} ${nameError ? ui.inputInvalid : ''}`.trim()}
             aria-invalid={nameError ? true : undefined}
+            aria-describedby={nameError ? 'reg-name-error' : undefined}
             disabled={busy}
             required
           />
           {nameError ? (
-            <p className={ui.fieldError} role="alert">
+            <p id="reg-name-error" className={ui.fieldError} role="alert">
               {nameError}
             </p>
           ) : null}
@@ -145,11 +146,13 @@ const RegisterForm = () => {
               if (email && !emailOk(email)) setEmailError('Email inválido.');
             }}
             className={`${ui.input} ${emailError ? ui.inputInvalid : ''}`.trim()}
+            aria-invalid={emailError ? true : undefined}
+            aria-describedby={emailError ? 'reg-email-error' : undefined}
             disabled={busy}
             required
           />
           {emailError ? (
-            <p className={ui.fieldError} role="alert">
+            <p id="reg-email-error" className={ui.fieldError} role="alert">
               {emailError}
             </p>
           ) : null}

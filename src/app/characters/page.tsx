@@ -88,9 +88,11 @@ const CharactersPage = () => {
               para entrar na mesa. Um personagem por campanha.
             </p>
           </div>
-          <Link href="/characters/create">
-            <HudButton>Novo personagem</HudButton>
-          </Link>
+          {hasToken ? (
+            <Link href="/characters/create">
+              <HudButton>Novo personagem</HudButton>
+            </Link>
+          ) : null}
         </header>
 
         {!hasToken && (
@@ -106,7 +108,13 @@ const CharactersPage = () => {
 
         <HudPanel title="Minhas fichas">
           {loading ? (
-            <p className={styles.status}>Carregando…</p>
+            <p className={styles.status} aria-busy="true">
+              Carregando…
+            </p>
+          ) : !hasToken ? (
+            <p className={styles.empty}>
+              Faça login para listar e criar personagens.
+            </p>
           ) : rows.length === 0 ? (
             <>
               <p className={styles.status}>

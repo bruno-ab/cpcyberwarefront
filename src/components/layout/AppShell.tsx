@@ -74,13 +74,25 @@ export const AppNav = () => {
         {(loggedIn ? PRIMARY_WHEN_LOGGED_IN : PRIMARY_WHEN_LOGGED_OUT).map(
           (item) => {
             if (loggedIn && item.key === 'table') {
-              const disabled = !tableNavLoading && !canOpenTable;
+              if (tableNavLoading) {
+                return (
+                  <span
+                    key={item.href}
+                    className={`${styles.navLink} ${styles.navLinkPrimary} ${styles.navLinkPending}`}
+                    aria-busy="true"
+                  >
+                    {t(`nav.${item.key}`)}…
+                  </span>
+                );
+              }
+              const disabled = !canOpenTable;
               if (disabled) {
                 return (
                   <span
                     key={item.href}
                     className={`${styles.navLink} ${styles.navLinkDisabled}`}
                     title="Entre em uma campanha em Campanhas para abrir a mesa."
+                    aria-disabled="true"
                   >
                     {t(`nav.${item.key}`)}
                   </span>

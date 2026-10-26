@@ -21,6 +21,7 @@ import {
   fetchAccountMe,
   type AccountProfile,
 } from '../../lib/accountApi';
+import { authLoginHref, authRegisterHref } from '../../lib/authRoutes';
 import { clearAccessToken, getAccessToken } from '../../lib/authSession';
 import styles from './account.module.css';
 import authStyles from '../login/auth.module.css';
@@ -180,10 +181,10 @@ const AccountPage = () => {
               <strong data-ok={false}>{t('statusOffline')}</strong>
             </p>
             <div className={styles.actions}>
-              <Link href="/login">
+              <Link href={authLoginHref('/account')}>
                 <HudButton>{t('jackIn')}</HudButton>
               </Link>
-              <Link href="/register">
+              <Link href={authRegisterHref('/account')}>
                 <HudButton variant="ghost">{t('register')}</HudButton>
               </Link>
             </div>
@@ -214,7 +215,7 @@ const AccountPage = () => {
                 <p className={styles.status}>{tc('loading')}</p>
               )}
               <div className={styles.actions}>
-                <Link href="/campaigns">
+                <Link href="/characters">
                   <HudButton>{t('characters')}</HudButton>
                 </Link>
                 <HudButton variant="ghost" type="button" onClick={logout}>
@@ -264,7 +265,12 @@ const AccountPage = () => {
                   />
                 </div>
                 {passwordMsg ? (
-                  <p className={authStyles.msg} data-ok={passwordOk}>
+                  <p
+                    className={authStyles.msg}
+                    data-ok={passwordOk}
+                    role="alert"
+                    aria-live="polite"
+                  >
                     {passwordMsg}
                   </p>
                 ) : null}

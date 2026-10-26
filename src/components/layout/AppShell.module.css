@@ -228,6 +228,12 @@
   pointer-events: none;
 }
 
+.navLinkPending {
+  opacity: 0.65;
+  cursor: wait;
+  pointer-events: none;
+}
+
 .soon {
   margin-left: 0.25rem;
   font-size: 0.6rem;
@@ -411,4 +417,34 @@
 
 .footerSig {
   pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .header {
+    align-items: stretch;
+  }
+
+  .nav {
+    flex: none;
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 0.35rem;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent
+    );
+  }
+
+  .controls {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, Suspense, useMemo, useState } from 'react';
+import { FormEvent, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthScreen } from '../../components/auth/AuthScreen';
@@ -31,6 +31,11 @@ const LoginPageContent = () => {
   const registerHref = nextRaw
     ? `/register?next=${encodeURIComponent(nextRaw)}`
     : '/register';
+  const emailRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    emailRef.current?.focus();
+  }, []);
 
   const validate = (): boolean => {
     let ok = true;
@@ -87,10 +92,17 @@ const LoginPageContent = () => {
       }
     >
       <AuthToast message={toast} onDismiss={() => setToast('')} />
+      {nextPath !== '/campaigns' ? (
+        <p className={ui.fieldHint} role="status">
+          Destino após login:{' '}
+          <strong className={ui.nextPath}>{nextPath}</strong>
+        </p>
+      ) : null}
       <form className={ui.form} onSubmit={handleSubmit} noValidate>
         <div className={ui.field}>
           <label htmlFor="login-email">Email</label>
           <input
+            ref={emailRef}
             id="login-email"
             type="email"
             autoComplete="username"
