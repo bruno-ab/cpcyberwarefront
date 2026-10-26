@@ -21,7 +21,6 @@ const PRIMARY_WHEN_LOGGED_IN = [
 ] as const;
 
 const NAV = [
-  { href: '/characters', key: 'characters' },
   { href: '/cyberware', key: 'cyberware' },
   { href: '/catalog', key: 'catalog' },
   { href: '/book', key: 'book' },
@@ -37,7 +36,6 @@ const NAV = [
   { href: '/achievements', key: 'achievements' },
   { href: '/memorial', key: 'memorial' },
   { href: '/id-card', key: 'idCard' },
-  { href: '/sheet', key: 'sheet' },
   { href: '/narrator', key: 'narrator' },
   { href: '/table', key: 'table' },
   { href: '/breach', key: 'breach' },

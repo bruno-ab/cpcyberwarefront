@@ -54,6 +54,11 @@ const CampaignDetailPage = () => {
 
   const playerId = getPlayerIdFromToken();
   const isGm = campaign != null && Number(campaign.gmPlayerId) === playerId;
+  const isMember =
+    campaign != null &&
+    playerId != null &&
+    (isGm ||
+      (campaign.memberPlayerIds || []).some((id) => Number(id) === playerId));
 
   const loadCampaign = useCallback(async () => {
     if (!Number.isFinite(campaignId) || campaignId <= 0) return;
@@ -456,15 +461,17 @@ const CampaignDetailPage = () => {
             <>
               <p className={styles.empty}>
                 Nenhum personagem no roster desta campanha.
+                {isMember
+                  ? ' Crie sua ficha aqui para entrar na mesa.'
+                  : ' Aceite o convite do narrador antes de criar personagem.'}
               </p>
-              <div className={styles.ctaRow}>
-                <Link href="/characters">
-                  <HudButton variant="ghost">Criar personagem</HudButton>
-                </Link>
-                <Link href="/sheet">
-                  <HudButton variant="ghost">Abrir fichas</HudButton>
-                </Link>
-              </div>
+              {isMember ? (
+                <div className={styles.ctaRow}>
+                  <Link href={`/campaigns/${campaignId}/create-character`}>
+                    <HudButton>Criar personagem</HudButton>
+                  </Link>
+                </div>
+              ) : null}
             </>
           ) : (
             <ul className={styles.list}>
@@ -474,6 +481,9 @@ const CampaignDetailPage = () => {
                     <strong>{c.name}</strong>
                     {c.role ? ` · ${c.role}` : ''}
                   </span>
+                  <Link href={`/sheet?id=${encodeURIComponent(String(c.id))}`}>
+                    Abrir ficha
+                  </Link>
                 </li>
               ))}
             </ul>

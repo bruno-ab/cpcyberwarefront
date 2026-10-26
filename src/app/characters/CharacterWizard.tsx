@@ -42,10 +42,17 @@ const initial: FormState = {
 };
 
 type Props = {
+  campaignId: number;
   onCreated?: () => void;
+  /** After success, go here instead of /sheet when set. */
+  afterCreateHref?: string;
 };
 
-export const CharacterWizard = ({ onCreated }: Props) => {
+export const CharacterWizard = ({
+  campaignId,
+  onCreated,
+  afterCreateHref,
+}: Props) => {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initial);
@@ -76,6 +83,7 @@ export const CharacterWizard = ({ onCreated }: Props) => {
           name: form.name.trim(),
           role: form.role,
           notes: form.notes,
+          campaignId,
           header: {
             age: form.age,
             city: form.city || 'Night City',
@@ -95,7 +103,10 @@ export const CharacterWizard = ({ onCreated }: Props) => {
       onCreated?.();
       const id = created?.id;
       if (id) {
-        setTimeout(() => router.push(`/sheet?id=${id}`), 600);
+        const target =
+          afterCreateHref ||
+          `/sheet?id=${encodeURIComponent(String(id))}`;
+        setTimeout(() => router.push(target), 600);
       } else {
         setForm(initial);
         setStep(0);

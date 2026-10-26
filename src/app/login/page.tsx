@@ -36,7 +36,7 @@ const LoginPage = () => {
       setAccessToken(data.access_token);
       setOk(true);
       setMessage('Link estabelecido.');
-      router.push('/characters');
+      router.push('/campaigns');
     } catch {
       setMessage('Falha de rede. Damn Arasaka.');
     } finally {

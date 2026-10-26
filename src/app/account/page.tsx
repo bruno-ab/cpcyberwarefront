@@ -214,7 +214,7 @@ const AccountPage = () => {
                 <p className={styles.status}>{tc('loading')}</p>
               )}
               <div className={styles.actions}>
-                <Link href="/characters">
+                <Link href="/campaigns">
                   <HudButton>{t('characters')}</HudButton>
                 </Link>
                 <HudButton variant="ghost" type="button" onClick={logout}>

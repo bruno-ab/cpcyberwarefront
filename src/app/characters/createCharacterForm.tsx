@@ -27,13 +27,18 @@ export function CreateCharacterForm() {
     void loadCampaigns();
   }, [loadCampaigns]);
 
-  const requireCampaign = campaigns.length >= 1;
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    if (requireCampaign && !campaignId) {
+    if (!campaignId) {
       setMessage('Escolha a campanha deste personagem.');
+      return;
+    }
+
+    if (campaigns.length === 0) {
+      setMessage(
+        'Você não participa de nenhuma campanha. Peça um convite ao narrador.',
+      );
       return;
     }
 
@@ -42,10 +47,8 @@ export function CreateCharacterForm() {
       role: role,
       metadata: '',
       cyberwares: [],
+      campaignId: Number(campaignId),
     };
-    if (campaignId) {
-      data.campaignId = Number(campaignId);
-    }
 
     try {
       const response = await fetch(apiUrl('/api/characters'), {
@@ -54,7 +57,13 @@ export function CreateCharacterForm() {
         body: JSON.stringify(data),
       });
       if (response.ok) {
-        router.push('/characters');
+        const created = await response.json().catch(() => null);
+        const id = created?.id;
+        if (id) {
+          router.push(`/sheet?id=${encodeURIComponent(String(id))}`);
+        } else {
+          router.push(`/campaigns/${campaignId}`);
+        }
       } else {
         const err = await response.json().catch(() => null);
         const detail =
@@ -108,11 +117,9 @@ export function CreateCharacterForm() {
                 className="nav-message"
                 value={campaignId}
                 onChange={(e) => setCampaignId(e.target.value)}
-                required={requireCampaign}
+                required
               >
-                <option value="">
-                  {requireCampaign ? 'Selecione…' : 'Sem campanha (opcional)'}
-                </option>
+                <option value="">Selecione…</option>
                 {campaigns.map((c) => (
                   <option key={c.id} value={String(c.id)}>
                     {c.name} (ID {c.id})
@@ -122,10 +129,15 @@ export function CreateCharacterForm() {
             </div>
             <p className={styles.hint}>
               Um personagem só pode pertencer a uma campanha. Aceite convites em
-              /campaigns antes de criar a ficha, se necessário.
+              Campanhas antes de criar a ficha.
             </p>
           </>
-        ) : null}
+        ) : (
+          <p className={styles.hint}>
+            Sem campanhas na conta. Crie uma como narrador ou aceite um convite
+            antes de registrar personagem.
+          </p>
+        )}
         {message ? <p className={styles.hint}>{message}</p> : null}
         <button type="submit" className="button button--primary button--size-xl">
           Criar personagem
