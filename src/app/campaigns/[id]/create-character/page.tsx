@@ -24,7 +24,7 @@ const CreateCharacterInCampaignPage = () => {
 
   const isMember = useMemo(() => {
     if (!campaign || !playerId) return false;
-    if Number(campaign.gmPlayerId) === playerId) return true;
+    if (Number(campaign.gmPlayerId) === playerId) return true;
     return (campaign.memberPlayerIds || []).some(
       (id) => Number(id) === playerId,
     );
