@@ -19,7 +19,16 @@ import {
   type TerminalLine,
 } from './homeTerminalCommands';
 import { HomeMarketTape } from './HomeMarketTape';
+import { HomeDistrictHolomap } from './HomeDistrictHolomap';
+import { HomeChromeFlipCard } from './HomeChromeFlipCard';
+import { HomeNightCityWeather } from './HomeNightCityWeather';
 import { HOME_NETWATCH_ALERTS, HOME_WIRE_FEED } from './homeWireFeed';
+import {
+  nextWeatherMode,
+  weatherDef,
+  WEATHER_ROTATE_MS,
+  type NightCityWeatherMode,
+} from './homeWeatherModes';
 import styles from './homeLanding.module.css';
 
 const toneClass = (tone?: TerminalLine['tone']) => {
@@ -71,6 +80,8 @@ export const HomeLanding = () => {
   const [breachPct, setBreachPct] = useState(100);
   const [glitchFlash, setGlitchFlash] = useState(false);
   const breachTimer = useRef<number | null>(null);
+  const [weatherMode, setWeatherMode] = useState<NightCityWeatherMode>('acid-rain');
+  const weatherAuto = animationsOn;
 
   const appendLog = useCallback((line: TerminalLine | TerminalLine[]) => {
     setLogs((prev) => {
@@ -169,6 +180,14 @@ export const HomeLanding = () => {
     [],
   );
 
+  useEffect(() => {
+    if (!weatherAuto) return undefined;
+    const id = window.setInterval(() => {
+      setWeatherMode((m) => nextWeatherMode(m));
+    }, WEATHER_ROTATE_MS);
+    return () => window.clearInterval(id);
+  }, [weatherAuto]);
+
   const onTerminalSubmit = (e: FormEvent) => {
     e.preventDefault();
     const val = termInput.trim();
@@ -201,6 +220,7 @@ export const HomeLanding = () => {
   };
 
   const wireItem = HOME_WIRE_FEED[newsIdx];
+  const weatherHud = weatherDef(weatherMode);
 
   const tableHref =
     loggedIn && (tableLoading || canOpenTable) ? '/table' : '/login';
@@ -210,6 +230,17 @@ export const HomeLanding = () => {
   return (
     <div ref={rootRef} className={styles.landing}>
       <HomeCyberGrid />
+      <div
+        className={styles.weatherFxLayer}
+        data-mode={weatherMode}
+        aria-hidden
+      />
+      <div
+        className={styles.weatherScanBoost}
+        data-mode={weatherMode}
+        data-animate={weatherAuto || undefined}
+        aria-hidden
+      />
       <div className={styles.scanlines} aria-hidden />
       <div className={styles.alarmOverlay} data-active={alarm || undefined} aria-hidden />
       <div
@@ -230,6 +261,10 @@ export const HomeLanding = () => {
             <span className={styles.dim}>|</span>
             <span className={styles.dim}>
               LINK: <span className={styles.ok}>NEURALINK ONLINE</span>
+            </span>
+            <span className={styles.dim}>|</span>
+            <span className={styles.climaHud} title={weatherHud.ambient}>
+              {weatherHud.hudLabel}
             </span>
           </div>
           <button
@@ -372,6 +407,16 @@ export const HomeLanding = () => {
               </button>
             </form>
           </aside>
+        </div>
+
+        <div className={styles.gadgetStrip}>
+          <HomeDistrictHolomap />
+          <HomeChromeFlipCard />
+          <HomeNightCityWeather
+            mode={weatherMode}
+            onModeChange={setWeatherMode}
+            autoRotate={weatherAuto}
+          />
         </div>
 
         <div className={styles.modules}>

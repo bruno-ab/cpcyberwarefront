@@ -18,11 +18,24 @@ Landing “deck” Night City alinhada ao mock HTML (Out/2026): grid animado, sc
 | Kiroshi ad | Após 3s; dismiss com glitch; CTA `/catalog`. |
 | Modal ICE | Deck scan / comando `breach`; link para minigame `/breach`. |
 | `HomeAmbientGags` | Gags raros (matrix slang, invasão, coelho ASCII, barra sync) — só com FX/motion on; não bloqueia cliques. |
+| `HomeDistrictHolomap` | Holoprojetor SVG (wireframe ciano): Watson, Westbrook, Heywood, Pacifica, City Center, Badlands — lore PT + link (`/lore`, `/wiki`, `/map`, `/gigs`). |
+| `HomeChromeFlipCard` | Cartão chrome CSS 3D; verso sorteia peça de `/api/cyberware/catalog` (fallback catálogo local) + link `/catalog`. Flip instantâneo com FX off / reduced motion. |
+| `HomeNightCityWeather` | Ciclo manual + auto (4 min com FX on): chuva ácida, smog, corpo zero, céu limpo. Tint/overlay na landing; HUD `CLIMA:` na status bar. FX off = tint estático, sem animação. |
+
+## Layout dos gadgets
+
+Entre o **heroGrid** (mesa + terminal) e a **fileira de módulos** (NCPD / N54 / Neuralink):
+
+1. **Holomap** — coluna larga (2fr ≥1100px); mapa + painel de lore.
+2. **Chrome flip card** — coluna estreita ao lado.
+3. **Meteo NC** — coluna estreita; controla o clima global da landing.
+
+Em tablet (768–1099px): holomap ocupa linha inteira; cartão e clima dividem a linha de baixo.
 
 ## Arquivos
 
 - `src/app/page.tsx`
-- `src/components/home/HomeLanding.tsx`, `HomeCyberGrid.tsx`, `HomeAmbientGags.tsx`, `HomeMarketTape.tsx`, `homeWireFeed.ts`, `homeLanding.module.css`, `homeTerminalCommands.ts`
+- `src/components/home/HomeLanding.tsx`, `HomeCyberGrid.tsx`, `HomeAmbientGags.tsx`, `HomeMarketTape.tsx`, `HomeDistrictHolomap.tsx`, `HomeChromeFlipCard.tsx`, `HomeNightCityWeather.tsx`, `homeNightCityDistricts.ts`, `homeWeatherModes.ts`, `homeWireFeed.ts`, `homeLanding.module.css`, `homeTerminalCommands.ts`
 - `src/components/layout/AppShell.tsx` (`landing` prop), `PageFrame.tsx`
 - `src/app/layout.tsx` (fonte Orbitron)
 
