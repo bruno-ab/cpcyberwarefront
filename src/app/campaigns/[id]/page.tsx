@@ -11,10 +11,15 @@ import { getAccessToken, getPlayerIdFromToken } from '../../../lib/authSession';
 import {
   activateScene,
   createScene,
+  fetchCampaignMembers,
   fetchCampaignNpcs,
   fetchCampaignScenes,
   fetchRoster,
+  inviteToCampaign,
+  removeCampaignMember,
   updateCampaign,
+  type CampaignMember,
+  type CampaignInvite,
   type CampaignNpc,
   type CampaignRow,
   type ScenesListResponse,
@@ -41,6 +46,10 @@ const CampaignDetailPage = () => {
   const [sceneDesc, setSceneDesc] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [members, setMembers] = useState<CampaignMember[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<CampaignInvite[]>([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [invitePlayerId, setInvitePlayerId] = useState('');
 
   const playerId = getPlayerIdFromToken();
   const isGm = campaign != null && Number(campaign.gmPlayerId) === playerId;
@@ -75,13 +84,21 @@ const CampaignDetailPage = () => {
     setNpcs(await fetchCampaignNpcs(campaignId));
   }, [campaignId]);
 
+  const loadMembers = useCallback(async () => {
+    const data = await fetchCampaignMembers(campaignId);
+    if (!data) return;
+    setMembers(data.members || []);
+    setPendingInvites(data.pendingInvites || []);
+  }, [campaignId]);
+
   useEffect(() => {
     if (!getAccessToken()) return;
     void loadCampaign();
     void loadScenes();
     void loadRoster();
     void loadNpcs();
-  }, [loadCampaign, loadScenes, loadRoster, loadNpcs]);
+    void loadMembers();
+  }, [loadCampaign, loadScenes, loadRoster, loadNpcs, loadMembers]);
 
   const openTable = (scene?: VttSceneSummary) => {
     setCampaignId(campaignId);
@@ -128,6 +145,42 @@ const CampaignDetailPage = () => {
     await activateScene(campaignId, sceneId);
     await loadScenes();
     setBusy(false);
+  };
+
+  const onInvite = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!isGm) return;
+    const email = inviteEmail.trim();
+    const pid = invitePlayerId.trim()
+      ? Number(invitePlayerId.trim())
+      : undefined;
+    if (!email && !pid) return;
+    setBusy(true);
+    const row = await inviteToCampaign(campaignId, {
+      email: email || undefined,
+      playerId: pid,
+    });
+    setBusy(false);
+    if (!row) {
+      setMsg('Falha ao convidar (jogador já membro ou convite duplicado?).');
+      return;
+    }
+    setInviteEmail('');
+    setInvitePlayerId('');
+    setMsg('Convite enviado.');
+    await loadMembers();
+  };
+
+  const onRemoveMember = async (memberPlayerId: number) => {
+    if (!isGm) return;
+    setBusy(true);
+    const ok = await removeCampaignMember(campaignId, memberPlayerId);
+    setBusy(false);
+    setMsg(ok ? 'Jogador removido.' : 'Falha ao remover jogador.');
+    if (ok) {
+      await loadMembers();
+      await loadRoster();
+    }
   };
 
   const activeScene = useMemo(
@@ -229,6 +282,74 @@ const CampaignDetailPage = () => {
             </ul>
           )}
         </HudPanel>
+
+        <HudPanel title="Jogadores">
+          {members.length === 0 ? (
+            <p className={styles.empty}>Nenhum jogador listado.</p>
+          ) : (
+            <ul className={styles.list}>
+              {members.map((m) => (
+                <li key={m.playerId} className={styles.listItem}>
+                  <div>
+                    <strong>{m.name}</strong>
+                    <span className={styles.badge}>
+                      {m.role === 'gm' ? 'Narrador' : 'Jogador'}
+                    </span>
+                    {m.email ? (
+                      <p className={styles.meta}>{m.email}</p>
+                    ) : null}
+                  </div>
+                  {isGm && m.role !== 'gm' ? (
+                    <HudButton
+                      variant="ghost"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => onRemoveMember(m.playerId)}
+                    >
+                      Remover
+                    </HudButton>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </HudPanel>
+
+        {isGm ? (
+          <HudPanel title="Convites">
+            <form className={styles.formRow} onSubmit={onInvite}>
+              <input
+                value={inviteEmail}
+                onChange={(ev) => setInviteEmail(ev.target.value)}
+                placeholder="E-mail do jogador"
+                type="email"
+              />
+              <input
+                value={invitePlayerId}
+                onChange={(ev) => setInvitePlayerId(ev.target.value)}
+                placeholder="ID do jogador (opcional)"
+                inputMode="numeric"
+              />
+              <HudButton type="submit" disabled={busy}>
+                Convidar
+              </HudButton>
+            </form>
+            {pendingInvites.length === 0 ? (
+              <p className={styles.empty}>Nenhum convite pendente.</p>
+            ) : (
+              <ul className={styles.list}>
+                {pendingInvites.map((inv) => (
+                  <li key={inv.id} className={styles.listItem}>
+                    <span>
+                      {inv.email || `Jogador #${inv.invitedPlayerId || '?'}`}
+                    </span>
+                    <span className={styles.meta}>pendente</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </HudPanel>
+        ) : null}
 
         <HudPanel title="Roster (personagens)">
           {rosterChars.length === 0 ? (

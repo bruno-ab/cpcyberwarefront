@@ -4,10 +4,34 @@ export type CampaignRow = {
   id: number;
   name: string;
   gmPlayerId: number;
+  memberPlayerIds?: number[];
   streetCred?: number;
   eddies?: number;
   characterIds?: string[];
   npcIds?: string[];
+};
+
+export type CampaignInvite = {
+  id: number;
+  campaignId: number;
+  email?: string | null;
+  invitedPlayerId?: number | null;
+  status: 'pending' | 'accepted' | 'declined';
+  campaignName?: string;
+  gmName?: string | null;
+};
+
+export type CampaignMember = {
+  playerId: number;
+  name: string;
+  email?: string | null;
+  role: 'gm' | 'player';
+};
+
+export type CampaignMembersResponse = {
+  campaignId: number;
+  members: CampaignMember[];
+  pendingInvites: CampaignInvite[];
 };
 
 export type MineCampaignsResponse = {
@@ -129,4 +153,67 @@ export const fetchCampaignNpcs = async (
   if (!res.ok) return [];
   const data = await res.json();
   return Array.isArray(data?.npcs) ? data.npcs : [];
+};
+
+export const fetchMyCampaignInvites = async (): Promise<CampaignInvite[]> => {
+  const res = await fetch(apiUrl('/api/campaigns/invites/mine'), {
+    headers: authHeaders(),
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+};
+
+export const acceptCampaignInvite = async (
+  inviteId: number,
+): Promise<boolean> => {
+  const res = await fetch(apiUrl(`/api/campaigns/invites/${inviteId}/accept`), {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  return res.ok;
+};
+
+export const declineCampaignInvite = async (
+  inviteId: number,
+): Promise<boolean> => {
+  const res = await fetch(
+    apiUrl(`/api/campaigns/invites/${inviteId}/decline`),
+    { method: 'POST', headers: authHeaders() },
+  );
+  return res.ok;
+};
+
+export const fetchCampaignMembers = async (
+  campaignId: number,
+): Promise<CampaignMembersResponse | null> => {
+  const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/members`), {
+    headers: authHeaders(),
+  });
+  if (!res.ok) return null;
+  return res.json();
+};
+
+export const inviteToCampaign = async (
+  campaignId: number,
+  body: { email?: string; playerId?: number },
+): Promise<CampaignInvite | null> => {
+  const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/invites`), {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) return null;
+  return res.json();
+};
+
+export const removeCampaignMember = async (
+  campaignId: number,
+  playerId: number,
+): Promise<boolean> => {
+  const res = await fetch(
+    apiUrl(`/api/campaigns/${campaignId}/members/${playerId}`),
+    { method: 'DELETE', headers: authHeaders() },
+  );
+  return res.ok;
 };

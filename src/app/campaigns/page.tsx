@@ -7,8 +7,12 @@ import { HudPanel } from '../../components/ui/HudPanel';
 import { HudButton } from '../../components/ui/HudButton';
 import { getAccessToken, getPlayerIdFromToken } from '../../lib/authSession';
 import {
+  acceptCampaignInvite,
   createCampaign,
+  declineCampaignInvite,
   fetchMineCampaigns,
+  fetchMyCampaignInvites,
+  type CampaignInvite,
   type CampaignRow,
   type MineCampaignsResponse,
 } from '../../lib/campaignsApi';
@@ -47,6 +51,7 @@ const CampaignsPage = () => {
   const [msg, setMsg] = useState('');
   const [ok, setOk] = useState(false);
   const [hasToken, setHasToken] = useState(false);
+  const [invites, setInvites] = useState<CampaignInvite[]>([]);
 
   const playerId = useMemo(() => getPlayerIdFromToken(), [hasToken]);
 
@@ -57,17 +62,36 @@ const CampaignsPage = () => {
     setHasToken(!!token);
     if (!token) {
       setMine(null);
+      setInvites([]);
       setLoading(false);
       return;
     }
-    const data = await fetchMineCampaigns();
+    const [data, pending] = await Promise.all([
+      fetchMineCampaigns(),
+      fetchMyCampaignInvites(),
+    ]);
     setMine(data);
+    setInvites(pending);
     setLoading(false);
   }, []);
 
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  const onAcceptInvite = async (inviteId: number) => {
+    const ok = await acceptCampaignInvite(inviteId);
+    setMsg(ok ? 'Convite aceito.' : 'Falha ao aceitar convite.');
+    setOk(ok);
+    await reload();
+  };
+
+  const onDeclineInvite = async (inviteId: number) => {
+    const ok = await declineCampaignInvite(inviteId);
+    setMsg(ok ? 'Convite recusado.' : 'Falha ao recusar convite.');
+    setOk(ok);
+    await reload();
+  };
 
   const onCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -140,6 +164,46 @@ const CampaignsPage = () => {
               ) : null}
             </HudPanel>
 
+            <HudPanel title="Convites pendentes">
+              {loading ? (
+                <p className={styles.status}>Carregando…</p>
+              ) : invites.length === 0 ? (
+                <p className={styles.empty}>
+                  Nenhum convite pendente. O narrador envia convites pelo e-mail
+                  ou ID do jogador na página da campanha.
+                </p>
+              ) : (
+                <ul className={styles.list}>
+                  {invites.map((inv) => (
+                    <li key={inv.id} className={styles.listItem}>
+                      <div>
+                        <strong>{inv.campaignName || `Campanha ${inv.campaignId}`}</strong>
+                        <p className={styles.meta}>
+                          Narrador: {inv.gmName || '—'}
+                          {inv.email ? ` · ${inv.email}` : ''}
+                        </p>
+                      </div>
+                      <div className={styles.actions}>
+                        <HudButton
+                          type="button"
+                          onClick={() => onAcceptInvite(inv.id)}
+                        >
+                          Aceitar
+                        </HudButton>
+                        <HudButton
+                          variant="ghost"
+                          type="button"
+                          onClick={() => onDeclineInvite(inv.id)}
+                        >
+                          Recusar
+                        </HudButton>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </HudPanel>
+
             <HudPanel title="Minhas campanhas (Narrador)">
               {loading ? (
                 <p className={styles.status}>Carregando…</p>
@@ -161,7 +225,8 @@ const CampaignsPage = () => {
                 <p className={styles.status}>Carregando…</p>
               ) : playerOnly.length === 0 ? (
                 <p className={styles.empty}>
-                  Seu personagem ainda não está em nenhum roster de campanha.
+                  Você ainda não participa de campanhas como jogador. Aceite um
+                  convite acima ou peça ao narrador para te adicionar.
                 </p>
               ) : (
                 <div className={styles.grid}>

@@ -1,63 +1,81 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styles from './createCharacterForm.module.css';
-import { useRouter } from 'next/navigation'
-import { apiUrl, authHeaders } from '../../lib/api'
-
+import { useRouter } from 'next/navigation';
+import { apiUrl, authHeaders } from '../../lib/api';
+import { fetchMineCampaigns, type CampaignRow } from '../../lib/campaignsApi';
+import { getAccessToken } from '../../lib/authSession';
 
 export function CreateCharacterForm() {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
+  const [campaignId, setCampaignId] = useState('');
+  const [campaigns, setCampaigns] = useState<CampaignRow[]>([]);
   const [message, setMessage] = useState('');
-  const [diceResult, setDiceResult] = useState(1);
-  const router = useRouter()
+  const router = useRouter();
 
-  const rollDice = () => {
-    // Generate a random number between 1 and 20
-    const result = Math.floor(Math.random() * 20) + 1;
-    setDiceResult(result);
+  const loadCampaigns = useCallback(async () => {
+    if (!getAccessToken()) {
+      setCampaigns([]);
+      return;
+    }
+    const mine = await fetchMineCampaigns();
+    setCampaigns(mine?.participating ?? []);
+  }, []);
 
-    // Add a delay before resetting the dice result to allow for animation
-    setTimeout(() => {
-      setDiceResult(1);
-    }, 3000); // Adjust the duration of the animation as needed
-  };
+  useEffect(() => {
+    void loadCampaigns();
+  }, [loadCampaigns]);
+
+  const requireCampaign = campaigns.length >= 1;
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    const data = {
+    if (requireCampaign && !campaignId) {
+      setMessage('Escolha a campanha deste personagem.');
+      return;
+    }
+
+    const data: Record<string, unknown> = {
       name: name,
       role: role,
-      metadata: "",
-      cyberwares:[]
+      metadata: '',
+      cyberwares: [],
     };
+    if (campaignId) {
+      data.campaignId = Number(campaignId);
+    }
 
     try {
       const response = await fetch(apiUrl('/api/characters'), {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
       if (response.ok) {
-        // const data = await response.json(); 
-        // console.log(data)
-        // const name = data.name; 
-        // setMessage(`Access granted! ${name} created!`);
-         router.push("/characters")
+        router.push('/characters');
       } else {
-        setMessage('Access denied! Verify your credentials and try again.');
+        const err = await response.json().catch(() => null);
+        const detail =
+          err?.message?.message ||
+          err?.message ||
+          'Verifique suas credenciais e tente de novo.';
+        setMessage(typeof detail === 'string' ? detail : 'Acesso negado.');
       }
     } catch (error) {
-      console.log(error)
-      setMessage('Access denied due to server error! Damn Arasaka!');
+      console.log(error);
+      setMessage('Erro no servidor. Damn Arasaka!');
     }
   };
 
   return (
     <div className={styles.loginContainer}>
-      <form className={`${styles.cyberpunk} ${styles.loginForm}`} onSubmit={handleFormSubmit}>
-        <div> Name</div>
+      <form
+        className={`${styles.cyberpunk} ${styles.loginForm}`}
+        onSubmit={handleFormSubmit}
+      >
+        <div>Nome</div>
         <div className="cyberpunk">
           <input
             id="name"
@@ -66,9 +84,10 @@ export function CreateCharacterForm() {
             placeholder=" "
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
           />
         </div>
-        <div> Role</div>
+        <div>Papel (Role)</div>
         <div className="cyberpunk">
           <input
             id="role"
@@ -77,14 +96,43 @@ export function CreateCharacterForm() {
             placeholder=" "
             value={role}
             onChange={(e) => setRole(e.target.value)}
+            required
           />
         </div>
+        {campaigns.length > 0 ? (
+          <>
+            <div>Campanha</div>
+            <div className="cyberpunk">
+              <select
+                id="campaignId"
+                className="nav-message"
+                value={campaignId}
+                onChange={(e) => setCampaignId(e.target.value)}
+                required={requireCampaign}
+              >
+                <option value="">
+                  {requireCampaign ? 'Selecione…' : 'Sem campanha (opcional)'}
+                </option>
+                {campaigns.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name} (ID {c.id})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className={styles.hint}>
+              Um personagem só pode pertencer a uma campanha. Aceite convites em
+              /campaigns antes de criar a ficha, se necessário.
+            </p>
+          </>
+        ) : null}
+        {message ? <p className={styles.hint}>{message}</p> : null}
         <button type="submit" className="button button--primary button--size-xl">
-          Create New Character
+          Criar personagem
         </button>
       </form>
     </div>
   );
 }
 
-export default CreateCharacterForm
+export default CreateCharacterForm;
