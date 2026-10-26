@@ -30,12 +30,8 @@ export const ChromeTokenTrails = ({
 }: Props) => {
   const [ghosts, setGhosts] = useState<SandyTrailGhost[]>([]);
   const prevPos = useRef<Map<string, { x: number; y: number }>>(new Map());
-  const reducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   useEffect(() => {
-    if (reducedMotion) return;
     const next: SandyTrailGhost[] = [];
     for (const t of tokens) {
       if ((t.floor ?? 0) !== floor) continue;
@@ -54,7 +50,7 @@ export const ChromeTokenTrails = ({
     if (next.length) {
       setGhosts((g) => [...next, ...g].slice(0, MAX_GHOSTS));
     }
-  }, [tokens, floor, reducedMotion]);
+  }, [tokens, floor]);
 
   useEffect(() => {
     if (!fxEvents.length) return;
@@ -72,23 +68,31 @@ export const ChromeTokenTrails = ({
     return () => window.clearTimeout(t);
   }, [ghosts]);
 
-  if (reducedMotion || !ghosts.length) return null;
+  if (!ghosts.length) return null;
 
   return (
     <div className={styles.layer} aria-hidden>
-      {ghosts.map((g) => (
-        <div
-          key={g.id}
-          className={styles.ghost}
-          style={{
-            left: g.x * grid,
-            top: g.y * grid,
-            width: grid,
-            height: grid,
-            ['--trail-color' as string]: g.color,
-          }}
-        />
-      ))}
+      {ghosts.map((g, i) => {
+        const hue =
+          (i * 47 +
+            g.x * 37 +
+            g.y * 53 +
+            (g.id.charCodeAt(g.id.length - 1) || 0)) %
+          360;
+        return (
+          <div
+            key={g.id}
+            className={styles.ghost}
+            style={{
+              left: g.x * grid,
+              top: g.y * grid,
+              width: grid,
+              height: grid,
+              ['--trail-hue' as string]: String(hue),
+            }}
+          />
+        );
+      })}
     </div>
   );
 };
