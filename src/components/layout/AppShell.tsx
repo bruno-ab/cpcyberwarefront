@@ -11,6 +11,7 @@ import { HeatStrip } from './HeatStrip';
 import { ShardGlyph } from '../secrets/ShardGlyph';
 import { useIsLoggedIn } from '../../hooks/useIsLoggedIn';
 import { useCanOpenTable } from '../../hooks/useCanOpenTable';
+import { useIsCampaignGm } from '../../hooks/useIsCampaignGm';
 import styles from './AppShell.module.css';
 
 const PRIMARY_WHEN_LOGGED_IN = [
@@ -46,6 +47,7 @@ export const AppNav = () => {
   const { t, locale, changeLocale } = useTranslations('common');
   const loggedIn = useIsLoggedIn();
   const { canOpen: canOpenTable, loading: tableNavLoading } = useCanOpenTable();
+  const { isGm: isCampaignGm, loading: gmNavLoading } = useIsCampaignGm();
 
   const primaryHrefs = new Set(
     PRIMARY_WHEN_LOGGED_IN.map((item) => item.href),
@@ -88,8 +90,18 @@ export const AppNav = () => {
               );
             })
           : null}
-        {NAV.filter((item) => !loggedIn || !primaryHrefs.has(item.href)).map(
-          (item) => (
+        {NAV.filter((item) => {
+          if (loggedIn && primaryHrefs.has(item.href)) return false;
+          if (
+            loggedIn &&
+            item.href === '/narrator' &&
+            !gmNavLoading &&
+            !isCampaignGm
+          ) {
+            return false;
+          }
+          return true;
+        }).map((item) => (
             <Link key={item.href} href={item.href} className={styles.navLink}>
               {t(`nav.${item.key}`)}
               {'soon' in item && item.soon ? (

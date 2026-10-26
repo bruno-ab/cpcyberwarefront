@@ -1,17 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import { HudButton } from '../../components/ui/HudButton';
+import { useIsCampaignGm } from '../../hooks/useIsCampaignGm';
+import { getAccessToken } from '../../lib/authSession';
 import { apiUrl, authHeaders } from '../../lib/api';
 
 const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
 const NarratorPage = () => {
+  const router = useRouter();
+  const { isGm, loading: gmLoading } = useIsCampaignGm();
   const [out, setOut] = useState('');
   const [assist, setAssist] = useState<any>(null);
   const [assistErr, setAssistErr] = useState('');
+
+  useEffect(() => {
+    if (!getAccessToken()) {
+      router.replace('/login?next=/narrator');
+      return;
+    }
+    if (!gmLoading && !isGm) {
+      router.replace('/campaigns');
+    }
+  }, [gmLoading, isGm, router]);
 
   const rumor = () => {
     const subjects = ['drone Arasaka', 'convoy Raffen', 'shard Blackwall', 'fixer desaparecido'];
@@ -46,6 +62,19 @@ const NarratorPage = () => {
     }
     setAssist(data.draft);
   };
+
+  if (gmLoading || !isGm) {
+    return (
+      <PageFrame>
+        <HudPanel title="Ferramentas do Narrador">
+          <p>Verificando acesso de narrador…</p>
+          <Link href="/campaigns">
+            <HudButton variant="ghost">Campanhas</HudButton>
+          </Link>
+        </HudPanel>
+      </PageFrame>
+    );
+  }
 
   return (
     <PageFrame>

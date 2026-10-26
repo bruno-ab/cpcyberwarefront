@@ -108,6 +108,7 @@ import {
   clearStoredCampaignId,
   resolveAllowedCampaignId,
 } from '../../lib/campaignAccess';
+import { vttJoinErrorMessage } from '../../lib/vttJoinMessages';
 import { useTranslations } from '../../i18n/useTranslations';
 import {
   characterImageSrc,
@@ -915,12 +916,10 @@ const TablePage = () => {
             socket.disconnect();
             if (ack.error === 'unauthorized') {
               setCampaignGate('login');
-              setAccessNotice('Sessão expirada. Entre de novo para continuar na mesa.');
+              setAccessNotice(vttJoinErrorMessage('unauthorized'));
             } else {
-              clearStoredCampaignId();
-              setJoinError(
-                'Não foi possível entrar na mesa. Verifique se você ainda tem acesso à campanha ou se a cena existe.',
-              );
+              if (ack.error === 'forbidden') clearStoredCampaignId();
+              setJoinError(vttJoinErrorMessage(ack.error));
             }
             return;
           }
@@ -935,6 +934,20 @@ const TablePage = () => {
     };
 
     socket.on('connect', join);
+    socket.on(
+      'vtt:error',
+      (payload: { error?: string; campaignId?: number }) => {
+        setJoinPending(false);
+        socket.disconnect();
+        if (payload?.error === 'unauthorized') {
+          setCampaignGate('login');
+          setAccessNotice(vttJoinErrorMessage('unauthorized'));
+        } else {
+          if (payload?.error === 'forbidden') clearStoredCampaignId();
+          setJoinError(vttJoinErrorMessage(payload?.error));
+        }
+      },
+    );
     socket.on('vtt:state', (s: VttState) => setState(s));
     socket.on('vtt:handout', () => setPhoneOpen(true));
     socket.on('vtt:breach', (b: BreachState) =>
