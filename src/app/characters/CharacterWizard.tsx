@@ -42,7 +42,8 @@ const initial: FormState = {
 };
 
 type Props = {
-  campaignId: number;
+  /** When set, links the new character to this campaign (optional). */
+  campaignId?: number;
   onCreated?: () => void;
   /** After success, go here instead of /sheet when set. */
   afterCreateHref?: string;
@@ -83,7 +84,9 @@ export const CharacterWizard = ({
           name: form.name.trim(),
           role: form.role,
           notes: form.notes,
-          campaignId,
+          ...(campaignId != null && Number.isFinite(campaignId) && campaignId > 0
+            ? { campaignId }
+            : {}),
           header: {
             age: form.age,
             city: form.city || 'Night City',

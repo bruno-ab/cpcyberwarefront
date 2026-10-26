@@ -6,6 +6,7 @@ import { defaultHeader } from './defaultSheet';
 import { characterImageSrc } from '../../lib/media';
 import { apiUrl, authHeaders } from '../../lib/api';
 import { HudButton } from '../../components/ui/HudButton';
+import { IdCardBadge } from '../../components/characters/IdCardBadge';
 
 const FIELD_LABELS: Record<string, string> = {
   name: 'Nome',
@@ -24,6 +25,7 @@ type Props = {
     name?: string;
     role?: string;
     image?: string | null;
+    idCard?: string | null;
     sheet?: { header?: Record<string, string | number> };
   };
   onPortraitUpdated?: (imageUrl: string) => void;
@@ -155,6 +157,11 @@ const CHeader = ({ characterData, onPortraitUpdated }: Props) => {
               </span>
             )}
           </div>
+          {characterData.idCard ? (
+            <div className={styles.idCardRow}>
+              <IdCardBadge code={characterData.idCard} />
+            </div>
+          ) : null}
           <dl className={styles.meta}>
             {fields.map(([key, value]) => (
               <div key={key} className={styles.metaItem}>

@@ -40,6 +40,11 @@ const CampaignCard = ({
       <Link href={`/campaigns/${campaign.id}`}>
         <HudButton variant="ghost">Ver campanha</HudButton>
       </Link>
+      {badge === 'Player' ? (
+        <Link href={`/campaigns/${campaign.id}#roster-campanha`}>
+          <HudButton type="button">Entrar com personagem</HudButton>
+        </Link>
+      ) : null}
     </div>
   </article>
 );

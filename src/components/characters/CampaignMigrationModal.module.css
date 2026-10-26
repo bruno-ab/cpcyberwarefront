@@ -1,0 +1,42 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: color-mix(in srgb, #000 65%, transparent);
+}
+
+.panel {
+  max-width: 28rem;
+  padding: 1.25rem 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--cp-yellow) 55%, transparent);
+  background: var(--cp-bg-elevated, #0a0e14);
+  box-shadow: var(--cp-glow-yellow, 0 0 24px rgba(255, 230, 0, 0.15));
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-family: var(--cp-font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-yellow);
+}
+
+.panel p {
+  margin: 0 0 1.1rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--cp-text-dim);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}

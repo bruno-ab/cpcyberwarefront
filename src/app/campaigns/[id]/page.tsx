@@ -16,8 +16,11 @@ import {
   fetchCampaignScenes,
   fetchRoster,
   inviteToCampaign,
+  linkCampaignByIdCard,
+  addCharacterToRoster,
   removeCampaignMember,
   updateCampaign,
+  type CampaignLinkConflict,
   type CampaignMember,
   type CampaignInvite,
   type CampaignNpc,
@@ -26,6 +29,7 @@ import {
   type VttSceneSummary,
 } from '../../../lib/campaignsApi';
 import { apiUrl, authHeaders } from '../../../lib/api';
+import { CampaignMigrationModal } from '../../../components/characters/CampaignMigrationModal';
 import styles from '../campaigns.module.css';
 
 const CampaignDetailPage = () => {
@@ -50,6 +54,16 @@ const CampaignDetailPage = () => {
   const [pendingInvites, setPendingInvites] = useState<CampaignInvite[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
   const [invitePlayerId, setInvitePlayerId] = useState('');
+  const [inviteIdCard, setInviteIdCard] = useState('');
+  const [myCharacters, setMyCharacters] = useState<
+    Array<{ id: string; name: string; idCard?: string | null; campaignId?: number | null }>
+  >([]);
+  const [joinCharacterId, setJoinCharacterId] = useState('');
+  const [migration, setMigration] = useState<{
+    open: boolean;
+    conflict: CampaignLinkConflict | null;
+    mode: 'card' | 'roster';
+  }>({ open: false, conflict: null, mode: 'roster' });
   const [pageLoading, setPageLoading] = useState(true);
 
   const playerId = getPlayerIdFromToken();
@@ -107,6 +121,33 @@ const CampaignDetailPage = () => {
     setPendingInvites(data.pendingInvites || []);
   }, [campaignId]);
 
+  const loadMyCharacters = useCallback(async () => {
+    if (!getAccessToken() || !playerId) {
+      setMyCharacters([]);
+      return;
+    }
+    try {
+      const res = await fetch(apiUrl('/api/characters'), {
+        headers: authHeaders(),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
+      setMyCharacters(
+        list
+          .filter((c: { player_id?: number }) => Number(c.player_id) === playerId)
+          .map((c: { id: string; name: string; id_card?: string; idCard?: string; campaign_id?: number | null; campaignId?: number | null }) => ({
+            id: String(c.id),
+            name: c.name,
+            idCard: c.idCard ?? c.id_card ?? null,
+            campaignId: c.campaignId ?? c.campaign_id ?? null,
+          })),
+      );
+    } catch {
+      setMyCharacters([]);
+    }
+  }, [playerId]);
+
   useEffect(() => {
     if (!getAccessToken()) {
       router.replace('/login?next=/campaigns/' + campaignId);
@@ -120,6 +161,7 @@ const CampaignDetailPage = () => {
         loadRoster(),
         loadNpcs(),
         loadMembers(),
+        loadMyCharacters(),
       ]);
       setPageLoading(false);
     })();
@@ -131,6 +173,7 @@ const CampaignDetailPage = () => {
     loadRoster,
     loadNpcs,
     loadMembers,
+    loadMyCharacters,
   ]);
 
   const openTable = (scene?: VttSceneSummary) => {
@@ -202,6 +245,65 @@ const CampaignDetailPage = () => {
     setInvitePlayerId('');
     setMsg('Convite enviado.');
     await loadMembers();
+  };
+
+  const runIdCardLink = async (confirmMigration: boolean) => {
+    const card = inviteIdCard.trim();
+    if (!card) return;
+    setBusy(true);
+    const result = await linkCampaignByIdCard(campaignId, card, confirmMigration);
+    setBusy(false);
+    if (result.ok) {
+      setInviteIdCard('');
+      setMigration({ open: false, conflict: null, mode: 'card' });
+      setMsg('Personagem vinculado ao roster.');
+      await loadRoster();
+      await loadMembers();
+      return;
+    }
+    if ('needsConfirm' in result && result.needsConfirm) {
+      setMigration({ open: true, conflict: result.needsConfirm, mode: 'card' });
+      return;
+    }
+    setMsg('error' in result ? result.error : 'Falha ao vincular ID-card.');
+  };
+
+  const onLinkByIdCard = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!isGm) return;
+    await runIdCardLink(false);
+  };
+
+  const runRosterJoin = async (confirmMigration: boolean) => {
+    const cid = joinCharacterId.trim();
+    if (!cid) return;
+    setBusy(true);
+    const result = await addCharacterToRoster(campaignId, cid, confirmMigration);
+    setBusy(false);
+    if (result.ok) {
+      setJoinCharacterId('');
+      setMigration({ open: false, conflict: null, mode: 'roster' });
+      setMsg('Personagem entrou no roster.');
+      await loadRoster();
+      await loadMyCharacters();
+      return;
+    }
+    if ('needsConfirm' in result && result.needsConfirm) {
+      setMigration({ open: true, conflict: result.needsConfirm, mode: 'roster' });
+      return;
+    }
+    setMsg('error' in result ? result.error : 'Falha ao vincular personagem.');
+  };
+
+  const onJoinWithCharacter = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!isMember || isGm) return;
+    await runRosterJoin(false);
+  };
+
+  const onConfirmMigration = async () => {
+    if (migration.mode === 'card') await runIdCardLink(true);
+    else await runRosterJoin(true);
   };
 
   const onRemoveMember = async (memberPlayerId: number) => {
@@ -326,6 +428,22 @@ const CampaignDetailPage = () => {
                     />
                     <HudButton type="submit" disabled={busy}>
                       Enviar convite
+                    </HudButton>
+                  </form>
+                  <p className={styles.inviteHint}>
+                    Ou vincule um personagem pelo ID-card (NC-XXXXXXXX) — o dono
+                    entra como membro se ainda não estiver na campanha.
+                  </p>
+                  <form className={styles.formRow} onSubmit={onLinkByIdCard}>
+                    <input
+                      value={inviteIdCard}
+                      onChange={(ev) => setInviteIdCard(ev.target.value.toUpperCase())}
+                      placeholder="ID-card do personagem (NC-…)"
+                      aria-label="ID-card do personagem"
+                      autoComplete="off"
+                    />
+                    <HudButton type="submit" disabled={busy}>
+                      Vincular ID-card
                     </HudButton>
                   </form>
                 </>
@@ -456,19 +574,47 @@ const CampaignDetailPage = () => {
         ) : null}
 
         {!pageLoading && campaign ? (
+        <div id="roster-campanha">
         <HudPanel title="Roster (personagens)">
+          {isMember && !isGm && myCharacters.length > 0 ? (
+            <form className={styles.formRow} onSubmit={onJoinWithCharacter}>
+              <select
+                value={joinCharacterId}
+                onChange={(ev) => setJoinCharacterId(ev.target.value)}
+                aria-label="Personagem para entrar no roster"
+                required
+              >
+                <option value="">Entrar com personagem…</option>
+                {myCharacters.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                    {c.campaignId && Number(c.campaignId) !== campaignId
+                      ? ' (outra campanha)'
+                      : ''}
+                    {c.idCard ? ` · ${c.idCard}` : ''}
+                  </option>
+                ))}
+              </select>
+              <HudButton type="submit" disabled={busy}>
+                Vincular
+              </HudButton>
+            </form>
+          ) : null}
           {rosterChars.length === 0 ? (
             <>
               <p className={styles.empty}>
                 Nenhum personagem no roster desta campanha.
                 {isMember
-                  ? ' Crie sua ficha aqui para entrar na mesa.'
-                  : ' Aceite o convite do narrador antes de criar personagem.'}
+                  ? ' Crie uma ficha, use Personagens → ID-card ou entre com um personagem acima.'
+                  : ' Aceite o convite do narrador antes de vincular personagem.'}
               </p>
               {isMember ? (
                 <div className={styles.ctaRow}>
                   <Link href={`/campaigns/${campaignId}/create-character`}>
                     <HudButton>Criar personagem</HudButton>
+                  </Link>
+                  <Link href="/characters/create">
+                    <HudButton variant="ghost">Nova ficha (sem campanha)</HudButton>
                   </Link>
                 </div>
               ) : null}
@@ -489,6 +635,7 @@ const CampaignDetailPage = () => {
             </ul>
           )}
         </HudPanel>
+        </div>
         ) : null}
 
         {!pageLoading && campaign ? (
@@ -521,6 +668,15 @@ const CampaignDetailPage = () => {
           </HudButton>
         </div>
         ) : null}
+        <CampaignMigrationModal
+          open={migration.open}
+          conflict={migration.conflict}
+          busy={busy}
+          onConfirm={() => void onConfirmMigration()}
+          onCancel={() =>
+            setMigration({ open: false, conflict: null, mode: 'roster' })
+          }
+        />
       </div>
     </PageFrame>
   );

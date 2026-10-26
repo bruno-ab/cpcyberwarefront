@@ -279,3 +279,95 @@ export const removeCampaignMember = async (
   );
   return res?.ok ?? false;
 };
+
+export type CampaignLinkConflict = {
+  previousCampaignId?: number;
+  previousCampaignName: string;
+};
+
+const unwrapApiError = (body: Record<string, unknown> | null | undefined) => {
+  if (!body) return body;
+  const msg = body.message;
+  if (msg && typeof msg === 'object' && !Array.isArray(msg)) {
+    return { ...body, ...(msg as Record<string, unknown>) };
+  }
+  return body;
+};
+
+export type RosterLinkResult =
+  | { ok: true }
+  | { ok: false; error: string }
+  | { ok: false; needsConfirm: CampaignLinkConflict };
+
+export const addCharacterToRoster = async (
+  campaignId: number,
+  characterId: string,
+  confirmMigration = false,
+): Promise<RosterLinkResult> => {
+  const res = await apiFetch(`/api/campaigns/${campaignId}/roster`, {
+    method: 'POST',
+    headers: authJsonHeaders(),
+    body: JSON.stringify({ characterId, confirmMigration }),
+  });
+  if (res?.ok) return { ok: true };
+  let body: Record<string, unknown> = {};
+  try {
+    body = unwrapApiError((await res?.json()) as Record<string, unknown>) ?? {};
+  } catch {
+    /* ignore */
+  }
+  if (body.code === 'needs-confirm') {
+    return {
+      ok: false,
+      needsConfirm: {
+        previousCampaignId: Number(body.previousCampaignId) || undefined,
+        previousCampaignName:
+          String(body.previousCampaignName || '') || 'outra campanha',
+      },
+    };
+  }
+  const errMsg =
+    typeof body.message === 'string'
+      ? body.message
+      : `Falha ao vincular personagem (${res?.status ?? '?'})`;
+  return { ok: false, error: errMsg };
+};
+
+export type IdCardLinkResult =
+  | { ok: true }
+  | { ok: false; error: string }
+  | { ok: false; needsConfirm: CampaignLinkConflict };
+
+export const linkCampaignByIdCard = async (
+  campaignId: number,
+  idCard: string,
+  confirmMigration = false,
+): Promise<IdCardLinkResult> => {
+  const res = await apiFetch(`/api/campaigns/${campaignId}/link-by-card`, {
+    method: 'POST',
+    headers: authJsonHeaders(),
+    body: JSON.stringify({ idCard: idCard.trim(), confirmMigration }),
+  });
+  if (res?.ok) return { ok: true };
+  let body: Record<string, unknown> = {};
+  try {
+    body = unwrapApiError((await res?.json()) as Record<string, unknown>) ?? {};
+  } catch {
+    /* ignore */
+  }
+  if (body.code === 'needs-confirm') {
+    return {
+      ok: false,
+      needsConfirm: {
+        previousCampaignId: Number(body.previousCampaignId) || undefined,
+        previousCampaignName:
+          String(body.previousCampaignName || '') || 'outra campanha',
+      },
+    };
+  }
+  const errMsg =
+    typeof body.message === 'string'
+      ? body.message
+      : `Falha ao vincular ID-card (${res?.status ?? '?'})`;
+  return { ok: false, error: errMsg };
+};

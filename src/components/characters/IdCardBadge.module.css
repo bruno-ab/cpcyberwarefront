@@ -1,0 +1,40 @@
+.wrap {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan) 45%, transparent);
+  background: color-mix(in srgb, var(--cp-bg) 85%, var(--cp-cyan) 5%);
+  font-family: var(--cp-font-mono);
+  font-size: 0.78rem;
+}
+
+.label {
+  color: var(--cp-text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.code {
+  color: var(--cp-yellow);
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
+
+.copy {
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--cp-cyan) 50%, transparent);
+  background: transparent;
+  color: var(--cp-cyan);
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.45rem;
+}
+
+.copy:hover {
+  color: var(--cp-yellow);
+  border-color: var(--cp-yellow);
+}
