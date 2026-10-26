@@ -17,13 +17,23 @@ const pickRandom = (list: CatalogRow[]): CatalogRow | undefined => {
   return list[Math.floor(Math.random() * list.length)];
 };
 
+/** Stable SSR / pre-hydration back face — no catalog-derived strings. */
+const PLACEHOLDER_BACK = {
+  name: 'CHROME DECK',
+  rarity: '—',
+  effect: 'Slot reservado · scan pós-boot',
+} as const;
+
 export const HomeChromeFlipCard = () => {
   const { animationsOn } = useMotion();
-  const [catalog, setCatalog] = useState<CatalogRow[]>(CYBERWARE_CATALOG);
+  const [mounted, setMounted] = useState(false);
+  const [catalog, setCatalog] = useState<CatalogRow[]>([]);
   const [flipped, setFlipped] = useState(false);
   const [featured, setFeatured] = useState<CatalogRow | undefined>(undefined);
 
   useEffect(() => {
+    setMounted(true);
+    setCatalog(CYBERWARE_CATALOG);
     setFeatured(pickRandom(CYBERWARE_CATALOG));
 
     fetch(apiUrl('/api/cyberware/catalog'))
@@ -37,18 +47,30 @@ export const HomeChromeFlipCard = () => {
       .catch(() => undefined);
   }, []);
 
-  const pool = useMemo(() => (catalog.length ? catalog : CYBERWARE_CATALOG), [catalog]);
+  const pool = useMemo(
+    () => (catalog.length ? catalog : CYBERWARE_CATALOG),
+    [catalog],
+  );
 
   const onFlip = useCallback(() => {
     playCyberSound('scan', { volume: 0.28 });
     setFlipped((was) => {
       const next = !was;
-      if (next) setFeatured(pickRandom(pool));
+      if (next && mounted) setFeatured(pickRandom(pool));
       return next;
     });
-  }, [pool]);
+  }, [pool, mounted]);
 
-  const item = featured ?? pool[0];
+  const item = mounted ? featured ?? pool[0] : undefined;
+  const back = !mounted
+    ? PLACEHOLDER_BACK
+    : item
+      ? { name: item.name, rarity: item.rarity, effect: item.effect }
+      : null;
+
+  const flipAriaLabel = flipped
+    ? 'Virar para frente do cartão chrome'
+    : 'Virar cartão e revelar peça do catálogo';
 
   return (
     <section className={styles.wrap} aria-label="Cartão chrome do catálogo">
@@ -60,7 +82,7 @@ export const HomeChromeFlipCard = () => {
           data-flipped={flipped || undefined}
           onClick={onFlip}
           aria-pressed={flipped}
-          aria-label={flipped ? 'Virar para frente do cartão chrome' : 'Virar cartão e revelar peça do catálogo'}
+          aria-label={flipAriaLabel}
         >
           <span className={`${styles.face} ${styles.front}`}>
             <span className={styles.frontTitle}>CHROME</span>
@@ -68,20 +90,22 @@ export const HomeChromeFlipCard = () => {
             <span className={styles.frontSub}>TOQUE PARA ESCANEAR</span>
           </span>
           <span className={`${styles.face} ${styles.back}`}>
-            {item ? (
+            {back ? (
               <>
-                <span className={styles.backName}>{item.name}</span>
-                <span className={styles.rarity} data-tier={rarityTier(item.rarity)}>
-                  {item.rarity}
+                <span className={styles.backName}>{back.name}</span>
+                <span className={styles.rarity} data-tier={rarityTier(back.rarity)}>
+                  {back.rarity}
                 </span>
-                <span className={styles.effect}>{item.effect}</span>
-                <Link
-                  href="/catalog"
-                  className={styles.catalogLink}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  ABRIR CATÁLOGO »
-                </Link>
+                <span className={styles.effect}>{back.effect}</span>
+                {mounted && item ? (
+                  <Link
+                    href="/catalog"
+                    className={styles.catalogLink}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    ABRIR CATÁLOGO »
+                  </Link>
+                ) : null}
               </>
             ) : (
               <span className={styles.effect}>Catálogo offline. Tente /catalog.</span>
