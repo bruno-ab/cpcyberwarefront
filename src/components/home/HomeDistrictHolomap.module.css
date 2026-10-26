@@ -13,7 +13,7 @@
 .head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   border-bottom: 1px solid color-mix(in srgb, var(--home-cyan) 30%, transparent);
   padding-bottom: 0.35rem;
@@ -22,6 +22,47 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--home-cyan);
+}
+
+.headLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.tab {
+  font-family: var(--home-font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--home-cyan) 35%, transparent);
+  background: rgba(0, 0, 0, 0.5);
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--home-cyan);
+  border-color: color-mix(in srgb, var(--home-cyan) 55%, transparent);
+}
+
+.tab[data-active='true'] {
+  color: var(--home-yellow);
+  border-color: color-mix(in srgb, var(--home-yellow) 50%, transparent);
+  background: color-mix(in srgb, var(--home-yellow) 8%, transparent);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--home-yellow);
+  outline-offset: 2px;
 }
 
 .tag {
@@ -157,4 +198,142 @@
 
 .loreLink:hover {
   color: var(--home-yellow);
+}
+
+.bodyAnimate {
+  animation: holoPanelFade 0.4s ease-out;
+}
+
+@keyframes holoPanelFade {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bodyAnimate {
+    animation: none;
+  }
+}
+
+:global(html[data-motion='off']) .bodyAnimate {
+  animation: none;
+}
+
+.dogtownStamp {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--home-magenta) 40%, transparent);
+  background: radial-gradient(
+    ellipse at 50% 30%,
+    color-mix(in srgb, var(--home-magenta) 14%, transparent),
+    transparent 72%
+  );
+}
+
+.dogtownSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dogtownWall {
+  fill: rgba(255, 60, 100, 0.06);
+  stroke: color-mix(in srgb, var(--home-magenta) 55%, transparent);
+  stroke-width: 1.2;
+}
+
+.dogtownLabel {
+  fill: var(--home-yellow);
+  font-family: var(--home-font-display);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.dogtownSub {
+  fill: color-mix(in srgb, var(--home-magenta) 90%, white);
+  font-family: var(--home-font-mono);
+  font-size: 7px;
+  letter-spacing: 0.14em;
+}
+
+.dogtownDetail {
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: #d1d5db;
+}
+
+.dogtownKicker {
+  margin: 0 0 0.35rem;
+  font-family: var(--home-font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--home-magenta) 85%, var(--home-cyan));
+}
+
+.dogtownDateline {
+  margin: 0.5rem 0 0;
+  font-size: 0.58rem;
+  color: #9ca3af;
+  font-family: var(--home-font-mono);
+  letter-spacing: 0.04em;
+}
+
+.dogtownAd {
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 0.35rem 0.15rem;
+  border-left: 3px solid color-mix(in srgb, var(--home-magenta) 55%, transparent);
+  padding-left: 0.65rem;
+}
+
+.adSponsor {
+  margin: 0 0 0.25rem;
+  font-family: var(--home-font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: var(--home-magenta);
+}
+
+.adTitle {
+  margin: 0 0 0.35rem;
+  font-family: var(--home-font-display);
+  font-size: 0.78rem;
+  color: var(--home-yellow);
+  letter-spacing: 0.05em;
+}
+
+.adCopy {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: #d1d5db;
+  max-width: 42rem;
+}
+
+.adCta {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--home-cyan);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+}
+
+.adCta:hover {
+  color: var(--home-yellow);
+}
+
+.rotateHint {
+  margin: 0;
+  font-size: 0.52rem;
+  font-family: var(--home-font-mono);
+  color: #6b7280;
+  letter-spacing: 0.03em;
 }
