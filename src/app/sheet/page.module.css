@@ -10,10 +10,10 @@
   text-align: left;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--sheet-section-color, var(--cp-yellow));
+  color: var(--sheet-section-color, var(--sheet-section-color, var(--cp-yellow)));
   font-family: var(--cp-font-display);
   font-size: 0.95rem;
-  text-shadow: 0 0 12px color-mix(in srgb, var(--sheet-section-color, var(--cp-yellow)) 55%, transparent);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--sheet-section-color, var(--sheet-section-color, var(--cp-yellow))) 55%, transparent);
 }
 
 .backRow {
@@ -25,7 +25,7 @@
 }
 
 .backRow a {
-  color: var(--cp-cyan);
+  color: var(--sheet-accent, var(--cp-cyan));
   text-decoration: none;
 }
 
@@ -42,7 +42,7 @@
 }
 
 .loading {
-  color: var(--cp-cyan);
+  color: var(--sheet-accent, var(--cp-cyan));
 }
 
 .error {
@@ -143,13 +143,13 @@
 }
 
 .summaryCard[data-band='ok'] {
-  border-color: #2be4ea88;
-  box-shadow: inset 0 0 20px #2be4ea22;
+  border-color: var(--sheet-border, #2be4ea88);
+  box-shadow: inset 0 0 20px var(--sheet-panel-glow, rgba(43, 228, 234, 0.13));
 }
 
 .summaryCard[data-band='bruise'] {
-  border-color: #fed33f88;
-  box-shadow: inset 0 0 22px #fed33f22;
+  border-color: color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 53%, transparent);
+  box-shadow: inset 0 0 22px var(--sheet-secondary, #fed33f)22;
 }
 
 .summaryCard[data-band='hurt'] {
@@ -188,15 +188,15 @@
 .summaryCard strong {
   position: relative;
   z-index: 2;
-  color: #2be4ea;
+  color: var(--sheet-accent, #2be4ea);
   font-size: 1.35rem;
   font-family: var(--cp-font-display), Audiowide, sans-serif;
-  text-shadow: 0 0 10px #2be4ea66;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--sheet-accent, #2be4ea) 40%, transparent);
 }
 
 .summaryCard[data-band='bruise'] strong {
-  color: #fed33f;
-  text-shadow: 0 0 10px #fed33f66;
+  color: var(--sheet-secondary, #fed33f);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 40%, transparent);
 }
 
 .summaryCard[data-band='hurt'] strong {
@@ -206,12 +206,12 @@
 
 .summaryCard[data-band='crit'] strong {
   color: #ff4d6d;
-  text-shadow: -0.04em 0 #2be4ea, 0.04em 0 #ff4d6d;
+  text-shadow: -0.04em 0 var(--sheet-accent, #2be4ea), 0.04em 0 #ff4d6d;
 }
 
 .summaryCard[data-band='dead'] strong {
   color: #ff003c;
-  text-shadow: -0.06em 0 #2be4ea, 0.06em 0 #ff003c;
+  text-shadow: -0.06em 0 var(--sheet-accent, #2be4ea), 0.06em 0 #ff003c;
 }
 
 @keyframes sheetScanMove {
@@ -312,7 +312,7 @@
 }
 
 .hint a {
-  color: var(--cp-yellow);
+  color: var(--sheet-section-color, var(--cp-yellow));
   text-decoration: underline;
 }
 
@@ -330,7 +330,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0.85rem 1rem;
-  border: 1px solid #2be4ea88;
+  border: 1px solid var(--sheet-border, #2be4ea88);
   background: var(--cp-bg-panel);
   box-shadow: inset 0 0 18px rgba(43, 228, 234, 0.12);
   clip-path: polygon(0 0, 100% 0, 100% 72%, 94% 100%, 0 100%);
@@ -338,12 +338,12 @@
 }
 
 .inventoryRow[data-band='ok'] {
-  border-color: #2be4ea88;
+  border-color: var(--sheet-border, #2be4ea88);
 }
 
 .inventoryRow[data-band='bruise'] {
-  border-color: #fed33f88;
-  box-shadow: inset 0 0 22px #fed33f22;
+  border-color: color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 53%, transparent);
+  box-shadow: inset 0 0 22px var(--sheet-secondary, #fed33f)22;
   animation-delay: 0.6s;
 }
 
@@ -372,15 +372,15 @@
 .inventoryRow strong {
   position: relative;
   z-index: 2;
-  color: #2be4ea;
+  color: var(--sheet-accent, #2be4ea);
   font-family: var(--cp-font-display), Audiowide, sans-serif;
   font-size: 1.15rem;
-  text-shadow: 0 0 10px #2be4ea55;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--sheet-accent, #2be4ea) 33%, transparent);
 }
 
 .inventoryRow[data-band='bruise'] strong {
-  color: #fed33f;
-  text-shadow: 0 0 10px #fed33f55;
+  color: var(--sheet-secondary, #fed33f);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 33%, transparent);
 }
 
 .inventoryRow[data-band='hurt'] strong {
@@ -389,7 +389,7 @@
 
 .inventoryRow[data-band='crit'] strong {
   color: #ff4d6d;
-  text-shadow: -0.04em 0 #2be4ea, 0.04em 0 #ff4d6d;
+  text-shadow: -0.04em 0 var(--sheet-accent, #2be4ea), 0.04em 0 #ff4d6d;
 }
 
 /* Section-scoped glitch flavors */
@@ -407,7 +407,7 @@
   background: linear-gradient(
     180deg,
     transparent 40%,
-    color-mix(in srgb, var(--cp-cyan) 35%, transparent) 50%,
+    color-mix(in srgb, var(--sheet-accent, var(--cp-cyan)) 35%, transparent) 50%,
     transparent 60%
   );
   background-size: 100% 220%;
@@ -443,10 +443,10 @@
   position: absolute;
   inset: -2px;
   opacity: 0;
-  border: 1px solid color-mix(in srgb, var(--cp-yellow) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sheet-section-color, var(--cp-yellow)) 50%, transparent);
   box-shadow:
-    2px 0 0 color-mix(in srgb, var(--cp-cyan) 40%, transparent),
-    -2px 0 0 color-mix(in srgb, var(--cp-magenta, #ff2bd6) 40%, transparent);
+    2px 0 0 color-mix(in srgb, var(--sheet-accent, var(--cp-cyan)) 40%, transparent),
+    -2px 0 0 color-mix(in srgb, var(--sheet-magenta, var(--cp-magenta, #ff2bd6)) 40%, transparent);
   animation: sheetChromeTear 6.5s steps(3, end) infinite;
   z-index: 0;
 }

@@ -1,9 +1,9 @@
 .wrap {
   position: relative;
   overflow: hidden;
-  border: 1px solid #2be4ea88;
+  border: 1px solid var(--sheet-border, #2be4ea88);
   background: var(--cp-bg-panel);
-  box-shadow: inset 0 0 22px rgba(43, 228, 234, 0.14);
+  box-shadow: inset 0 0 22px var(--sheet-panel-glow, rgba(43, 228, 234, 0.14));
   padding: 0.85rem 1rem 1rem;
   margin: 0.5rem 0 1rem;
   clip-path: polygon(0 0, 100% 0, 100% 88%, 97% 100%, 0 100%);
@@ -40,7 +40,7 @@
   align-items: flex-start;
   margin-bottom: 0.75rem;
   padding-bottom: 0.55rem;
-  border-bottom: 1px solid #2be4ea44;
+  border-bottom: 1px solid color-mix(in srgb, var(--sheet-accent, #2be4ea) 27%, transparent);
 }
 
 .eyebrow {
@@ -49,7 +49,7 @@
   font-size: 0.62rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #2be4ea;
+  color: var(--sheet-accent, #2be4ea);
 }
 
 .head h4 {
@@ -58,8 +58,8 @@
   font-size: 0.95rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #fed33f;
-  text-shadow: 0 0 10px #fed33f55;
+  color: var(--sheet-secondary, #fed33f);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 33%, transparent);
 }
 
 .blurb {
@@ -82,12 +82,12 @@
   font-family: var(--cp-font-mono), 'Share Tech Mono', monospace;
   font-size: 0.68rem;
   letter-spacing: 0.04em;
-  color: #2be4ea;
+  color: var(--sheet-accent, #2be4ea);
   max-width: 44rem;
 }
 
 .focus span {
-  color: #fed33f;
+  color: var(--sheet-secondary, #fed33f);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-right: 0.35rem;
@@ -99,9 +99,9 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #111;
-  background: #fed33f;
+  background: var(--sheet-secondary, #fed33f);
   padding: 0.25rem 0.5rem;
-  box-shadow: 0 0 10px #fed33f66;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 40%, transparent);
 }
 
 .list {
@@ -117,7 +117,7 @@
 .card {
   position: relative;
   overflow: hidden;
-  border: 1px solid #2be4ea66;
+  border: 1px solid color-mix(in srgb, var(--sheet-accent, #2be4ea) 40%, transparent);
   background: rgba(0, 0, 0, 0.35);
   padding: 0.65rem 0.75rem;
   clip-path: polygon(0 0, 100% 0, 100% 78%, 93% 100%, 0 100%);
@@ -126,7 +126,7 @@
 }
 
 .card:nth-child(even) {
-  border-color: #fed33f66;
+  border-color: color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 40%, transparent);
   animation-delay: 1.1s;
 }
 
@@ -143,8 +143,8 @@
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #2be4ea;
-  text-shadow: 0 0 8px #2be4ea44;
+  color: var(--sheet-accent, #2be4ea);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--sheet-accent, #2be4ea) 27%, transparent);
 }
 
 .cardTop em {
@@ -165,7 +165,7 @@
 .mech {
   margin-top: 0.45rem !important;
   padding-top: 0.45rem;
-  border-top: 1px dashed #2be4ea44;
+  border-top: 1px dashed color-mix(in srgb, var(--sheet-accent, #2be4ea) 27%, transparent);
   color: #8b93a7 !important;
   font-size: 0.82rem !important;
 }
@@ -176,7 +176,7 @@
   font-size: 0.62rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #fed33f;
+  color: var(--sheet-secondary, #fed33f);
   margin-bottom: 0.2rem;
 }
 
@@ -188,7 +188,7 @@
 }
 
 .empty {
-  border: 1px dashed #2be4ea55;
+  border: 1px dashed color-mix(in srgb, var(--sheet-accent, #2be4ea) 33%, transparent);
   padding: 0.85rem;
   color: #8b93a7;
   font-family: var(--cp-font-mono), 'Share Tech Mono', monospace;

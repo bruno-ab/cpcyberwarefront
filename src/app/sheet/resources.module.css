@@ -83,25 +83,25 @@
   cursor: pointer;
   font-size: 0.72rem;
   line-height: 1;
-  color: color-mix(in srgb, var(--cp-yellow) 35%, #2a2a2a);
+  color: color-mix(in srgb, var(--sheet-section-color, var(--cp-yellow)) 35%, #2a2a2a);
   user-select: none;
   transition: color 0.08s ease, text-shadow 0.08s ease;
 }
 
 .dot[data-on='1'] {
-  color: var(--cp-cyan);
+  color: var(--sheet-accent, var(--cp-cyan));
   text-shadow: var(--cp-glow-cyan);
 }
 
 .dot:hover {
-  color: var(--cp-cyan-dim);
+  color: var(--sheet-accent-soft, var(--cp-cyan-dim));
 }
 
 .label {
   font-family: var(--cp-font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
-  color: var(--cp-yellow);
+  color: var(--sheet-section-color, var(--cp-yellow));
   text-transform: lowercase;
 }
 
@@ -130,8 +130,8 @@
   box-sizing: border-box;
   background: var(--cp-bg-1);
   border: 1px solid var(--cp-border-strong);
-  color: var(--cp-cyan);
-  caret-color: var(--cp-cyan);
+  color: var(--sheet-accent, var(--cp-cyan));
+  caret-color: var(--sheet-accent, var(--cp-cyan));
   font-family: var(--cp-font-mono);
   font-size: 0.75rem;
   padding: 0.4rem 0.55rem;
@@ -145,7 +145,7 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--cp-cyan);
+  border-color: var(--sheet-accent, var(--cp-cyan));
   box-shadow: var(--cp-glow-cyan);
 }
 
@@ -161,7 +161,7 @@
   appearance: none;
   height: 4px;
   background: var(--cp-bg-2);
-  border: 1px solid color-mix(in srgb, var(--cp-cyan) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sheet-accent, var(--cp-cyan)) 40%, transparent);
   outline: none;
 }
 
@@ -169,7 +169,7 @@
   appearance: none;
   width: 12px;
   height: 12px;
-  background: var(--cp-cyan);
+  background: var(--sheet-accent, var(--cp-cyan));
   border: 1px solid var(--cp-bg-0);
   box-shadow: var(--cp-glow-cyan);
   cursor: pointer;
@@ -179,7 +179,7 @@
 .range::-moz-range-thumb {
   width: 12px;
   height: 12px;
-  background: var(--cp-cyan);
+  background: var(--sheet-accent, var(--cp-cyan));
   border: 1px solid var(--cp-bg-0);
   box-shadow: var(--cp-glow-cyan);
   cursor: pointer;
@@ -199,8 +199,8 @@
   appearance: none;
   align-self: flex-start;
   background: transparent;
-  border: 1px solid var(--cp-yellow);
-  color: var(--cp-yellow);
+  border: 1px solid var(--sheet-section-color, var(--cp-yellow));
+  color: var(--sheet-section-color, var(--cp-yellow));
   font-family: var(--cp-font-mono);
   font-size: 0.65rem;
   letter-spacing: 0.1em;

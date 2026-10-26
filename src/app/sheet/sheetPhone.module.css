@@ -6,9 +6,9 @@
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  border: 1px solid var(--cp-cyan);
+  border: 1px solid var(--sheet-accent, var(--cp-cyan));
   background: var(--cp-bg-panel);
-  color: var(--cp-cyan);
+  color: var(--sheet-accent, var(--cp-cyan));
   font-size: 1.15rem;
   cursor: pointer;
   box-shadow: var(--cp-glow-cyan);
@@ -38,10 +38,10 @@
   width: min(320px, calc(100vw - 1.5rem));
   height: min(520px, calc(100vh - 6rem));
   background: linear-gradient(165deg, #16181f, #07080a 70%);
-  border: 2px solid var(--cp-cyan);
+  border: 2px solid var(--sheet-accent, var(--cp-cyan));
   border-radius: 22px;
   padding: 0.85rem 0.7rem 0.7rem;
-  box-shadow: 0 0 28px color-mix(in srgb, var(--cp-cyan) 30%, transparent);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--sheet-accent, var(--cp-cyan)) 30%, transparent);
   display: flex;
   flex-direction: column;
 }
@@ -62,7 +62,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-top: 0.55rem;
-  color: var(--cp-yellow);
+  color: var(--sheet-section-color, var(--cp-yellow));
   font-family: var(--cp-font-mono);
 }
 
@@ -145,7 +145,7 @@
 
 .thread strong {
   display: block;
-  color: var(--cp-yellow);
+  color: var(--sheet-section-color, var(--cp-yellow));
   font-family: var(--cp-font-display);
   font-size: 0.78rem;
   letter-spacing: 0.06em;
@@ -155,7 +155,7 @@
 .thread span {
   font-family: var(--cp-font-mono);
   font-size: 0.62rem;
-  color: var(--cp-cyan);
+  color: var(--sheet-accent, var(--cp-cyan));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -187,7 +187,7 @@
   align-self: flex-start;
   background: transparent;
   border: none;
-  color: var(--cp-cyan);
+  color: var(--sheet-accent, var(--cp-cyan));
   font-family: var(--cp-font-mono);
   font-size: 0.72rem;
   cursor: pointer;
@@ -213,8 +213,8 @@
 
 .bubble[data-mine='true'] {
   align-self: flex-end;
-  border-color: var(--cp-cyan);
-  background: color-mix(in srgb, var(--cp-cyan) 12%, #0a0a0c);
+  border-color: var(--sheet-accent, var(--cp-cyan));
+  background: color-mix(in srgb, var(--sheet-accent, var(--cp-cyan)) 12%, #0a0a0c);
 }
 
 .bubble p {
@@ -245,8 +245,8 @@
 .compose button {
   appearance: none;
   width: 2.2rem;
-  border: 1px solid var(--cp-yellow);
+  border: 1px solid var(--sheet-section-color, var(--cp-yellow));
   background: transparent;
-  color: var(--cp-yellow);
+  color: var(--sheet-section-color, var(--cp-yellow));
   cursor: pointer;
 }

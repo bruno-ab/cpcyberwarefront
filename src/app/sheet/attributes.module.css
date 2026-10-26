@@ -6,8 +6,8 @@
   margin: 0 auto 0.85rem;
   max-width: 1100px;
   padding: 0.45rem 0.65rem;
-  border: 1px solid rgba(2, 215, 242, 0.35);
-  background: rgba(2, 215, 242, 0.06);
+  border: 1px solid var(--sheet-border, rgba(2, 215, 242, 0.35));
+  background: color-mix(in srgb, var(--sheet-accent, #02d7f2) 6%, transparent);
   font-family: var(--cp-font-mono, monospace);
 }
 
@@ -15,7 +15,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--cp-cyan, #02d7f2);
+  color: var(--sheet-accent, var(--cp-cyan, #02d7f2));
 }
 
 .speedValue {
@@ -37,19 +37,19 @@
 }
 
 .speedBonusEm {
-  color: var(--cp-cyan, #02d7f2);
+  color: var(--sheet-accent, var(--cp-cyan, #02d7f2));
   font-weight: 700;
-  text-shadow: 0 0 8px rgba(2, 215, 242, 0.55);
+  text-shadow: 0 0 8px var(--sheet-accent-soft, rgba(2, 215, 242, 0.55));
 }
 
 .attributestable {
   position: relative;
   overflow: hidden;
   background: var(--cp-bg-panel);
-  border: 1px solid #2be4ea88;
-  color: #2be4ea;
+  border: 1px solid var(--sheet-border, #2be4ea88);
+  color: var(--sheet-accent, #2be4ea);
   padding: 0.85rem 1rem;
-  box-shadow: inset 0 0 22px rgba(43, 228, 234, 0.12);
+  box-shadow: inset 0 0 22px var(--sheet-panel-glow, rgba(43, 228, 234, 0.12));
   clip-path: polygon(0 0, 100% 0, 100% 90%, 97% 100%, 0 100%);
   animation: attrSoftGlitch 3.8s steps(2, end) infinite;
 }

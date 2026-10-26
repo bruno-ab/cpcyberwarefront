@@ -11,7 +11,7 @@
 }
 
 .wrap[data-severity='1'] {
-  border-color: #fed33f88;
+  border-color: color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 53%, transparent);
 }
 
 .wrap[data-severity='2'] {
@@ -145,7 +145,7 @@
   font-size: 0.85rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #2be4ea;
+  color: var(--sheet-accent, #2be4ea);
 }
 
 .maxField {
@@ -163,7 +163,7 @@
   width: 4rem;
   background: #111;
   border: 1px solid #555;
-  color: #fed33f;
+  color: var(--sheet-secondary, #fed33f);
   font-family: 'Audiowide', sans-serif;
   font-size: 1rem;
   padding: 0.3rem 0.4rem;
@@ -171,7 +171,7 @@
 
 .ratio {
   font-family: 'Audiowide', sans-serif;
-  color: #fed33f;
+  color: var(--sheet-secondary, #fed33f);
   font-size: 1.1rem;
   letter-spacing: 0.06em;
 }
@@ -201,11 +201,11 @@
 }
 
 .bandTag[data-band='ok'] {
-  color: #2be4ea;
+  color: var(--sheet-accent, #2be4ea);
 }
 
 .bandTag[data-band='bruise'] {
-  color: #fed33f;
+  color: var(--sheet-secondary, #fed33f);
 }
 
 .bandTag[data-band='hurt'] {
@@ -234,7 +234,7 @@
   width: 2rem;
   height: 2rem;
   padding: 0;
-  border: 1px solid #2be4ea88;
+  border: 1px solid var(--sheet-border, #2be4ea88);
   background: transparent;
   cursor: pointer;
   position: relative;
@@ -242,8 +242,8 @@
 }
 
 .box:hover {
-  border-color: #fed33f;
-  box-shadow: 0 0 8px #fed33f55;
+  border-color: var(--sheet-secondary, #fed33f);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 33%, transparent);
 }
 
 .box[data-filled='true'] {
@@ -253,9 +253,9 @@
 }
 
 .box[data-band='bruise'][data-filled='true'] {
-  background: linear-gradient(145deg, #fed33f, #ff7d16);
-  border-color: #fed33f;
-  box-shadow: 0 0 8px #fed33f66;
+  background: linear-gradient(145deg, var(--sheet-secondary, #fed33f), #ff7d16);
+  border-color: var(--sheet-secondary, #fed33f);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--sheet-secondary, var(--sheet-secondary, #fed33f)) 40%, transparent);
 }
 
 .box[data-band='hurt'][data-filled='true'] {
@@ -303,12 +303,12 @@
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.85rem;
   letter-spacing: 0.04em;
-  color: #2be4ea;
+  color: var(--sheet-accent, #2be4ea);
   min-height: 1.3em;
 }
 
 .wrap[data-severity='2'] .status {
-  color: #fed33f;
+  color: var(--sheet-secondary, #fed33f);
 }
 
 .wrap[data-severity='3'] .status,
@@ -318,7 +318,7 @@
 
 .wrap[data-severity='5'] .status {
   color: #ff003c;
-  text-shadow: -0.06em 0 #2be4ea, 0.06em 0 #ff003c;
+  text-shadow: -0.06em 0 var(--sheet-accent, #2be4ea), 0.06em 0 #ff003c;
   font-size: 1rem;
   letter-spacing: 0.2em;
 }
@@ -353,6 +353,6 @@
 }
 
 .actions button:hover {
-  border-color: #2be4ea;
-  color: #2be4ea;
+  border-color: var(--sheet-accent, #2be4ea);
+  color: var(--sheet-accent, #2be4ea);
 }
