@@ -1178,9 +1178,16 @@ const TablePage = () => {
       setCampaignNpcs([]);
       return;
     }
-    fetchCampaignNpcs(campaignId)
-      .then(setCampaignNpcs)
-      .catch(() => setCampaignNpcs([]));
+    const loadNpcs = () =>
+      fetchCampaignNpcs(campaignId)
+        .then(setCampaignNpcs)
+        .catch(() => setCampaignNpcs([]));
+    loadNpcs();
+    const onFocus = () => {
+      loadNpcs();
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, [campaignId, isGm]);
 
   useEffect(() => {
