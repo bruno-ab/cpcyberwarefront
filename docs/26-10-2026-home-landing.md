@@ -2,22 +2,27 @@
 
 ## Objetivo
 
-Hero mais “deck” Night City: marca forte, uplink interativo, CTAs claros (logado vs visitante), gadgets abaixo da dobra — sem grid de cards no primeiro viewport.
+Landing “deck” Night City alinhada ao mock HTML (Out/2026): grid animado, scanlines, painéis chanfrados, terminal NetWatch, módulos NCPD/N54/Neuralink, popup Kiroshi e modal ICE — integrada ao `AppShell` (nav global, Heat, FX/SFX).
 
 ## Interações
 
 | Peça | Comportamento |
 |------|----------------|
-| `HomeGlitchTitle` | Nome do produto clicável/hover com RGB split leve; jitter no clique. Respeita `data-motion=off` e `prefers-reduced-motion`. |
-| `HomeUplink` | Terminal + skyline: clique digita linhas de lore (PT); ~35% chance de corrupção visual que se corrige. SFX `ui` / `key` se SFX on. |
-| `HomeDeckGadgets` | N54 com pulse (link `/news`), SCAN alterna dica, chrome 10/10 → `/catalog`. |
-| `HomeCtaRow` | Deslogado: Entrar / Catálogo / Regras + link mesa. Logado: Campanhas / Mesa (desabilitada se sem campanha) / Catálogo. Glitch breve no clique dos CTAs. |
+| `HomeCyberGrid` | Canvas de grade ciano; scroll vertical só com `data-motion=on`. |
+| `HomeLanding` | Pipes → `/campaigns`, `/table`, `/characters` ou `/login`, `/breach`. Hero: mesa + deck scan (modal). |
+| Terminal | Comandos `help`, `scan`, `breach`, `ncpd`, `clear`, `status`, `neuralink`. SFX via `playCyberSound` se SFX on. |
+| NCPD | Flash vermelho MaxTac (~3s) + `alarm` SFX; desligado com FX/motion off (flash estático leve). |
+| N54 | Rotação manual de manchetes PT do mock. |
+| Neuralink | Barras demo; sobem após falha no modal ICE. |
+| Kiroshi ad | Após 3s; dismiss com glitch; CTA `/catalog`. |
+| Modal ICE | Deck scan / comando `breach`; link para minigame `/breach`. |
 
 ## Arquivos
 
-- `src/app/page.tsx`, `src/app/home.module.css`
-- `src/components/home/*`
-- `src/i18n/messages/pt-BR.json`, `en.json`
+- `src/app/page.tsx`
+- `src/components/home/HomeLanding.tsx`, `HomeCyberGrid.tsx`, `homeLanding.module.css`, `homeTerminalCommands.ts`
+- `src/components/layout/AppShell.tsx` (`landing` prop), `PageFrame.tsx`
+- `src/app/layout.tsx` (fonte Orbitron)
 
 ## Preview
 
@@ -26,4 +31,4 @@ cd F:\projetos\cpcyberwarefront
 npm run dev
 ```
 
-Abrir `http://localhost:3000/` — toggles **FX ON/OFF** e **SFX** no header continuam valendo.
+Abrir `http://localhost:3000/` — toggles **FX ON/OFF** e **SFX** no header do AppShell continuam valendo.

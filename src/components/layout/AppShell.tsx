@@ -138,17 +138,31 @@ export const AppNav = () => {
   );
 };
 
-export const AppShell = ({ children }: { children: ReactNode }) => (
-  <div className={styles.shell}>
+type AppShellProps = {
+  children: ReactNode;
+  /** Home landing: full-bleed deck UI + custom footer */
+  landing?: boolean;
+};
+
+export const AppShell = ({ children, landing }: AppShellProps) => (
+  <div className={`${styles.shell} ${landing ? styles.shellLanding : ''}`}>
     <div className={styles.scanlines} aria-hidden />
-    <div className={styles.chromePulse} aria-hidden />
-    <div className={styles.horizon} aria-hidden />
+    {!landing ? (
+      <>
+        <div className={styles.chromePulse} aria-hidden />
+        <div className={styles.horizon} aria-hidden />
+      </>
+    ) : null}
     <AppNav />
-    <main className={styles.main}>{children}</main>
-    <footer className={styles.siteFooter}>
-      <span className={styles.footerSig}>NC-VTT · v0.1</span>
-      <ShardGlyph shardId="shard-bw-a" glyph="◈" ariaHint="Signal fragment" />
-    </footer>
+    <main className={`${styles.main} ${landing ? styles.mainLanding : ''}`}>
+      {children}
+    </main>
+    {!landing ? (
+      <footer className={styles.siteFooter}>
+        <span className={styles.footerSig}>NC-VTT · v0.1</span>
+        <ShardGlyph shardId="shard-bw-a" glyph="◈" ariaHint="Signal fragment" />
+      </footer>
+    ) : null}
   </div>
 );
 

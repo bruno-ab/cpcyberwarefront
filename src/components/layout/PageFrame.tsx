@@ -3,8 +3,13 @@
 import { ReactNode } from 'react';
 import { AppShell } from './AppShell';
 
-export const PageFrame = ({ children }: { children: ReactNode }) => (
-  <AppShell>{children}</AppShell>
+type PageFrameProps = {
+  children: ReactNode;
+  landing?: boolean;
+};
+
+export const PageFrame = ({ children, landing }: PageFrameProps) => (
+  <AppShell landing={landing}>{children}</AppShell>
 );
 
 export default PageFrame;

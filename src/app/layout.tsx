@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Audiowide, Rajdhani, Share_Tech_Mono } from 'next/font/google';
+import { Audiowide, Orbitron, Rajdhani, Share_Tech_Mono } from 'next/font/google';
 import '../styles/tokens.css';
 import '../styles/themes.css';
 import '../styles/hud-base.css';
@@ -29,6 +29,12 @@ const audiowide = Audiowide({
   variable: '--font-audiowide',
 });
 
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  variable: '--font-orbitron',
+});
+
 export const metadata: Metadata = {
   title: 'Cyberpunk Storyteller',
   description: 'Mesa digital Night City × Storyteller',
@@ -39,7 +45,7 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
   <html lang="pt-BR">
     <body
-      className={`${rajdhani.variable} ${shareMono.variable} ${audiowide.variable}`}
+      className={`${rajdhani.variable} ${shareMono.variable} ${audiowide.variable} ${orbitron.variable}`}
     >
       {/* cp-arg: fragment jack lives on /account — sync handshake NC-SHARD-SYNC when crystals align */}
       <script
