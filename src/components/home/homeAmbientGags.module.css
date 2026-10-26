@@ -1,0 +1,330 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  overflow: hidden;
+  font-family: var(--font-share-mono), 'Share Tech Mono', monospace;
+}
+
+/* —— Matrix rain burst —— */
+.matrixBurst {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: gagMatrixIn 0.45s ease-out forwards, gagMatrixOut 0.8s ease-in 4.2s forwards;
+}
+
+.matrixCol {
+  position: absolute;
+  top: -10%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.62rem;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 8px currentColor;
+  animation: gagMatrixFall linear forwards;
+  opacity: 0.85;
+}
+
+.matrixCol[data-tone='cyan'] {
+  color: #00f0ff;
+}
+
+.matrixCol[data-tone='magenta'] {
+  color: #ff0055;
+}
+
+.matrixCol[data-tone='yellow'] {
+  color: #fcee0a;
+}
+
+.matrixCol[data-tone='red'] {
+  color: #ff003c;
+}
+
+@keyframes gagMatrixFall {
+  from {
+    transform: translateY(-8vh);
+  }
+  to {
+    transform: translateY(108vh);
+  }
+}
+
+@keyframes gagMatrixIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gagMatrixOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* —— Invasion ping —— */
+.invasion {
+  position: fixed;
+  pointer-events: auto;
+  max-width: min(92vw, 22rem);
+  padding: 0.65rem 0.75rem 0.55rem;
+  background: rgba(8, 8, 12, 0.92);
+  border: 1px solid #ff0055;
+  box-shadow:
+    0 0 18px rgba(255, 0, 85, 0.35),
+    inset 0 0 24px rgba(0, 240, 255, 0.06);
+  animation: gagInvasionIn 0.35s steps(2, end), gagInvasionOut 0.5s ease 7.5s forwards;
+}
+
+.invasion[data-corner='1'] {
+  right: 1rem;
+  bottom: 4.5rem;
+}
+
+.invasion[data-corner='0'] {
+  left: 1rem;
+  top: 5rem;
+}
+
+.invasionFull {
+  position: fixed;
+  inset: 0;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(4, 4, 8, 0.55);
+  border: none;
+  box-shadow: none;
+  animation: gagInvasionIn 0.4s steps(3, end), gagInvasionOut 0.6s ease 8s forwards;
+}
+
+.invasionFull .invasionPanel {
+  pointer-events: auto;
+  max-width: min(92vw, 26rem);
+  padding: 1rem 1.1rem;
+  border: 1px solid #00f0ff;
+  background: rgba(8, 8, 12, 0.94);
+  box-shadow: 0 0 28px rgba(0, 240, 255, 0.25);
+}
+
+.invasionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.65rem;
+  color: #fcee0a;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.invasionLine {
+  font-size: 0.78rem;
+  color: #00f0ff;
+  margin: 0.2rem 0;
+  animation: gagLineGlitch 0.28s steps(2, end);
+}
+
+.invasionLine[data-corrupt='1'] {
+  color: #ff0055;
+  text-shadow: 2px 0 #00f0ff;
+}
+
+.dismiss {
+  pointer-events: auto;
+  border: 1px solid #ff003c;
+  background: transparent;
+  color: #ff003c;
+  font: inherit;
+  font-size: 0.6rem;
+  padding: 0.15rem 0.45rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dismiss:hover {
+  background: rgba(255, 0, 60, 0.15);
+  color: #fcee0a;
+  border-color: #fcee0a;
+}
+
+@keyframes gagInvasionIn {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes gagInvasionOut {
+  to {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+@keyframes gagLineGlitch {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+/* —— ASCII rabbit —— */
+.rabbit {
+  position: fixed;
+  font-size: 0.55rem;
+  line-height: 1.15;
+  white-space: pre;
+  color: #fcee0a;
+  text-shadow:
+    0 0 6px #00f0ff,
+    1px 0 #ff0055;
+  opacity: 0;
+  animation:
+    gagRabbitIn 0.2s steps(2, end) forwards,
+    gagRabbitFlicker 0.12s steps(2, end) 0.2s 8,
+    gagRabbitOut 0.4s ease 2.8s forwards;
+}
+
+.rabbit[data-corner='tl'] {
+  top: 4.5rem;
+  left: 0.75rem;
+}
+
+.rabbit[data-corner='tr'] {
+  top: 4.5rem;
+  right: 0.75rem;
+}
+
+.rabbit[data-corner='bl'] {
+  bottom: 3.5rem;
+  left: 0.75rem;
+}
+
+.rabbit[data-corner='br'] {
+  bottom: 3.5rem;
+  right: 0.75rem;
+}
+
+@keyframes gagRabbitIn {
+  to {
+    opacity: 0.92;
+  }
+}
+
+@keyframes gagRabbitFlicker {
+  0%,
+  100% {
+    opacity: 0.92;
+    filter: none;
+  }
+  50% {
+    opacity: 0.35;
+    filter: hue-rotate(90deg);
+  }
+}
+
+@keyframes gagRabbitOut {
+  to {
+    opacity: 0;
+  }
+}
+
+/* —— Bottom sync bar —— */
+.syncWrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.35rem 0.75rem 0.45rem;
+  background: linear-gradient(transparent, rgba(8, 8, 12, 0.88));
+  animation: gagSyncIn 0.3s ease-out, gagSyncOut 0.45s ease 4.8s forwards;
+}
+
+.syncLabel {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: #00f0ff;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.syncTrack {
+  height: 3px;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(255, 0, 85, 0.35);
+  overflow: hidden;
+}
+
+.syncFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff0055, #00f0ff, #fcee0a);
+  box-shadow: 0 0 10px #00f0ff;
+  animation: gagSyncFill 3.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes gagSyncFill {
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes gagSyncIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gagSyncOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .matrixBurst,
+  .matrixCol,
+  .invasion,
+  .invasionFull,
+  .rabbit,
+  .syncWrap,
+  .syncFill {
+    animation: none !important;
+  }
+
+  .layer {
+    display: none;
+  }
+}
+
+:global(html[data-motion='off']) .layer {
+  display: none;
+}

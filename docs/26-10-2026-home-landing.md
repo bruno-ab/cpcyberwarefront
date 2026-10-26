@@ -16,11 +16,12 @@ Landing “deck” Night City alinhada ao mock HTML (Out/2026): grid animado, sc
 | Neuralink | Barras demo; sobem após falha no modal ICE. |
 | Kiroshi ad | Após 3s; dismiss com glitch; CTA `/catalog`. |
 | Modal ICE | Deck scan / comando `breach`; link para minigame `/breach`. |
+| `HomeAmbientGags` | Gags raros (matrix slang, invasão, coelho ASCII, barra sync) — só com FX/motion on; não bloqueia cliques. |
 
 ## Arquivos
 
 - `src/app/page.tsx`
-- `src/components/home/HomeLanding.tsx`, `HomeCyberGrid.tsx`, `homeLanding.module.css`, `homeTerminalCommands.ts`
+- `src/components/home/HomeLanding.tsx`, `HomeCyberGrid.tsx`, `HomeAmbientGags.tsx`, `homeLanding.module.css`, `homeTerminalCommands.ts`
 - `src/components/layout/AppShell.tsx` (`landing` prop), `PageFrame.tsx`
 - `src/app/layout.tsx` (fonte Orbitron)
 
