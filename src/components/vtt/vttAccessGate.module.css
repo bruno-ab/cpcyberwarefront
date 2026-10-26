@@ -1,0 +1,41 @@
+.wrap {
+  max-width: 520px;
+  margin: 2rem auto;
+}
+
+.msg {
+  margin: 0;
+  font-family: var(--cp-font-mono);
+  font-size: 0.9rem;
+  color: var(--cp-text-dim);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.loadingBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid color-mix(in srgb, var(--cp-cyan) 35%, transparent);
+  border-top-color: var(--cp-cyan);
+  border-radius: 50%;
+  animation: vttGateSpin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes vttGateSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -167,3 +167,52 @@
 .back:hover {
   text-decoration: underline;
 }
+
+.skeletonGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeletonCard {
+  height: 4.25rem;
+  border: 1px solid var(--cp-border);
+  background: linear-gradient(
+    90deg,
+    var(--cp-bg-elevated) 0%,
+    color-mix(in srgb, var(--cp-cyan) 8%, var(--cp-bg-elevated)) 50%,
+    var(--cp-bg-elevated) 100%
+  );
+  background-size: 200% 100%;
+  animation: campaignSkeleton 1.2s ease-in-out infinite;
+}
+
+@keyframes campaignSkeleton {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.inviteHint {
+  margin: 0 0 0.75rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.78rem;
+  color: var(--cp-text-dim);
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}

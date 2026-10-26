@@ -38,7 +38,7 @@ const CampaignCard = ({
     </div>
     <div className={styles.actions}>
       <Link href={`/campaigns/${campaign.id}`}>
-        <HudButton variant="ghost">Abrir</HudButton>
+        <HudButton variant="ghost">Ver campanha</HudButton>
       </Link>
     </div>
   </article>
@@ -134,7 +134,7 @@ const CampaignsPage = () => {
             </p>
             <div className={styles.actions}>
               <Link href="/login">
-                <HudButton>Jack in</HudButton>
+                <HudButton>Entrar na conta</HudButton>
               </Link>
             </div>
           </HudPanel>
@@ -166,7 +166,10 @@ const CampaignsPage = () => {
 
             <HudPanel title="Convites pendentes">
               {loading ? (
-                <p className={styles.status}>Carregando…</p>
+                <div className={styles.skeletonGrid} aria-busy="true">
+                  <div className={styles.skeletonCard} />
+                  <div className={styles.skeletonCard} />
+                </div>
               ) : invites.length === 0 ? (
                 <p className={styles.empty}>
                   Nenhum convite pendente. O narrador envia convites pelo e-mail
@@ -206,7 +209,10 @@ const CampaignsPage = () => {
 
             <HudPanel title="Minhas campanhas (Narrador)">
               {loading ? (
-                <p className={styles.status}>Carregando…</p>
+                <div className={styles.skeletonGrid} aria-busy="true">
+                  <div className={styles.skeletonCard} />
+                  <div className={styles.skeletonCard} />
+                </div>
               ) : gmOnly.length === 0 ? (
                 <p className={styles.empty}>
                   Nenhuma campanha como GM. Crie uma acima ou rode o seed demo.
@@ -222,7 +228,9 @@ const CampaignsPage = () => {
 
             <HudPanel title="Campanhas do jogador">
               {loading ? (
-                <p className={styles.status}>Carregando…</p>
+                <div className={styles.skeletonGrid} aria-busy="true">
+                  <div className={styles.skeletonCard} />
+                </div>
               ) : playerOnly.length === 0 ? (
                 <p className={styles.empty}>
                   Você ainda não participa de campanhas como jogador. Aceite um

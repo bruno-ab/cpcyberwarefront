@@ -1,0 +1,52 @@
+.banner {
+  position: absolute;
+  top: 3.35rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  max-width: min(640px, calc(100vw - 2rem));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--cp-yellow) 55%, transparent);
+  background: color-mix(in srgb, var(--cp-bg) 88%, #000);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.text {
+  margin: 0;
+  flex: 1;
+  min-width: 12rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.72rem;
+  color: var(--cp-text-dim);
+  line-height: 1.45;
+}
+
+.text strong {
+  color: var(--cp-yellow);
+}
+
+.text kbd {
+  font-family: inherit;
+  padding: 0.05rem 0.25rem;
+  border: 1px solid var(--cp-border);
+  color: var(--cp-cyan);
+}
+
+.dismiss {
+  font-family: var(--cp-font-mono);
+  font-size: 0.72rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--cp-cyan);
+  background: transparent;
+  color: var(--cp-cyan);
+  cursor: pointer;
+}
+
+.dismiss:hover {
+  background: color-mix(in srgb, var(--cp-cyan) 12%, transparent);
+}

@@ -10,7 +10,14 @@ import { FontScaleToggle } from './FontScaleToggle';
 import { HeatStrip } from './HeatStrip';
 import { ShardGlyph } from '../secrets/ShardGlyph';
 import { useIsLoggedIn } from '../../hooks/useIsLoggedIn';
+import { useCanOpenTable } from '../../hooks/useCanOpenTable';
 import styles from './AppShell.module.css';
+
+const PRIMARY_WHEN_LOGGED_IN = [
+  { href: '/campaigns', key: 'campaigns' as const },
+  { href: '/table', key: 'table' as const, requiresTable: true },
+  { href: '/account', key: 'account' as const },
+] as const;
 
 const NAV = [
   { href: '/characters', key: 'characters' },
@@ -38,6 +45,11 @@ const NAV = [
 export const AppNav = () => {
   const { t, locale, changeLocale } = useTranslations('common');
   const loggedIn = useIsLoggedIn();
+  const { canOpen: canOpenTable, loading: tableNavLoading } = useCanOpenTable();
+
+  const primaryHrefs = new Set(
+    PRIMARY_WHEN_LOGGED_IN.map((item) => item.href),
+  );
 
   return (
     <header className={styles.header}>
@@ -49,19 +61,43 @@ export const AppNav = () => {
         </span>
       </Link>
       <nav className={styles.nav} aria-label="Main">
-        {NAV.map((item) => (
-          <Link key={item.href} href={item.href} className={styles.navLink}>
-            {t(`nav.${item.key}`)}
-            {'soon' in item && item.soon ? (
-              <span className={styles.soon}>{t('nav.tableSoon')}</span>
-            ) : null}
-          </Link>
-        ))}
-        {loggedIn ? (
-          <Link href="/account" className={styles.navLink}>
-            {t('nav.account')}
-          </Link>
-        ) : null}
+        {loggedIn
+          ? PRIMARY_WHEN_LOGGED_IN.map((item) => {
+              if (item.key === 'table') {
+                const disabled = !tableNavLoading && !canOpenTable;
+                if (disabled) {
+                  return (
+                    <span
+                      key={item.href}
+                      className={`${styles.navLink} ${styles.navLinkDisabled}`}
+                      title="Entre em uma campanha em Campanhas para abrir a mesa."
+                    >
+                      {t(`nav.${item.key}`)}
+                    </span>
+                  );
+                }
+              }
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navLink} ${styles.navLinkPrimary}`}
+                >
+                  {t(`nav.${item.key}`)}
+                </Link>
+              );
+            })
+          : null}
+        {NAV.filter((item) => !loggedIn || !primaryHrefs.has(item.href)).map(
+          (item) => (
+            <Link key={item.href} href={item.href} className={styles.navLink}>
+              {t(`nav.${item.key}`)}
+              {'soon' in item && item.soon ? (
+                <span className={styles.soon}>{t('nav.tableSoon')}</span>
+              ) : null}
+            </Link>
+          ),
+        )}
       </nav>
       <div className={styles.controls}>
         <HeatStrip />

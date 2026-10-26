@@ -122,6 +122,8 @@ import {
 } from '../../lib/sheetPool';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
 import { ChromeBootSequence } from '../../components/vtt/ChromeBootSequence';
+import { VttAccessGate } from '../../components/vtt/VttAccessGate';
+import { GmFirstVisitHints } from '../../components/vtt/GmFirstVisitHints';
 import { TokenArHud } from '../../components/vtt/TokenArHud';
 import { isArTargetToken, tokenShowsNameplate } from '../../lib/vttAr';
 import styles from './table.module.css';
@@ -382,6 +384,12 @@ const TablePage = () => {
   const { campaignId, setCampaignId, campaign } = useCampaign();
   const [campaignAccessOk, setCampaignAccessOk] = useState(false);
   const [accessNotice, setAccessNotice] = useState('');
+  const [campaignGate, setCampaignGate] = useState<
+    'pending' | 'ok' | 'login' | 'none'
+  >('pending');
+  const [joinError, setJoinError] = useState('');
+  const [joinPending, setJoinPending] = useState(false);
+  const [scenesReady, setScenesReady] = useState(false);
   const { t: tAr } = useTranslations('vtt.ar');
   const { t: tTokenEmote } = useTranslations('vtt.tokenEmote');
 
@@ -600,6 +608,7 @@ const TablePage = () => {
 
   const loadScenes = useCallback(
     async (opts?: { selectPreferred?: boolean }) => {
+      setScenesReady(false);
       try {
         const res = await fetch(
           apiUrl(`/api/vtt/campaigns/${campaignId}/scenes`),
@@ -628,6 +637,8 @@ const TablePage = () => {
         return { list, active };
       } catch {
         return null;
+      } finally {
+        setScenesReady(true);
       }
     },
     [campaignId, applySceneList],
@@ -819,33 +830,40 @@ const TablePage = () => {
     let cancelled = false;
     void (async () => {
       setCampaignAccessOk(false);
+      setCampaignGate('pending');
+      setJoinError('');
       if (!getAccessToken()) {
-        setAccessNotice('Faça login');
-        router.replace('/login?next=/table');
+        setAccessNotice('Faça login para entrar na mesa virtual.');
+        setCampaignGate('login');
         return;
       }
       const resolved = await resolveAllowedCampaignId(campaignId);
       if (cancelled) return;
       if (!resolved.campaignId) {
         clearStoredCampaignId();
-        setAccessNotice('Sem acesso a esta campanha');
-        router.replace('/campaigns');
+        setAccessNotice(
+          'Você ainda não participa de nenhuma campanha. Aceite um convite ou crie uma mesa em Campanhas.',
+        );
+        setCampaignGate('none');
         return;
       }
       if (resolved.campaignId !== campaignId) {
         setCampaignId(resolved.campaignId);
       }
       if (resolved.forbidden) {
-        setAccessNotice('Sem acesso a esta campanha');
+        setAccessNotice(
+          'A campanha salva não está mais disponível. Entramos na sua campanha ativa.',
+        );
       } else {
         setAccessNotice('');
       }
+      setCampaignGate('ok');
       setCampaignAccessOk(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [campaignId, router, setCampaignId]);
+  }, [campaignId, setCampaignId]);
 
   useEffect(() => {
     setRosterHydrated(false);
@@ -876,6 +894,8 @@ const TablePage = () => {
     socketRef.current = socket;
 
     const join = () => {
+      setJoinPending(true);
+      setJoinError('');
       socket.emit(
         'vtt:join',
         { sessionId, campaignId, sceneId, name },
@@ -890,17 +910,21 @@ const TablePage = () => {
               }
             | undefined,
         ) => {
+          setJoinPending(false);
           if (ack?.ok === false) {
+            socket.disconnect();
             if (ack.error === 'unauthorized') {
-              setAccessNotice('Faça login');
-              router.replace('/login?next=/table');
+              setCampaignGate('login');
+              setAccessNotice('Sessão expirada. Entre de novo para continuar na mesa.');
             } else {
-              setAccessNotice('Sem acesso a esta campanha');
               clearStoredCampaignId();
-              router.replace('/campaigns');
+              setJoinError(
+                'Não foi possível entrar na mesa. Verifique se você ainda tem acesso à campanha ou se a cena existe.',
+              );
             }
             return;
           }
+          setJoinError('');
           if (ack?.role === 'gm' || ack?.role === 'player') {
             setMyRole(ack.role);
           }
@@ -2065,7 +2089,7 @@ const TablePage = () => {
 
   useEffect(() => {
     setLeftHudCollapsed(readHudPanelPref(HUD_PREF_LEFT, false));
-    setRightHudCollapsed(readHudPanelPref(HUD_PREF_RIGHT, false));
+    setRightHudCollapsed(readHudPanelPref(HUD_PREF_RIGHT, true));
   }, []);
 
   const toggleLeftHud = useCallback(() => {
@@ -2693,6 +2717,64 @@ const TablePage = () => {
       </div>
     ) : null;
 
+  const tableBootLoading =
+    campaignGate === 'pending' ||
+    (campaignGate === 'ok' && (!scenesReady || joinPending));
+
+  if (campaignGate === 'login' || campaignGate === 'none') {
+    return (
+      <PageFrame>
+        <VttAccessGate
+          title="Mesa virtual"
+          message={accessNotice}
+          showLogin={campaignGate === 'login'}
+          campaignId={campaignId}
+        />
+      </PageFrame>
+    );
+  }
+
+  if (joinError) {
+    return (
+      <PageFrame>
+        <VttAccessGate
+          title="Falha ao entrar na mesa"
+          message={joinError}
+          campaignId={campaignId}
+        />
+      </PageFrame>
+    );
+  }
+
+  if (campaignGate === 'ok' && scenesReady && !sceneId) {
+    return (
+      <PageFrame>
+        <VttAccessGate
+          title="Nenhuma cena disponível"
+          message="Esta campanha ainda não tem cenas VTT. O narrador pode criar uma em Campanhas → detalhe da campanha → Cenas VTT."
+          campaignId={campaignId}
+        />
+      </PageFrame>
+    );
+  }
+
+  if (tableBootLoading) {
+    return (
+      <PageFrame>
+        <VttAccessGate
+          loading
+          title="Mesa virtual"
+          message={
+            joinPending
+              ? 'Entrando na sessão…'
+              : 'Carregando campanha e cenas…'
+          }
+          campaignId={campaignId}
+        />
+      </PageFrame>
+    );
+  }
+
   return (
     <PageFrame>
       <ChromeBootSequence
@@ -2716,6 +2798,7 @@ const TablePage = () => {
                 : 'ok'
         }
       >
+        <GmFirstVisitHints isGm={isGm} />
         <TableTopHud
           sceneTitle={sceneTitle}
           roleLabel={`${isGm ? 'GM' : 'Player'} · ${myName}`}

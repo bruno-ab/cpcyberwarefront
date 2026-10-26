@@ -212,6 +212,17 @@
   outline: none;
 }
 
+.navLinkPrimary {
+  color: var(--cp-yellow);
+  border-color: color-mix(in srgb, var(--cp-yellow) 45%, transparent);
+}
+
+.navLinkDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .soon {
   margin-left: 0.25rem;
   font-size: 0.6rem;

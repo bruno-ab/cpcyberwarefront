@@ -50,6 +50,7 @@ const CampaignDetailPage = () => {
   const [pendingInvites, setPendingInvites] = useState<CampaignInvite[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
   const [invitePlayerId, setInvitePlayerId] = useState('');
+  const [pageLoading, setPageLoading] = useState(true);
 
   const playerId = getPlayerIdFromToken();
   const isGm = campaign != null && Number(campaign.gmPlayerId) === playerId;
@@ -69,13 +70,14 @@ const CampaignDetailPage = () => {
       return;
     }
     if (!res.ok) {
+      setMsg('Não foi possível carregar esta campanha. Tente de novo em instantes.');
       setCampaign(null);
       return;
     }
     const row = (await res.json()) as CampaignRow;
     setCampaign(row);
     setEditName(row.name);
-  }, [campaignId]);
+  }, [campaignId, router]);
 
   const loadScenes = useCallback(async () => {
     const data: ScenesListResponse | null = await fetchCampaignScenes(campaignId);
@@ -105,12 +107,26 @@ const CampaignDetailPage = () => {
       router.replace('/login?next=/campaigns/' + campaignId);
       return;
     }
-    void loadCampaign();
-    void loadScenes();
-    void loadRoster();
-    void loadNpcs();
-    void loadMembers();
-  }, [loadCampaign, loadScenes, loadRoster, loadNpcs, loadMembers]);
+    setPageLoading(true);
+    void (async () => {
+      await Promise.all([
+        loadCampaign(),
+        loadScenes(),
+        loadRoster(),
+        loadNpcs(),
+        loadMembers(),
+      ]);
+      setPageLoading(false);
+    })();
+  }, [
+    campaignId,
+    router,
+    loadCampaign,
+    loadScenes,
+    loadRoster,
+    loadNpcs,
+    loadMembers,
+  ]);
 
   const openTable = (scene?: VttSceneSummary) => {
     setCampaignId(campaignId);
@@ -218,14 +234,47 @@ const CampaignDetailPage = () => {
         <header className={styles.hero}>
           <h1>{campaign?.name || `Campanha ${campaignId}`}</h1>
           <p>
-            {isGm ? 'Modo Narrador' : 'Modo Jogador'} · ID {campaignId}
-            {activeScene ? ` · Cena ativa: ${activeScene.name}` : ''}
+            {pageLoading
+              ? 'Carregando dados da campanha…'
+              : `${isGm ? 'Modo Narrador' : 'Modo Jogador'} · ID ${campaignId}${
+                  activeScene ? ` · Cena ativa: ${activeScene.name}` : ''
+                }`}
           </p>
+          {campaign && !pageLoading ? (
+            <div className={styles.heroActions}>
+              <HudButton type="button" onClick={() => openTable(activeScene || undefined)}>
+                Abrir mesa
+              </HudButton>
+              {isGm ? (
+                <Link href="#convites-campanha">
+                  <HudButton variant="ghost">Convidar jogadores</HudButton>
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </header>
+
+        {pageLoading ? (
+          <div className={styles.skeletonGrid} aria-busy="true">
+            <div className={styles.skeletonCard} />
+            <div className={styles.skeletonCard} />
+          </div>
+        ) : null}
 
         {msg ? <p className={styles.status}>{msg}</p> : null}
 
-        {isGm && (
+        {!pageLoading && !campaign && msg ? (
+          <HudPanel title="Acesso">
+            <p className={styles.empty}>{msg}</p>
+            <div className={styles.ctaRow}>
+              <Link href="/campaigns">
+                <HudButton variant="ghost">Voltar às campanhas</HudButton>
+              </Link>
+            </div>
+          </HudPanel>
+        ) : null}
+
+        {!pageLoading && campaign && isGm && (
           <HudPanel title="Informações da campanha">
             <form className={styles.formRow} onSubmit={onSaveName}>
               <input
@@ -240,6 +289,7 @@ const CampaignDetailPage = () => {
           </HudPanel>
         )}
 
+        {!pageLoading && campaign ? (
         <HudPanel title="Cenas VTT">
           {isGm && (
             <form className={styles.formRow} onSubmit={onCreateScene}>
@@ -260,7 +310,19 @@ const CampaignDetailPage = () => {
             </form>
           )}
           {scenes.length === 0 ? (
-            <p className={styles.empty}>Nenhuma cena ainda.</p>
+            <>
+              <p className={styles.empty}>
+                {isGm
+                  ? 'Crie a primeira cena para abrir a mesa virtual.'
+                  : 'O narrador ainda não criou cenas para esta campanha.'}
+              </p>
+              {isGm ? (
+                <p className={styles.inviteHint}>
+                  Use o formulário acima ou peça ao grupo para entrar enquanto
+                  você prepara o mapa.
+                </p>
+              ) : null}
+            </>
           ) : (
             <ul className={styles.list}>
               {scenes.map((scene) => (
@@ -294,7 +356,9 @@ const CampaignDetailPage = () => {
             </ul>
           )}
         </HudPanel>
+        ) : null}
 
+        {!pageLoading && campaign ? (
         <HudPanel title="Jogadores">
           {members.length === 0 ? (
             <p className={styles.empty}>Nenhum jogador listado.</p>
@@ -326,9 +390,15 @@ const CampaignDetailPage = () => {
             </ul>
           )}
         </HudPanel>
+        ) : null}
 
-        {isGm ? (
+        {!pageLoading && campaign && isGm ? (
+          <div id="convites-campanha">
           <HudPanel title="Convites">
+            <p className={styles.inviteHint}>
+              Convide por e-mail ou pelo ID numérico da conta do jogador (visível
+              em Conta). Convites pendentes aparecem abaixo.
+            </p>
             <form className={styles.formRow} onSubmit={onInvite}>
               <input
                 value={inviteEmail}
@@ -361,11 +431,25 @@ const CampaignDetailPage = () => {
               </ul>
             )}
           </HudPanel>
+          </div>
         ) : null}
 
+        {!pageLoading && campaign ? (
         <HudPanel title="Roster (personagens)">
           {rosterChars.length === 0 ? (
-            <p className={styles.empty}>Roster vazio.</p>
+            <>
+              <p className={styles.empty}>
+                Nenhum personagem no roster desta campanha.
+              </p>
+              <div className={styles.ctaRow}>
+                <Link href="/characters">
+                  <HudButton variant="ghost">Criar personagem</HudButton>
+                </Link>
+                <Link href="/sheet">
+                  <HudButton variant="ghost">Abrir fichas</HudButton>
+                </Link>
+              </div>
+            </>
           ) : (
             <ul className={styles.list}>
               {rosterChars.map((c) => (
@@ -379,7 +463,9 @@ const CampaignDetailPage = () => {
             </ul>
           )}
         </HudPanel>
+        ) : null}
 
+        {!pageLoading && campaign ? (
         <HudPanel title="NPCs da campanha">
           {npcs.length === 0 ? (
             <p className={styles.empty}>
@@ -400,12 +486,15 @@ const CampaignDetailPage = () => {
             </div>
           )}
         </HudPanel>
+        ) : null}
 
+        {!pageLoading && campaign ? (
         <div className={styles.actions}>
           <HudButton type="button" onClick={() => openTable(activeScene || undefined)}>
-            Ir para a mesa (cena ativa)
+            Abrir mesa (cena ativa)
           </HudButton>
         </div>
+        ) : null}
       </div>
     </PageFrame>
   );
