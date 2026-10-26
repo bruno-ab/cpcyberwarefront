@@ -151,7 +151,7 @@ export const GmTokenSpawnList = ({
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={npcImageSrc({ id: npc.id })}
+                      src={npcImageSrc(npc)}
                       alt=""
                       className={styles.portrait}
                       draggable={false}

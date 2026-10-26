@@ -1,15 +1,23 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { NPC_SHEETS } from '../../data/npcSheets';
 import { computeCyberwareCapacity } from '../../lib/cyberwareCapacity';
 import { npcImageSrc } from '../../lib/media';
+import { fetchNpcPortraitOverrides } from '../../lib/npcPortraitsApi';
 import styles from './npcs.module.css';
 
 const NpcsPage = () => {
   const [sourceFilter, setSourceFilter] = useState<string>('cp2077');
+  const [portraitOverrides, setPortraitOverrides] = useState<Record<string, string>>(
+    {},
+  );
+
+  useEffect(() => {
+    void fetchNpcPortraitOverrides().then(setPortraitOverrides);
+  }, []);
 
   const items = useMemo(() => {
     if (sourceFilter === 'all') return NPC_SHEETS;
@@ -54,7 +62,10 @@ const NpcsPage = () => {
             return (
               <article key={npc.id} className={styles.card}>
                 <img
-                  src={npcImageSrc(npc)}
+                  src={npcImageSrc({
+                    ...npc,
+                    image: portraitOverrides[npc.id] ?? npc.image,
+                  })}
                   alt={npc.name}
                   className={styles.portrait}
                   width={120}

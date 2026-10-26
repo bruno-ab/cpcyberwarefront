@@ -142,6 +142,7 @@ export type CampaignNpc = {
   affiliation: string;
   threat: string;
   summary: string;
+  image?: string | null;
 };
 
 export const fetchCampaignNpcs = async (

@@ -1186,7 +1186,7 @@ const TablePage = () => {
           y,
           affiliation: npc.affiliation || undefined,
           arThreat: mapNpcThreat(npc.threat),
-          portraitUrl: npcImageSrc({ id: npc.id }),
+          portraitUrl: npcImageSrc(npc),
           color: '#ff2a6d',
           bars: { hp: 7, hpMax: 7 },
         });
