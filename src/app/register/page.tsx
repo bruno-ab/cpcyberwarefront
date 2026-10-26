@@ -1,110 +1,233 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { PageFrame } from '../../components/layout/PageFrame';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { AuthScreen } from '../../components/auth/AuthScreen';
+import { AuthToast } from '../../components/auth/AuthToast';
+import { PasswordField } from '../../components/auth/PasswordField';
 import { HudButton } from '../../components/ui/HudButton';
 import { apiUrl } from '../../lib/api';
-import styles from '../login/auth.module.css';
+import { sanitizeAuthNext } from '../../lib/authRoutes';
+import {
+  scorePassword,
+  strengthLabelPt,
+} from '../../lib/passwordStrength';
+import ui from '../../components/auth/authUi.module.css';
 
-const RegisterPage = () => {
+const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
+const RegisterForm = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [message, setMessage] = useState('');
-  const [ok, setOk] = useState(false);
+  const [confirm, setConfirm] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmError, setConfirmError] = useState('');
+  const [toast, setToast] = useState('');
+  const [toastOk, setToastOk] = useState(false);
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = useMemo(
+    () => sanitizeAuthNext(searchParams.get('next')),
+    [searchParams],
+  );
+
+  const strength = scorePassword(password);
+  const strengthLabel = password ? strengthLabelPt(strength) : undefined;
+
+  const validate = (): boolean => {
+    let ok = true;
+    setNameError('');
+    setEmailError('');
+    setPasswordError('');
+    setConfirmError('');
+    if (!name.trim()) {
+      setNameError('Informe seu nome ou handle.');
+      ok = false;
+    }
+    if (!email.trim()) {
+      setEmailError('Informe seu email.');
+      ok = false;
+    } else if (!emailOk(email)) {
+      setEmailError('Email inválido.');
+      ok = false;
+    }
+    if (!password || password.length < 6) {
+      setPasswordError('Senha com pelo menos 6 caracteres.');
+      ok = false;
+    }
+    if (password !== confirm) {
+      setConfirmError('As senhas não coincidem.');
+      ok = false;
+    }
+    return ok;
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setToast('');
+    setToastOk(false);
+    if (!validate()) return;
     setBusy(true);
-    setMessage('');
-    setOk(false);
     try {
       const response = await fetch(apiUrl('/api/players'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, password }),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+        }),
       });
       if (!response.ok) {
-        setMessage('Registro recusado. Tente outro email.');
+        setToast('Registro recusado. Tente outro email ou nome.');
         return;
       }
-      setOk(true);
-      setMessage('Conta criada. Vá para o jack-in.');
-      setTimeout(() => router.push('/login'), 700);
+      setToastOk(true);
+      setToast('Conta criada. Redirecionando para jack-in…');
+      const loginNext = encodeURIComponent(nextPath);
+      window.setTimeout(() => {
+        router.push(`/login?next=${loginNext}`);
+      }, 900);
     } catch {
-      setMessage('Falha de rede. Damn Arasaka.');
+      setToast('Falha de rede. Tente de novo em instantes.');
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <PageFrame>
-      <div className={styles.page}>
-        <section className={styles.panel}>
-          <h1 className={styles.brand}>Novo link</h1>
-          <p className={styles.sub}>Registrar player · Night City</p>
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.field}>
-              <label htmlFor="name">Nome</label>
-              <input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="phone">Phone (opcional)</label>
-              <input
-                id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="password">Senha</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {message && (
-              <p className={styles.msg} data-ok={ok}>
-                {message}
-              </p>
-            )}
-            <div className={styles.actions}>
-              <HudButton type="submit" disabled={busy}>
-                {busy ? 'Gravando…' : 'Registrar'}
-              </HudButton>
-            </div>
-          </form>
-          <p className={styles.foot}>
-            Já tem link? <Link href="/login">Fazer login</Link>
-          </p>
-        </section>
-      </div>
-    </PageFrame>
+    <>
+      <AuthToast
+        message={toast}
+        variant={toastOk ? 'ok' : 'error'}
+        onDismiss={toastOk ? undefined : () => setToast('')}
+      />
+      <form className={ui.form} onSubmit={handleSubmit} noValidate>
+        <div className={ui.field}>
+          <label htmlFor="reg-name">Nome</label>
+          <input
+            id="reg-name"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (nameError) setNameError('');
+            }}
+            className={`${ui.input} ${nameError ? ui.inputInvalid : ''}`.trim()}
+            aria-invalid={nameError ? true : undefined}
+            disabled={busy}
+            required
+          />
+          {nameError ? (
+            <p className={ui.fieldError} role="alert">
+              {nameError}
+            </p>
+          ) : null}
+        </div>
+        <div className={ui.field}>
+          <label htmlFor="reg-email">Email</label>
+          <input
+            id="reg-email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError('');
+            }}
+            onBlur={() => {
+              if (email && !emailOk(email)) setEmailError('Email inválido.');
+            }}
+            className={`${ui.input} ${emailError ? ui.inputInvalid : ''}`.trim()}
+            disabled={busy}
+            required
+          />
+          {emailError ? (
+            <p className={ui.fieldError} role="alert">
+              {emailError}
+            </p>
+          ) : null}
+        </div>
+        <PasswordField
+          id="reg-password"
+          label="Senha"
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (passwordError) setPasswordError('');
+          }}
+          error={passwordError}
+          strength={password ? strength : undefined}
+          strengthLabel={strengthLabel}
+          disabled={busy}
+          required
+        />
+        <PasswordField
+          id="reg-confirm"
+          label="Confirmar senha"
+          autoComplete="new-password"
+          value={confirm}
+          onChange={(e) => {
+            setConfirm(e.target.value);
+            if (confirmError) setConfirmError('');
+          }}
+          error={confirmError}
+          disabled={busy}
+          required
+        />
+        <div className={ui.actions}>
+          <HudButton type="submit" disabled={busy}>
+            {busy ? 'Gravando…' : 'Registrar na rede'}
+          </HudButton>
+        </div>
+      </form>
+    </>
   );
 };
+
+const RegisterPageContent = () => {
+  const searchParams = useSearchParams();
+  const nextRaw = searchParams.get('next');
+  const loginHref = nextRaw
+    ? `/login?next=${encodeURIComponent(nextRaw)}`
+    : '/login';
+
+  return (
+    <AuthScreen
+      title="Novo link"
+      tagline="Crie seu player — depois faça jack-in e entre nas campanhas."
+      footer={
+        <>
+          Já tem conta? <Link href={loginHref}>Fazer login</Link>
+        </>
+      }
+    >
+      <RegisterForm />
+    </AuthScreen>
+  );
+};
+
+const RegisterPage = () => (
+  <Suspense
+    fallback={
+      <AuthScreen
+        title="Novo link"
+        tagline="Crie seu player — depois faça jack-in e entre nas campanhas."
+        footer={<>Carregando…</>}
+      >
+        <p className={ui.fieldHint}>Carregando…</p>
+      </AuthScreen>
+    }
+  >
+    <RegisterPageContent />
+  </Suspense>
+);
 
 export default RegisterPage;

@@ -1,5 +1,9 @@
 # Autorização front — 26-10-2026
 
+## Gate global
+
+Sem `access_token`, o app redireciona para `/login?next=…` exceto `/login` e `/register`. Ver `26-10-2026-auth-gate.md`.
+
 ## Rotas
 
 | Rota | Comportamento |
