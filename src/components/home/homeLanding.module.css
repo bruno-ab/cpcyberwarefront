@@ -844,10 +844,27 @@
 }
 
 .marketTape {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.marketTapeCompact {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #374151 transparent;
+  padding-bottom: 0.15rem;
+}
+
+.marketTapeCompact .marketPanel {
+  flex: 0 0 min(10.5rem, 72%);
+  min-width: 0;
 }
 
 .marketTapeCompact .marketSvg {
@@ -858,6 +875,9 @@
   background: #0a0f14;
   border: 1px solid #1f2937;
   padding: 0.35rem;
+  min-width: 0;
+  flex: 1 1 calc(50% - 0.25rem);
+  max-width: 100%;
 }
 
 .marketHead {
