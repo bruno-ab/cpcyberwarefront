@@ -12,7 +12,7 @@ Landing “deck” Night City alinhada ao mock HTML (Out/2026): grid animado, sc
 | `HomeLanding` | Pipes → `/campaigns`, `/table`, `/characters` ou `/login`, `/breach`. Hero: mesa + deck scan (modal). |
 | Terminal | Comandos `help`, `scan`, `breach`, `ncpd`, `clear`, `status`, `neuralink`. SFX via `playCyberSound` se SFX on. |
 | NCPD | Flash vermelho MaxTac (~3s) + `alarm` SFX; desligado com FX/motion off (flash estático leve). |
-| N54 | Rotação manual (capitais/megacidades + mercados) + **tape horizontal** com sparklines neon (Arasaka, Nikkei, Militech, Trauma Team, Kang Tao, Petrochem, NCX, EUR$ — mix ▲/▼, scroll no compact). |
+| N54 | Rotação manual (capitais/megacidades + mercados) + **tape horizontal** com sparklines neon (Arasaka, Nikkei, Militech, Trauma Team, Kang Tao, Petrochem, NCX, EUR$ + Biotechnica, Night Corp, Zetatech, Budget Arms, Kendachi, Tsunami Defense, Dynalar, NetWatch, Raven — mix ▲/▼, scroll no compact). |
 | NCPD | Ticker NetWatch (alertas Tel Aviv ficção) além do wanted + MaxTac. |
 | Neuralink | Barras demo; sobem após falha no modal ICE. |
 | Kiroshi ad | Após 3s; dismiss com glitch; CTA `/catalog`. |
@@ -51,3 +51,5 @@ Abrir `http://localhost:3000/` — toggles **FX ON/OFF** e **SFX** no header do 
 Layout: grids usam `minmax(0, 1fr)` + ticker contido; glitch FX em overlay fixo (não `filter` no root) para não quebrar `position: fixed`.
 
 **26/10 (tarde):** N54 ganhou feed pulp por capitais (SP, Tóquio, Londres, Berlin, Moscou, Pequim, NY, CDMX, Lagos, Dubai, Seoul…) e tape de mercado com 8 mini-gráficos scrolláveis.
+
+**26/10 (noite):** Tape N54 + wire ganharam 9 megacorps CP2077 (BTNC, NCORP, ZTECH, BDGT, KNDCH, TSUN, DYNL, NWCH, RAVN) com manchetes pulp PT e alertas NetWatch.

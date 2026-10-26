@@ -287,6 +287,78 @@ export const HOME_WIRE_FEED: HomeWireItem[] = [
       'EUR$ ▼ −0,7%: saques corpo congelados em três megacidades — cambistas de rua vendem “Eurodólar com cheiro de ozônio”.',
   },
   {
+    id: 'mk-biotechnica',
+    region: 'markets',
+    regionLabel: 'BIOTECHNICA · BTNC',
+    kicker: 'TAPE VERDE',
+    headline:
+      'BTNC ▲ +4,2%: contratos de monocultura synth-carbono explodem — fixers de Badlands já vendem “semente fantasma” antes da colheita oficial.',
+  },
+  {
+    id: 'mk-nightcorp',
+    region: 'markets',
+    regionLabel: 'NIGHT CORP · NCORP',
+    kicker: 'TAPE VERMELHO',
+    headline:
+      'NCORP ▼ −2,8%: vazamento de memo interno sugere cortes no grid municipal — moradores juram que luzes de Watson piscam em código Morse.',
+  },
+  {
+    id: 'mk-zetatech',
+    region: 'markets',
+    regionLabel: 'ZETATECH · ZTECH',
+    kicker: 'TAPE VERDE',
+    headline:
+      'ZTECH ▲ +3,1%: nova linha de optics militares entra no book — ripperdocs de Japantown cobram “pré-encomenda” sem serial visível.',
+  },
+  {
+    id: 'mk-budget-arms',
+    region: 'markets',
+    regionLabel: 'BUDGET ARMS · BDGT',
+    kicker: 'TAPE VERMELHO',
+    headline:
+      'BDGT ▼ −5,4%: recall de lote “Saturday Night Special” derruba ação — gangues ainda revendem caixas com adesivo “nunca explodiu”.',
+  },
+  {
+    id: 'mk-dynalar',
+    region: 'markets',
+    regionLabel: 'DYNALAR · DYNL',
+    kicker: 'TAPE VERDE',
+    headline:
+      'DYNL ▲ +7,2%: SUV corpo blindado vira status em Pacifica — analistas N54 falam em “bull market de medo”.',
+  },
+  {
+    id: 'mk-netwatch',
+    region: 'markets',
+    regionLabel: 'NETWATCH · NWCH',
+    kicker: 'ICE WIRE',
+    headline:
+      'NWCH ▼ −1,2%: orçamento de daemon cai no feed público — traders apostam em “temporada de buracos no Blackwall”.',
+  },
+  {
+    id: 'nc-nightcorp-grid',
+    region: 'night-city',
+    regionLabel: 'NIGHT CITY',
+    kicker: 'NCORP WIRE',
+    headline:
+      'Night Corp nega apagão seletivo em Watson: moradores filmam postes desligando só em prédios sem plano corp — NCPD chama de “glitch climático”.',
+  },
+  {
+    id: 'tokyo-kendachi',
+    region: 'tokyo',
+    regionLabel: 'TÓQUIO · CHROME DISTRICT',
+    kicker: 'KNDCH ▲',
+    headline:
+      'Kendachi lança monofio “sangue-frio”: colecionadores pagam em iene-net antes da bula — Trauma Team registra três acidentes de treino em 12h.',
+  },
+  {
+    id: 'nc-raven-chip',
+    region: 'night-city',
+    regionLabel: 'NIGHT CITY · PACIFICA',
+    kicker: 'RAVN ▲',
+    headline:
+      'Raven Microcyber sobe após rumor de chip netrunner “sem calor”: NetWatch promete auditoria; fixers vendem beta com garantia de uma hora.',
+  },
+  {
     id: 'mk-trauma',
     region: 'trauma',
     regionLabel: 'TRAUMA TEAM · NIGHT CITY',
@@ -372,4 +444,7 @@ export const HOME_NETWATCH_ALERTS: readonly string[] = [
   'N54 · PEQUIM: KT-FUT halt · firewall 3.0 · ordens fila 6h',
   'N54 · LAGOS: porto fantasma · manifesto zerado · Medtech nega origem',
   'N54 · NCX: Watson +0,9% · Pacifica excluída do índice “oficial”',
+  'N54 · MERCADOS: BTNC ▲ · BDGT recall · DYNL bull de medo em Pacifica',
+  'NETWATCH: NWCH ▼ · buracos no Blackwall · spoof ZTECH optics em circulação',
+  'N54 · NIGHT CITY: NCORP ▼ · grid Watson · moradores filmam apagão seletivo',
 ] as const;
