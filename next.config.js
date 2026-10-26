@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/mural',
+        destination: '/memorial',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     const apiBase =
       process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ||

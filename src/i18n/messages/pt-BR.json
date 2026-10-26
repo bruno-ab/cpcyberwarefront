@@ -24,7 +24,7 @@
       "shop": "Ripperdoc",
       "wiki": "Wiki",
       "achievements": "Conquistas",
-      "memorial": "Mural",
+      "memorial": "Memorial",
       "idCard": "ID Card"
     },
     "cta": {
@@ -172,7 +172,7 @@
     "search": "Buscar no livro…"
   },
   "memorial": {
-    "title": "Mural de Memorial",
+    "title": "Memorial",
     "intro": "Flatlines da crônica — epitáfios e rolagens que a mesa não esquece.",
     "gmPanelTitle": "Registrar flatline",
     "pickCharacter": "Personagem",
@@ -181,12 +181,12 @@
     "sessionPlaceholder": "Sessão 12, gig Watson…",
     "epitaphLabel": "Epitáfio",
     "epitaphPlaceholder": "Opcional — padrão Night City se vazio.",
-    "register": "Inscrever no mural",
-    "registered": "Registrado no mural.",
+    "register": "Inscrever no memorial",
+    "registered": "Registrado no memorial.",
     "saved": "Epitáfio salvo.",
     "error": "Falha ao sincronizar.",
-    "loading": "Carregando mural…",
-    "emptyTitle": "Mural vazio",
+    "loading": "Carregando memorial…",
+    "emptyTitle": "Memorial vazio",
     "empty": "Ninguém flatlined ainda — ou a crew ainda está de pé.",
     "fallen": "Flatline",
     "notableRolls": "Rolagens marcantes",
