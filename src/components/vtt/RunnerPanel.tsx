@@ -132,9 +132,11 @@ export const RunnerPanel = ({
           {ot.humanity != null ? ` · HUM ${ot.humanity}` : ''}
         </span>
         <span>
-          {ot.edges != null ? `Edges ${ot.edges}` : ''}
+          {ot.reputation != null ? `Rep ${ot.reputation}` : ''}
+          {character.credits != null
+            ? `${ot.reputation != null ? ' · ' : ''}Eddies ${character.credits}`
+            : ''}
           {ot.willpower != null ? ` · WP ${ot.willpower}` : ''}
-          {character.credits != null ? ` · ¤${character.credits}` : ''}
         </span>
         <span className={styles.speedLine}>
           Velocidade{' '}

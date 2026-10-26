@@ -238,6 +238,7 @@ const Resources = ({ characterData }: ResourcesProps) => {
             .filter(
               ([name]) =>
                 name !== 'edges' &&
+                name !== 'reputation' &&
                 name !== 'implant_capacity' &&
                 name !== 'max_cyberware',
             )
@@ -249,6 +250,32 @@ const Resources = ({ characterData }: ResourcesProps) => {
                 <span className={styles.label}>{labelOf(name)}</span>
               </div>
             ))}
+          <div className={styles.row}>
+            <label className={styles.numberField}>
+              <span className={styles.label}>Reputação</span>
+              <input
+                type="number"
+                min={0}
+                className={styles.input}
+                value={otherTraitsValues.reputation ?? 0}
+                onChange={(e) => {
+                  const next = {
+                    ...otherTraitsValues,
+                    reputation: Math.max(0, Number(e.target.value) || 0),
+                  };
+                  setOtherTraitsValues(next);
+                }}
+                onBlur={(e) => {
+                  const next = {
+                    ...otherTraitsValues,
+                    reputation: Math.max(0, Number(e.target.value) || 0),
+                  };
+                  setOtherTraitsValues(next);
+                  persist({ other: next });
+                }}
+              />
+            </label>
+          </div>
           <div className={styles.row}>
             <label className={styles.numberField}>
               <span className={styles.label}>Edges (E)</span>

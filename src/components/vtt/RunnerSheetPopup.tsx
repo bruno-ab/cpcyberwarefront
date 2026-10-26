@@ -119,9 +119,11 @@ export const RunnerSheetPopup = ({
               <div className={styles.meta}>
                 HP {character.vitality ?? '—'}/{character.vitalityMax ?? 7}
                 {ot.humanity != null ? ` · HUM ${ot.humanity}` : ''}
-                {ot.edges != null ? ` · Edges ${ot.edges}` : ''}
+                {ot.reputation != null ? ` · Rep ${ot.reputation}` : ''}
+                {character.credits != null
+                  ? ` · Eddies ${character.credits}`
+                  : ''}
                 {ot.willpower != null ? ` · WP ${ot.willpower}` : ''}
-                {character.credits != null ? ` · ¤${character.credits}` : ''}
               </div>
               <div className={styles.meta}>
                 Velocidade <b>{speed.speed}</b>

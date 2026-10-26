@@ -70,6 +70,7 @@ const defaultResources = {
     path: 0,
     willpower: 5,
     edges: 3,
+    reputation: 0,
     implant_capacity: 10,
     max_cyberware: 8,
   },

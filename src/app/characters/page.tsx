@@ -142,7 +142,8 @@ const CharactersPage = () => {
         <div className={styles.grid}>
           {data.map((character) => {
             const header = character.sheet?.header || {};
-            const edges = character.sheet?.other_traits?.edges ?? '—';
+            const reputation =
+              character.sheet?.other_traits?.reputation ?? 0;
             const initial = (character.name || '?').slice(0, 1).toUpperCase();
             return (
               <div key={character.id} className={styles.card}>
@@ -168,7 +169,7 @@ const CharactersPage = () => {
                     {header.city || 'Night City'}
                     {header.origin ? ` · ${header.origin}` : ''}
                     {' · '}
-                    {edges} E · {character.credits ?? 0} eddies
+                    Rep {reputation} · {character.credits ?? 0} eddies
                   </p>
                   {header.concept && (
                     <p className={styles.meta}>{header.concept}</p>

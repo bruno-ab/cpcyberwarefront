@@ -140,6 +140,7 @@ const Sheet = () => {
   }
 
   const edges = characterData.sheet?.other_traits?.edges ?? 0;
+  const reputation = characterData.sheet?.other_traits?.reputation ?? 0;
   const credits = characterData.credits ?? 0;
 
   return (
@@ -188,8 +189,8 @@ const Sheet = () => {
             <div className={styles.summaryCards}>
               <div className={styles.summaryCard} data-band="bruise">
                 <span className={styles.cardScan} aria-hidden />
-                <span>Edges (E)</span>
-                <strong>{edges}</strong>
+                <span>Reputação</span>
+                <strong>{Number(reputation) || 0}</strong>
               </div>
               <div className={styles.summaryCard} data-band="ok">
                 <span className={styles.cardScan} aria-hidden />
