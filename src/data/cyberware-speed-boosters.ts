@@ -16,6 +16,7 @@ type SpeedEntry = {
   image: string;
   source: 'cp2077' | 'edgerunners' | 'both';
   statBonuses: Record<string, number>;
+  ramCost?: number;
 };
 
 const legsImg = '/images/cyberware/legs.svg';
@@ -77,7 +78,8 @@ export const SPEED_BOOSTER_CATALOG: SpeedEntry[] = [
   {
     name: 'Boostware Flexor',
     description: 'Speedware de reação — burst curto antes do inimigo fechar a distância.',
-    effect: '+1 quadrado de Velocidade; não acumula com outro speedware de pernas.',
+    effect:
+      'Ativar (RAM): burst de sprint (+1 movimento neste turno). Passivo: +1 quadrado de Velocidade.',
     rarity: 'Rare',
     type: CyberWareSlot.legs,
     slots: 1,
@@ -89,7 +91,8 @@ export const SPEED_BOOSTER_CATALOG: SpeedEntry[] = [
     price: 22000,
     image: legsImg,
     source: 'cp2077',
-    statBonuses: { speed: 1 },
+    statBonuses: { speed: 1, ram: 1 },
+    ramCost: 1,
   },
   {
     name: 'Cabos Reflex Synapse',

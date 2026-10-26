@@ -6,6 +6,7 @@ import { characterImageSrc } from '../../lib/media';
 import { ROLE_RULES } from '../../data/roleRules';
 import { speedFromSheetSummary } from '../../lib/characterSpeed';
 import { ramFromSheetSummary } from '../../lib/characterRam';
+import { chromeActivationRamCost } from '../../lib/chromeCatalog';
 import styles from './runnerPanel.module.css';
 
 export type RunnerChar = {
@@ -158,10 +159,16 @@ export const RunnerPanel = ({
             <b>
               {ram.ram}/{ram.ramMax}
             </b>
-            {ram.ramBonus > 0 ? (
+            {ram.ramNeural > 0 || ram.ramBonus > 0 || ram.ramBase > 0 ? (
               <em className={styles.speedBoost}>
                 {' '}
-                ({ram.ramBase}+{ram.ramBonus})
+                ({[
+                  ram.ramNeural > 0 ? `${ram.ramNeural} neural` : null,
+                  ram.ramBase > 0 ? `${ram.ramBase} deck` : null,
+                  ram.ramBonus > 0 ? `+${ram.ramBonus} chrome` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')})
               </em>
             ) : null}
           </span>
@@ -279,17 +286,25 @@ export const RunnerPanel = ({
         <div className={styles.section}>
           <span className={styles.sectionLabel}>Chrome</span>
           <ul className={styles.chromeList}>
-            {sheet.chrome.slice(0, 6).map((name: string) => (
-              <li key={name}>
-                <button
-                  type="button"
-                  onClick={() => onChrome?.(name)}
-                  title={name}
-                >
-                  {name}
-                </button>
-              </li>
-            ))}
+            {sheet.chrome.slice(0, 6).map((name: string) => {
+              const cost = chromeActivationRamCost(name);
+              return (
+                <li key={name}>
+                  <button
+                    type="button"
+                    onClick={() => onChrome?.(name)}
+                    title={
+                      cost != null
+                        ? `${name} · ativar custa ${cost} RAM`
+                        : name
+                    }
+                  >
+                    {name}
+                    {cost != null ? <i>RAM {cost}</i> : null}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

@@ -1,5 +1,14 @@
-/** RAM de netrunning: 0 sem deck; com deck = 8 + Σ chrome (statBonuses.ram). */
+import { matchCatalogEntry } from './chromeCatalog';
 
+export const RAM_NEURAL_BASE = 2;
+
+const installedHasActivatableChrome = (names: string[]) =>
+  names.some((name) => {
+    const e = matchCatalogEntry(name);
+    return e != null && typeof e.ramCost === 'number' && e.ramCost > 0;
+  });
+
+/** RAM: buffer neural + deck + Σ chrome (statBonuses.ram). */
 
 
 export const RAM_DECK_BASE = 8;
@@ -13,19 +22,13 @@ export const NET_DECK_NAME_RE =
 
 
 export type RamBreakdown = {
-
   ram: number;
-
   ramMax: number;
-
   ramBase: number;
-
+  ramNeural: number;
   ramBonus: number;
-
   hasNetDeck: boolean;
-
 };
-
 
 
 export const ramBonusFromBonuses = (
@@ -86,11 +89,9 @@ export const computeCharacterRam = (
       names.some((n) => NET_DECK_NAME_RE.test(String(n || ''))));
 
   const ramBonus = ramBonusFromBonuses(bonuses);
-
+  const ramNeural = installedHasActivatableChrome(names) ? RAM_NEURAL_BASE : 0;
   const ramBase = hasNetDeck ? RAM_DECK_BASE : 0;
-
-  const ramMax = ramBase + ramBonus;
-
+  const ramMax = ramNeural + ramBase + ramBonus;
   const ot = sheet?.other_traits as Record<string, unknown> | undefined;
 
   const stored = Number(ot?.ram);
@@ -101,10 +102,8 @@ export const computeCharacterRam = (
 
   else ram = Math.max(0, Math.min(ram, ramMax));
 
-  return { ram, ramMax, ramBase, ramBonus, hasNetDeck };
-
+  return { ram, ramMax, ramBase, ramNeural, ramBonus, hasNetDeck };
 };
-
 
 
 export const ramFromSheetSummary = (
@@ -118,27 +117,19 @@ export const ramFromSheetSummary = (
   const ramMax = Number(sheetSummary?.ramMax);
 
   const ramBase = Number(sheetSummary?.ramBase);
-
+  const ramNeural = Number(sheetSummary?.ramNeural);
   const ramBonus = Number(sheetSummary?.ramBonus);
 
   if (Number.isFinite(ramMax)) {
-
     return {
-
       ram: Number.isFinite(ram) ? ram : ramMax,
-
       ramMax,
-
       ramBase: Number.isFinite(ramBase) ? ramBase : RAM_DECK_BASE,
-
+      ramNeural: Number.isFinite(ramNeural) ? ramNeural : 0,
       ramBonus: Number.isFinite(ramBonus) ? ramBonus : 0,
-
       hasNetDeck: Boolean(sheetSummary?.hasNetDeck) || ramMax > 0,
-
     };
-
   }
-
   return computeCharacterRam(sheetSummary, {});
 
 };

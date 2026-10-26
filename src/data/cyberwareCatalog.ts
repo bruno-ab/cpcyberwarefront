@@ -25,6 +25,8 @@ export type CyberwareCatalogEntry = {
   source: 'cp2077' | 'edgerunners' | 'both';
   /** Bônus permanentes de bolinhas na ficha (chave = attr/skill). */
   statBonuses?: Record<string, number>;
+  /** RAM gasta ao ativar o implante na mesa VTT. */
+  ramCost?: number;
 };
 
 /**
@@ -50,11 +52,14 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 45000,
     image: '/images/cyberware/operating_system.svg',
     source: 'both',
+    statBonuses: { ram: 3 },
+    ramCost: 2,
   },
   {
     name: 'Kerenzikov',
     description: 'Speedware clássico que dilata a percepção de combate.',
-    effect: '+2 dados permanentes em Iniciativa. Incompatível com outro speedware.',
+    effect:
+      'Ativar (RAM): +2 dados em Iniciativa/Esquiva neste turno. Passivo: +1 dado em Iniciativa. Incompatível com outro speedware.',
     rarity: 'Epic',
     type: CyberWareSlot.operatingSystem,
     slots: 1,
@@ -66,11 +71,14 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 28000,
     image: '/images/cyberware/operating_system.svg',
     source: 'cp2077',
+    statBonuses: { ram: 2 },
+    ramCost: 1,
   },
   {
     name: 'Synaptic Accelerator',
     description: 'Acelerador sináptico tático da Arasaka.',
-    effect: 'Na primeira rodada de combate, aja antes de inimigos com Wits menor que o seu.',
+    effect:
+      'Ativar (RAM): aja imediatamente após o inimigo mais rápido nesta rodada. Passivo: prioridade na 1ª rodada vs. Wits menor.',
     rarity: 'Rare',
     type: CyberWareSlot.operatingSystem,
     slots: 1,
@@ -82,6 +90,8 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 16000,
     image: '/images/cyberware/operating_system.svg',
     source: 'cp2077',
+    statBonuses: { ram: 1 },
+    ramCost: 1,
   },
   {
     name: 'Cyberdeck Tetratronic Rippler',
@@ -201,6 +211,7 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 18000,
     image: '/images/cyberware/face.svg',
     source: 'both',
+    ramCost: 1,
   },
   {
     name: 'Ballistic Coprocessor',
@@ -290,7 +301,8 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
   {
     name: 'Reflex Tuner',
     description: 'Afinador de reflexos subcorticais.',
-    effect: '+1 dado em Dexterity para reações e pilotagem.',
+    effect:
+      'Ativar (RAM): pulso de reflexo — +1 ação de movimento neste turno. Passivo: +1 dado em Dexterity para reações.',
     rarity: 'Uncommon',
     type: CyberWareSlot.nervousSystem,
     slots: 1,
@@ -302,6 +314,7 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 8000,
     image: '/images/cyberware/nervous_system.svg',
     source: 'cp2077',
+    ramCost: 1,
   },
   {
     name: 'Neofiber',
@@ -356,7 +369,7 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
   {
     name: 'Blood Pump',
     description: 'Bomba cardíaca de combate que força adrenalina.',
-    effect: 'Uma vez por cena, recupere 2 Vitalidade (não acima do máximo).',
+    effect: 'Ativar (RAM): recupere 2 Vitalidade (não acima do máximo), 1× por cena.',
     rarity: 'Epic',
     type: CyberWareSlot.circulatorySystem,
     slots: 1,
@@ -368,6 +381,7 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 20000,
     image: '/images/cyberware/circulatory_system.svg',
     source: 'cp2077',
+    ramCost: 1,
   },
   {
     name: 'Second Heart',
@@ -422,7 +436,8 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
   {
     name: 'Optical Camo',
     description: 'Camuflagem óptica ativa.',
-    effect: '+3 dados em Stealth enquanto ativo (1 cena); depois teste EMP interno dif. 6.',
+    effect:
+      'Ativar (RAM): +3 dados em Stealth por 1 cena; depois teste EMP interno dif. 6.',
     rarity: 'Epic',
     type: CyberWareSlot.integumentarySystem,
     slots: 1,
@@ -434,6 +449,7 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 35000,
     image: '/images/cyberware/integumentary_system.svg',
     source: 'cp2077',
+    ramCost: 2,
   },
   {
     name: 'Heat Converter',
@@ -456,7 +472,7 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
   {
     name: 'Ballistic Shield',
     description: 'Projetor de escudo nas palmas.',
-    effect: 'Ação: +2 dados para bloquear projéteis por 1 rodada.',
+    effect: 'Ativar (RAM): +2 dados para bloquear projéteis por 1 rodada.',
     rarity: 'Rare',
     type: CyberWareSlot.hands,
     slots: 1,
@@ -468,6 +484,7 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 11000,
     image: '/images/cyberware/hands.svg',
     source: 'cp2077',
+    ramCost: 1,
   },
   {
     name: 'Smart Link',

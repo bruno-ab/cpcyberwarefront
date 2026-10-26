@@ -661,6 +661,22 @@
   box-shadow: 0 0 0 2px var(--cp-yellow, #fed33f);
 }
 
+.chromeToast {
+  position: absolute;
+  top: 5.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 0.35rem 0.75rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--cp-cyan, #02d7f2);
+  background: rgba(0, 8, 12, 0.88);
+  border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 45%, transparent);
+  pointer-events: none;
+}
+
 .scanToast {
   position: absolute;
   top: 4.5rem;
@@ -681,6 +697,36 @@
 .token[data-aura='sandevistan'] {
   filter: saturate(1.4) hue-rotate(-10deg);
   box-shadow: 0 0 12px rgba(254, 211, 63, 0.8);
+}
+
+.token[data-aura='reflex-boost'] {
+  box-shadow: 0 0 10px rgba(2, 215, 242, 0.55);
+  animation: reflexPulse 0.85s ease-in-out infinite;
+}
+
+.token[data-aura='optics-active'],
+.token[data-passive~='optics'] {
+  box-shadow:
+    0 0 0 1px rgba(2, 215, 242, 0.35),
+    0 0 10px rgba(2, 215, 242, 0.35);
+}
+
+.token[data-passive~='subdermal'] {
+  outline: 1px dashed rgba(180, 200, 220, 0.35);
+  outline-offset: 2px;
+}
+
+.token[data-aura='stealth-camo'] {
+  opacity: 0.72;
+  filter: saturate(0.4) blur(0.3px);
+}
+
+.token[data-aura='shield-ring'] {
+  box-shadow: 0 0 0 2px rgba(120, 180, 255, 0.45);
+}
+
+.token[data-aura='blood-pump'] {
+  box-shadow: 0 0 12px rgba(255, 42, 109, 0.45);
 }
 
 .token[data-aura='hacked'] {
@@ -717,6 +763,16 @@
   font-size: 0.85rem;
 }
 
+@keyframes reflexPulse {
+  0%,
+  100% {
+    filter: none;
+  }
+  50% {
+    filter: blur(0.4px);
+  }
+}
+
 @keyframes tokenGlitch {
   0% {
     transform: translate(0, 0);
@@ -730,6 +786,8 @@
 }
 
 :global(html[data-safe-vision='on']) .token[data-aura='hacked'],
+:global(html[data-safe-vision='on']) .token[data-aura='reflex-boost'],
+:global(html[data-safe-vision='on']) .token[data-aura='stealth-camo'],
 :global(html[data-safe-vision='on']) .boardRoot[data-sandy='1'] .mapWorld {
   animation: none !important;
   filter: none !important;

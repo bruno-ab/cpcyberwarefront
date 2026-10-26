@@ -63,7 +63,7 @@ const RamField = ({ characterData }: Props) => {
       <section className={styles.wrap} data-disabled="1">
         <h4 className={styles.title}>RAM</h4>
         <p className={styles.hint}>
-          Sem cyberdeck ou interface NET instalado — RAM indisponível na mesa.
+          Sem cyberdeck, buffer neural ou chrome com RAM — indisponível na mesa.
         </p>
       </section>
     );
@@ -77,13 +77,16 @@ const RamField = ({ characterData }: Props) => {
           {current}/{breakdown.ramMax}
         </div>
       </div>
-      {breakdown.ramBonus > 0 ? (
-        <p className={styles.boost}>
-          Máx. {breakdown.ramBase}+{breakdown.ramBonus} chrome
-        </p>
-      ) : (
-        <p className={styles.boost}>Buffer base do deck · {breakdown.ramBase}</p>
-      )}
+      <p className={styles.boost}>
+        Máx.{' '}
+        {[
+          breakdown.ramNeural > 0 ? `${breakdown.ramNeural} neural` : null,
+          breakdown.ramBase > 0 ? `${breakdown.ramBase} deck` : null,
+          breakdown.ramBonus > 0 ? `+${breakdown.ramBonus} chrome` : null,
+        ]
+          .filter(Boolean)
+          .join(' · ') || '—'}
+      </p>
       <div
         className={styles.track}
         role="progressbar"

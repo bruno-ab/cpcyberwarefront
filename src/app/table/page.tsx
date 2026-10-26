@@ -86,6 +86,14 @@ import { DroneHud } from '../../components/vtt/DroneHud';
 import { AimOverlay } from '../../components/vtt/AimOverlay';
 import { RunnerPanel } from '../../components/vtt/RunnerPanel';
 import { RunnerSheetPopup } from '../../components/vtt/RunnerSheetPopup';
+import {
+  ChromeTokenTrails,
+  type SandyTrailGhost,
+} from '../../components/vtt/ChromeTokenTrails';
+import {
+  chromeActivationRamCost,
+  passiveChromeFx,
+} from '../../lib/chromeCatalog';
 import { apiUrl, authHeaders, getApiBaseUrl } from '../../lib/api';
 import {
   buildAimPreview,
@@ -448,6 +456,8 @@ const TablePage = () => {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [scanBusy, setScanBusy] = useState(false);
   const [scanToast, setScanToast] = useState<string | null>(null);
+  const [chromeToast, setChromeToast] = useState<string | null>(null);
+  const [sandyTrailFx, setSandyTrailFx] = useState<SandyTrailGhost[]>([]);
   const [netMenu, setNetMenu] = useState<NetMenuPayload | null>(null);
   const [netBusy, setNetBusy] = useState(false);
   const [sandyFx, setSandyFx] = useState(false);
@@ -900,16 +910,69 @@ const TablePage = () => {
         });
       },
     );
-    socket.on('vtt:fx', (fx: { type?: string; tokenId?: string }) => {
-      if (fx?.type === 'sandevistan') {
-        setSandyFx(true);
-        window.setTimeout(() => setSandyFx(false), 2200);
-        playCyberSound('glitch', { volume: 0.45 });
-      }
-      if (fx?.type === 'damage') {
-        playCyberSound('deny', { volume: 0.35 });
-      }
-    });
+    socket.on(
+      'vtt:fx',
+      (fx: {
+        type?: string;
+        tokenId?: string;
+        from?: { x: number; y: number };
+        color?: string;
+      }) => {
+        if (fx?.type === 'sandevistan' || fx?.type === 'chrome-activate') {
+          setSandyFx(true);
+          window.setTimeout(() => setSandyFx(false), 2200);
+          playCyberSound('glitch', { volume: 0.45 });
+        }
+        if (fx?.type === 'sandevistan-trail' && fx.from) {
+          setSandyTrailFx((prev) =>
+            [
+              {
+                id: `fx_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+                x: fx.from.x,
+                y: fx.from.y,
+                color: fx.color || '#FCEE0A',
+              },
+              ...prev,
+            ].slice(0, 24),
+          );
+        }
+        if (fx?.type === 'damage') {
+          playCyberSound('deny', { volume: 0.35 });
+        }
+      },
+    );
+    socket.on(
+      'vtt:chrome',
+      (payload: {
+        ok?: boolean;
+        error?: string;
+        chrome?: string;
+        ramCost?: number;
+        ram?: number;
+        ramMax?: number;
+        cost?: number;
+      }) => {
+        if (payload?.ok) {
+          if (payload.ramCost) {
+            setChromeToast(
+              `${payload.chrome || 'Chrome'} ativo · RAM −${payload.ramCost} (${payload.ram ?? '?'}/${payload.ramMax ?? '?'})`,
+            );
+          } else {
+            setChromeToast(`${payload.chrome || 'Chrome'} ativo.`);
+          }
+          playCyberSound('ui', { volume: 0.35 });
+        } else if (payload?.error === 'no-ram') {
+          setChromeToast(
+            `RAM insuficiente (${payload.ram ?? 0}/${payload.ramMax ?? 0}) · custo ${payload.cost ?? payload.ramCost ?? '?'}`,
+          );
+          playCyberSound('deny', { volume: 0.45 });
+        } else if (payload?.error === 'not-installed') {
+          setChromeToast('Chrome não instalado nesta ficha.');
+          playCyberSound('deny', { volume: 0.4 });
+        }
+        window.setTimeout(() => setChromeToast(null), 3200);
+      },
+    );
     socket.on('vtt:view-mode', (p: { mode?: ViewMode }) => {
       if (p?.mode) setLocalViewMode(p.mode);
     });
@@ -1921,6 +1984,17 @@ const TablePage = () => {
 
   const runnerForPanel = myRosterChar;
 
+  const installedChromeByCharacterId = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const c of roster) {
+      const chrome = c.sheetSummary?.chrome;
+      if (Array.isArray(chrome)) {
+        map.set(String(c.id), chrome.map(String));
+      }
+    }
+    return map;
+  }, [roster]);
+
   useEffect(() => {
     setLeftHudCollapsed(readHudPanelPref(HUD_PREF_LEFT, false));
     setRightHudCollapsed(readHudPanelPref(HUD_PREF_RIGHT, false));
@@ -2672,6 +2746,11 @@ const TablePage = () => {
               {scanToast}
             </div>
           )}
+          {chromeToast && (
+            <div className={styles.chromeToast} role="status">
+              {chromeToast}
+            </div>
+          )}
           {netMenu && (
             <QuickhackMenu
               menu={netMenu}
@@ -3210,6 +3289,15 @@ const TablePage = () => {
                     grid={GRID}
                     floor={currentFloor}
                   />
+                  <ChromeTokenTrails
+                    grid={GRID}
+                    floor={currentFloor}
+                    tokens={floorTokens}
+                    fxEvents={sandyTrailFx}
+                    onConsumeFx={(id) =>
+                      setSandyTrailFx((prev) => prev.filter((g) => g.id !== id))
+                    }
+                  />
                   {(viewMode === 'net'
                     ? floorTokens.filter(
                         (t) =>
@@ -3246,6 +3334,16 @@ const TablePage = () => {
                       : '';
                     const arIntel =
                       showArHud && t.arIntel ? t.arIntel : null;
+                    const auras = t.auras || [];
+                    const auraPrimary = auras.includes('sandevistan')
+                      ? 'sandevistan'
+                      : auras[0] || '';
+                    const passiveTags = passiveChromeFx(
+                      t.characterId != null
+                        ? installedChromeByCharacterId.get(String(t.characterId)) ||
+                            []
+                        : [],
+                    );
                     return (
                       <button
                         type="button"
@@ -3257,7 +3355,8 @@ const TablePage = () => {
                         data-hidden={t.hidden ? '1' : '0'}
                         data-scan={scanHot ? '1' : '0'}
                         data-threat={intel?.threat || ''}
-                        data-aura={(t.auras || [])[0] || ''}
+                        data-aura={auraPrimary}
+                        data-passive={passiveTags.join(' ')}
                         style={{
                           left: t.x * GRID,
                           top: t.y * GRID,
@@ -3574,6 +3673,11 @@ const TablePage = () => {
                     chrome: 'sandevistan',
                   });
                 }}
+                sandyRamCost={
+                  (myRosterChar?.sheetSummary?.chrome || [])
+                    .map((n: string) => chromeActivationRamCost(n))
+                    .find((c: number | null) => c != null) ?? 2
+                }
               />
             </HudPanel>
           {selectedToken &&

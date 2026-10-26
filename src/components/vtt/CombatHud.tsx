@@ -41,6 +41,7 @@ type CombatHudProps = {
   onToggleAim: () => void;
   onAttack: () => void;
   onSandy: () => void;
+  sandyRamCost?: number | null;
 };
 
 export const CombatHud = ({
@@ -66,6 +67,7 @@ export const CombatHud = ({
   onToggleAim,
   onAttack,
   onSandy,
+  sandyRamCost,
 }: CombatHudProps) => {
   const current = initiative[turnIndex];
   const myTurn =
@@ -176,6 +178,7 @@ export const CombatHud = ({
               )}
               <HudButton variant="ghost" onClick={onSandy}>
                 Sandevistan
+                {sandyRamCost != null ? ` · RAM ${sandyRamCost}` : ''}
               </HudButton>
               <HudButton variant="ghost" onClick={onDelay}>
                 Atrasar
