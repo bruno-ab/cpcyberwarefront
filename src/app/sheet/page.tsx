@@ -9,6 +9,8 @@ import Abilities from './abilities';
 import CyberPunkResource from './resource';
 import CHeader from './cHeader';
 import VitalityField from './vitality';
+import RamField from './RamField';
+import { computeCharacterRam } from '../../lib/characterRam';
 import CyberCapacity from './CyberCapacity';
 import RoleAbilities from './RoleAbilities';
 import SheetAmbientGlitches from './SheetAmbientGlitches';
@@ -142,6 +144,15 @@ const Sheet = () => {
   const edges = characterData.sheet?.other_traits?.edges ?? 0;
   const reputation = characterData.sheet?.other_traits?.reputation ?? 0;
   const credits = characterData.credits ?? 0;
+  const ramSummary = computeCharacterRam(
+    characterData.sheet,
+    characterData.statBonuses || {},
+    {
+      installedNames: (characterData.cyberwares || []).map((c: { name?: string }) =>
+        String(c.name || ''),
+      ),
+    },
+  );
 
   return (
     <section className={styles.sheetPage} {...sheetRoot}>
@@ -186,6 +197,7 @@ const Sheet = () => {
               <h3 className={styles.attributesSection}>Vitalidade</h3>
               <VitalityField characterData={characterData} />
             </div>
+            <RamField characterData={characterData} />
             <div className={styles.summaryCards}>
               <div className={styles.summaryCard} data-band="bruise">
                 <span className={styles.cardScan} aria-hidden />
@@ -201,6 +213,15 @@ const Sheet = () => {
                 <span className={styles.cardScan} aria-hidden />
                 <span>Chrome</span>
                 <strong>{characterData.cyberwares?.length || 0} peças</strong>
+              </div>
+              <div className={styles.summaryCard} data-band="ok">
+                <span className={styles.cardScan} aria-hidden />
+                <span>RAM</span>
+                <strong>
+                  {ramSummary.hasNetDeck
+                    ? `${ramSummary.ram}/${ramSummary.ramMax}`
+                    : '—'}
+                </strong>
               </div>
               <div className={styles.summaryCard} data-band="crit">
                 <span className={styles.cardScan} aria-hidden />
@@ -279,6 +300,7 @@ const Sheet = () => {
         {tab === 'recursos' && (
           <div className={styles.glitchResources}>
             <h3 className={styles.attributesSection}>Recursos & Antecedentes</h3>
+            <RamField characterData={characterData} />
             <CyberPunkResource characterData={characterData} />
           </div>
         )}

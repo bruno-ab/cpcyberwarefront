@@ -951,8 +951,15 @@ const TablePage = () => {
         outcome?: string;
         error?: string;
         name?: string;
+        ram?: number;
+        ramMax?: number;
       }) => {
         setNetBusy(false);
+        if (payload?.ram != null) {
+          setNetMenu((prev) =>
+            prev ? { ...prev, ram: payload.ram, ramMax: payload.ramMax ?? prev.ramMax } : prev,
+          );
+        }
         playCyberSound(payload?.ok ? 'confirm' : 'deny', { volume: 0.45 });
         setScanToast(
           payload?.ok
@@ -1238,17 +1245,27 @@ const TablePage = () => {
 
   const spawnRoster = () => {
     intent('token:spawn-roster', {
-      characters: roster.map((c, i) => ({
-        id: c.id,
-        name: c.name,
-        playerId: c.playerId,
-        color: TOKEN_COLORS[i % TOKEN_COLORS.length],
-        portraitUrl: characterImageSrc(c),
-        bars: {
+      characters: roster.map((c, i) => {
+        const sum = c.sheetSummary || {};
+        const ram = Number(sum.ram);
+        const ramMax = Number(sum.ramMax);
+        const bars: Record<string, number> = {
           hp: Number(c.vitality) || 7,
           hpMax: Number(c.vitalityMax) || 7,
-        },
-      })),
+        };
+        if (Number.isFinite(ramMax) && ramMax > 0) {
+          bars.ram = Number.isFinite(ram) ? ram : ramMax;
+          bars.ramMax = ramMax;
+        }
+        return {
+          id: c.id,
+          name: c.name,
+          playerId: c.playerId,
+          color: TOKEN_COLORS[i % TOKEN_COLORS.length],
+          portraitUrl: characterImageSrc(c),
+          bars,
+        };
+      }),
     });
     playCyberSound('confirm', { volume: 0.4 });
   };
@@ -2285,7 +2302,14 @@ const TablePage = () => {
       >
         + Porta
       </HudButton>
-      <HudButton variant="ghost" onClick={() => intent('breach:start', {})}>
+      <HudButton
+        variant="ghost"
+        onClick={() =>
+          intent('breach:start', {
+            tokenId: selectedTokenId || myTokenIds[0],
+          })
+        }
+      >
         Breach
       </HudButton>
       {canSpawnDrone && (
@@ -2684,6 +2708,10 @@ const TablePage = () => {
                 : ''}
               {selectedToken.bars?.signal != null
                 ? ` · SIG ${selectedToken.bars.signal}%`
+                : ''}
+              {selectedToken.bars?.ramMax != null &&
+              Number(selectedToken.bars.ramMax) > 0
+                ? ` · RAM ${selectedToken.bars.ram ?? 0}/${selectedToken.bars.ramMax}`
                 : ''}
               {selectedToken.hidden ? ' · oculto' : ''}
               {turnMovementForSelected && (
@@ -3365,6 +3393,18 @@ const TablePage = () => {
                             style={{
                               width: `${
                                 (t.bars.hp / Math.max(1, t.bars.hpMax)) * 100
+                              }%`,
+                            }}
+                          />
+                        )}
+                        {t.bars?.ramMax != null && Number(t.bars.ramMax) > 0 && (
+                          <span
+                            className={styles.tokenRam}
+                            style={{
+                              width: `${
+                                (Number(t.bars.ram) /
+                                  Math.max(1, Number(t.bars.ramMax))) *
+                                100
                               }%`,
                             }}
                           />

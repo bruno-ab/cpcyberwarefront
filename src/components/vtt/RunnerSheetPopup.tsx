@@ -7,6 +7,7 @@ import { characterImageSrc } from '../../lib/media';
 import { ROLE_RULES } from '../../data/roleRules';
 import { defaultAbilities } from '../../app/sheet/defaultSheet';
 import { speedFromSheetSummary } from '../../lib/characterSpeed';
+import { ramFromSheetSummary } from '../../lib/characterRam';
 import type { RunnerChar } from './RunnerPanel';
 import styles from './runnerSheetPopup.module.css';
 
@@ -91,6 +92,7 @@ export const RunnerSheetPopup = ({
   const [tab, setTab] = useState<PopupTab>('atributos');
   const sheet = character.sheetSummary || {};
   const speed = speedFromSheetSummary(sheet);
+  const ram = ramFromSheetSummary(sheet);
   const ot = sheet.other_traits || {};
   const header = sheet.header || {};
   const roleRule = findRoleRule(character.role || sheet.role);
@@ -136,6 +138,20 @@ export const RunnerSheetPopup = ({
                   ' · 5 + Destreza'
                 )}
               </div>
+              {(ram.hasNetDeck || ram.ramMax > 0) && (
+                <div className={styles.meta}>
+                  RAM{' '}
+                  <b>
+                    {ram.ram}/{ram.ramMax}
+                  </b>
+                  {ram.ramBonus > 0 ? (
+                    <span className={styles.speedBoost}>
+                      {' '}
+                      ({ram.ramBase}+{ram.ramBonus} chrome)
+                    </span>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
           <HudButton variant="ghost" onClick={onClose}>

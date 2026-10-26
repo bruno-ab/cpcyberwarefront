@@ -5,6 +5,7 @@ import { computeSheetPool, formatStatOption } from '../../lib/sheetPool';
 import { characterImageSrc } from '../../lib/media';
 import { ROLE_RULES } from '../../data/roleRules';
 import { speedFromSheetSummary } from '../../lib/characterSpeed';
+import { ramFromSheetSummary } from '../../lib/characterRam';
 import styles from './runnerPanel.module.css';
 
 export type RunnerChar = {
@@ -83,6 +84,7 @@ export const RunnerPanel = ({
 
   const sheet = character.sheetSummary || {};
   const speed = speedFromSheetSummary(sheet);
+  const ram = ramFromSheetSummary(sheet);
   const ot = sheet.other_traits || {};
   const roleRule = findRoleRule(character.role || sheet.role);
   const portrait = characterImageSrc(character);
@@ -150,6 +152,20 @@ export const RunnerPanel = ({
             </>
           ) : null}
         </span>
+        {ram.hasNetDeck || ram.ramMax > 0 ? (
+          <span className={styles.speedLine}>
+            RAM{' '}
+            <b>
+              {ram.ram}/{ram.ramMax}
+            </b>
+            {ram.ramBonus > 0 ? (
+              <em className={styles.speedBoost}>
+                {' '}
+                ({ram.ramBase}+{ram.ramBonus})
+              </em>
+            ) : null}
+          </span>
+        ) : null}
       </div>
 
       {roleRule && (

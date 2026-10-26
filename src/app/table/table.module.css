@@ -457,6 +457,17 @@
   pointer-events: none;
 }
 
+.tokenRam {
+  position: absolute;
+  left: 10%;
+  bottom: 4px;
+  height: 3px;
+  max-width: 80%;
+  background: #8814ff;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
 .layerHint {
   margin: 0.45rem 0 0;
   font-family: var(--cp-font-mono, monospace);

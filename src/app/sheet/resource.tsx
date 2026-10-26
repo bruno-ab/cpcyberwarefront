@@ -240,7 +240,8 @@ const Resources = ({ characterData }: ResourcesProps) => {
                 name !== 'edges' &&
                 name !== 'reputation' &&
                 name !== 'implant_capacity' &&
-                name !== 'max_cyberware',
+                name !== 'max_cyberware' &&
+                name !== 'ram',
             )
             .map(([name]) => (
               <div key={name} className={styles.row}>

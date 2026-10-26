@@ -98,6 +98,24 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 32000,
     image: '/images/cyberware/operating_system.svg',
     source: 'edgerunners',
+    statBonuses: { computer: 2, technology: 2 },
+  },
+  {
+    name: 'Seacho NET Interface',
+    description: 'Jack neural de baixo perfil para quickhacks leves.',
+    effect: 'Habilita NET na mesa; +2 RAM além do buffer do deck.',
+    rarity: 'Uncommon',
+    type: CyberWareSlot.operatingSystem,
+    slots: 1,
+    edgeCost: 2,
+    hackDifficulty: 5,
+    implantCost: 1,
+    vitality: 0,
+    humanityCost: 1,
+    price: 6500,
+    image: '/images/cyberware/operating_system.svg',
+    source: 'cp2077',
+    statBonuses: { ram: 2 },
   },
 
   // —— Frontal Cortex ——
@@ -148,6 +166,7 @@ const BASE_CATALOG: CyberwareCatalogEntry[] = [
     price: 12000,
     image: '/images/cyberware/frontal_cortex.svg',
     source: 'cp2077',
+    statBonuses: { ram: 2 },
   },
   {
     name: 'Ex-Disk',
