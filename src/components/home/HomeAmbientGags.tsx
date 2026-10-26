@@ -27,13 +27,15 @@ type MatrixCol = {
   cells: string[];
 };
 
+type InvasionLine = { text: string; corrupt: boolean };
+
 type ActiveGag =
   | { kind: 'matrix'; cols: MatrixCol[] }
   | {
       kind: 'invasion';
       full: boolean;
       corner: '0' | '1';
-      lines: string[];
+      lines: InvasionLine[];
     }
   | { kind: 'rabbit'; corner: 'tl' | 'tr' | 'bl' | 'br'; art: string }
   | { kind: 'syncBar'; label: string };
@@ -69,9 +71,13 @@ const buildInvasion = (): ActiveGag => {
   const full = Math.random() < 0.22;
   const lineCount = full ? 4 + Math.floor(Math.random() * 3) : 2 + Math.floor(Math.random() * 2);
   const shuffled = [...INVASION_LINES].sort(() => Math.random() - 0.5);
-  const lines = shuffled.slice(0, lineCount).map((line, idx) =>
-    idx === 0 || Math.random() < 0.45 ? glitchify(line) : line,
-  );
+  const lines = shuffled.slice(0, lineCount).map((line, idx) => {
+    const glitched = idx === 0 || Math.random() < 0.45 ? glitchify(line) : line;
+    return {
+      text: glitched,
+      corrupt: full ? Math.random() < 0.4 : idx % 2 === 1,
+    };
+  });
   return {
     kind: 'invasion',
     full,
@@ -209,12 +215,12 @@ export const HomeAmbientGags = () => {
           </div>
           {gag.lines.map((line, i) => (
             <p
-              key={line + i}
+              key={line.text + i}
               className={styles.invasionLine}
-              data-corrupt={i % 2 === 1 ? '1' : undefined}
+              data-corrupt={line.corrupt ? '1' : undefined}
             >
               {'> '}
-              {line}
+              {line.text}
             </p>
           ))}
         </div>
@@ -231,12 +237,12 @@ export const HomeAmbientGags = () => {
             </div>
             {gag.lines.map((line, i) => (
               <p
-                key={line + i}
+                key={line.text + i}
                 className={styles.invasionLine}
-                data-corrupt={Math.random() < 0.4 ? '1' : undefined}
+                data-corrupt={line.corrupt ? '1' : undefined}
               >
                 {'> '}
-                {line}
+                {line.text}
               </p>
             ))}
           </div>

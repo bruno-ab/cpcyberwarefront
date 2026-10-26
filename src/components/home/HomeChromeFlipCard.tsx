@@ -21,11 +21,11 @@ export const HomeChromeFlipCard = () => {
   const { animationsOn } = useMotion();
   const [catalog, setCatalog] = useState<CatalogRow[]>(CYBERWARE_CATALOG);
   const [flipped, setFlipped] = useState(false);
-  const [featured, setFeatured] = useState<CatalogRow | undefined>(() =>
-    pickRandom(CYBERWARE_CATALOG),
-  );
+  const [featured, setFeatured] = useState<CatalogRow | undefined>(undefined);
 
   useEffect(() => {
+    setFeatured(pickRandom(CYBERWARE_CATALOG));
+
     fetch(apiUrl('/api/cyberware/catalog'))
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
