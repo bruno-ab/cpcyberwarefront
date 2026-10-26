@@ -1,0 +1,235 @@
+.panel {
+  grid-column: 1 / -1;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  border: 1px solid color-mix(in srgb, var(--home-cyan) 50%, var(--home-magenta) 25%);
+  background: rgba(0, 0, 0, 0.88);
+  padding: 0.75rem 1rem 0.85rem;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  box-shadow: inset 0 0 24px color-mix(in srgb, var(--home-cyan) 6%, transparent);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--home-cyan) 28%, transparent);
+  padding-bottom: 0.35rem;
+  font-family: var(--home-font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--home-cyan);
+}
+
+.tag {
+  font-size: 0.55rem;
+  color: var(--home-magenta);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+@media (min-width: 720px) {
+  .body {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: end;
+  }
+}
+
+.counters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+}
+
+.counter {
+  min-width: 0;
+}
+
+.counterLabel {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  color: #9ca3af;
+  margin-bottom: 0.15rem;
+}
+
+.counterValue {
+  font-family: var(--home-font-display);
+  font-size: clamp(0.72rem, 2.2vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  word-break: break-all;
+}
+
+.counterValueRx {
+  color: var(--home-cyan);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--home-cyan) 45%, transparent);
+}
+
+.counterValueTx {
+  color: var(--home-magenta);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--home-magenta) 40%, transparent);
+}
+
+.counterMeta {
+  font-size: 0.5rem;
+  color: color-mix(in srgb, var(--home-cyan) 70%, #6b7280);
+  margin-top: 0.12rem;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.barBlock {
+  min-width: 0;
+}
+
+.barLabel {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.2rem;
+}
+
+.barPct {
+  font-family: var(--home-font-display);
+  font-weight: 700;
+}
+
+.barPctCyan {
+  color: var(--home-cyan);
+}
+
+.barPctMag {
+  color: var(--home-magenta);
+}
+
+.barTrack {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  transform-origin: left center;
+}
+
+.barFillCyan {
+  background: linear-gradient(90deg, var(--home-cyan), color-mix(in srgb, var(--home-cyan) 40%, #fff));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--home-cyan) 50%, transparent);
+}
+
+.barFillMag {
+  background: linear-gradient(90deg, var(--home-magenta), color-mix(in srgb, var(--home-magenta) 35%, #fff));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--home-magenta) 45%, transparent);
+}
+
+.barFill[data-animate='true'] {
+  transition: width 0.35s ease-out;
+}
+
+.sparkWrap {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.sparkHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.25rem;
+  color: #9ca3af;
+}
+
+.sparkChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 2.25rem;
+  padding: 0.25rem 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--home-cyan) 25%, transparent);
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 7px,
+    rgba(0, 240, 255, 0.04) 7px,
+    rgba(0, 240, 255, 0.04) 8px
+  );
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sparkBar {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--home-cyan),
+    color-mix(in srgb, var(--home-magenta) 55%, var(--home-cyan))
+  );
+  opacity: 0.85;
+  border-radius: 1px 1px 0 0;
+}
+
+.sparkBar[data-animate='true'] {
+  transition: height 0.3s ease-out, opacity 0.25s;
+}
+
+:global(html[data-motion='on']) .panel[data-live='true'] .counterValueRx,
+:global(html[data-motion='on']) .panel[data-live='true'] .counterValueTx {
+  animation: netCounterPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes netCounterPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.88;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barFill[data-animate='true'],
+  .sparkBar[data-animate='true'] {
+    transition: none;
+  }
+
+  :global(html[data-motion='on']) .panel[data-live='true'] .counterValueRx,
+  :global(html[data-motion='on']) .panel[data-live='true'] .counterValueTx {
+    animation: none;
+  }
+}
+
+:global(html[data-motion='off']) .barFill[data-animate='true'],
+:global(html[data-motion='off']) .sparkBar[data-animate='true'] {
+  transition: none;
+}
+
+:global(html[data-motion='off']) .panel[data-live='true'] .counterValueRx,
+:global(html[data-motion='off']) .panel[data-live='true'] .counterValueTx {
+  animation: none;
+}

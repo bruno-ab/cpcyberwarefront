@@ -22,6 +22,7 @@ import { HomeMarketTape } from './HomeMarketTape';
 import { HomeDistrictHolomap } from './HomeDistrictHolomap';
 import { HomeChromeFlipCardGate } from './HomeChromeFlipCardGate';
 import { HomeNightCityWeather } from './HomeNightCityWeather';
+import { HomeNetGraph } from './HomeNetGraph';
 import { HOME_NETWATCH_ALERTS, HOME_WIRE_FEED } from './homeWireFeed';
 import {
   nextWeatherMode,
@@ -417,6 +418,7 @@ export const HomeLanding = () => {
             onModeChange={setWeatherMode}
             autoRotate={weatherAuto}
           />
+          <HomeNetGraph />
         </div>
 
         <div className={styles.modules}>

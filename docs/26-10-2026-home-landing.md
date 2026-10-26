@@ -21,6 +21,7 @@ Landing “deck” Night City alinhada ao mock HTML (Out/2026): grid animado, sc
 | `HomeDistrictHolomap` | Holoprojetor SVG (wireframe ciano): Watson, Westbrook, Heywood, Pacifica, City Center, Badlands — lore PT + link (`/lore`, `/wiki`, `/map`, `/gigs`). |
 | `HomeChromeFlipCard` | Cartão chrome CSS 3D; verso sorteia peça de `/api/cyberware/catalog` (fallback catálogo local) + link `/catalog`. Flip instantâneo com FX off / reduced motion. |
 | `HomeNightCityWeather` | Ciclo manual + auto (4 min com FX on): chuva ácida, smog, corpo zero, céu limpo. Tint/overlay na landing; HUD `CLIMA:` na status bar. FX off = tint estático, sem animação. |
+| `HomeNetGraph` | Faixa full-width na gadget strip: contadores PACOTES RX/TX, barras BUFFER/LATÊNCIA e sparkline; anima só com FX on. |
 
 ## Layout dos gadgets
 
@@ -29,13 +30,14 @@ Entre o **heroGrid** (mesa + terminal) e a **fileira de módulos** (NCPD / N54 /
 1. **Holomap** — coluna larga (2fr ≥1100px); mapa + painel de lore.
 2. **Chrome flip card** — coluna estreita ao lado.
 3. **Meteo NC** — coluna estreita; controla o clima global da landing.
+4. **Net graph** — linha inteira abaixo (`grid-column: 1 / -1`): telemetria RX/TX, buffer, latência e mini-gráfico de pacotes.
 
-Em tablet (768–1099px): holomap ocupa linha inteira; cartão e clima dividem a linha de baixo.
+Em tablet (768–1099px): holomap ocupa linha inteira; cartão e clima dividem a linha de baixo; telemetria na linha seguinte.
 
 ## Arquivos
 
 - `src/app/page.tsx`
-- `src/components/home/HomeLanding.tsx`, `HomeCyberGrid.tsx`, `HomeAmbientGags.tsx`, `HomeMarketTape.tsx`, `homeMarketTapeData.ts`, `HomeDistrictHolomap.tsx`, `HomeChromeFlipCard.tsx`, `HomeNightCityWeather.tsx`, `homeNightCityDistricts.ts`, `homeWeatherModes.ts`, `homeWireFeed.ts`, `homeLanding.module.css`, `homeTerminalCommands.ts`
+- `src/components/home/HomeLanding.tsx`, `HomeCyberGrid.tsx`, `HomeAmbientGags.tsx`, `HomeMarketTape.tsx`, `homeMarketTapeData.ts`, `HomeDistrictHolomap.tsx`, `HomeChromeFlipCard.tsx`, `HomeNightCityWeather.tsx`, `HomeNetGraph.tsx`, `homeNightCityDistricts.ts`, `homeWeatherModes.ts`, `homeWireFeed.ts`, `homeLanding.module.css`, `homeTerminalCommands.ts`
 - `src/components/layout/AppShell.tsx` (`landing` prop), `PageFrame.tsx`
 - `src/app/layout.tsx` (fonte Orbitron)
 
