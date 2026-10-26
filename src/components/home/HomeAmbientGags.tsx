@@ -7,6 +7,8 @@ import {
   ASCII_RABBIT,
   ASCII_RABBIT_ALT,
   INVASION_LINES,
+  ARABIC_GLYPHS,
+  JAPANESE_GLYPHS,
   MATRIX_TERMS,
   SYNC_LABELS,
   glitchify,
@@ -38,13 +40,52 @@ type ActiveGag =
       lines: InvasionLine[];
     }
   | { kind: 'rabbit'; corner: 'tl' | 'tr' | 'bl' | 'br'; art: string }
-  | { kind: 'syncBar'; label: string };
+  | { kind: 'syncBar'; label: string }
+  | {
+      kind: 'scriptGlitch';
+      glyphs: ScriptGlitchGlyph[];
+    };
+
+type ScriptGlitchGlyph = {
+  id: number;
+  text: string;
+  script: 'arabic' | 'japanese';
+  top: string;
+  left: string;
+  size: string;
+  delay: string;
+  duration: string;
+  rgb: 'cmr' | 'myc' | 'ryc';
+};
 
 const GAG_DURATION_MS: Record<GagKind, number> = {
   matrix: 5200,
   invasion: 8200,
   rabbit: 3400,
   syncBar: 5400,
+  scriptGlitch: 4600,
+};
+
+const RGB_MODES = ['cmr', 'myc', 'ryc'] as const;
+
+const buildScriptGlitch = (): ActiveGag => {
+  const count = 14 + Math.floor(Math.random() * 22);
+  const glyphs: ScriptGlitchGlyph[] = Array.from({ length: count }, (_, i) => {
+    const useArabic = Math.random() < 0.45;
+    const pool = useArabic ? ARABIC_GLYPHS : JAPANESE_GLYPHS;
+    return {
+      id: i,
+      text: pool[Math.floor(Math.random() * pool.length)],
+      script: useArabic ? 'arabic' : 'japanese',
+      top: `${randBetween(6, 88).toFixed(1)}%`,
+      left: `${randBetween(3, 92).toFixed(1)}%`,
+      size: `${randBetween(0.72, 1.65).toFixed(2)}rem`,
+      delay: `${randBetween(0, 2.4).toFixed(2)}s`,
+      duration: `${randBetween(0.35, 1.15).toFixed(2)}s`,
+      rgb: RGB_MODES[Math.floor(Math.random() * RGB_MODES.length)],
+    };
+  });
+  return { kind: 'scriptGlitch', glyphs };
 };
 
 const sampleTerms = (n: number) => {
@@ -110,6 +151,8 @@ const spawnGag = (kind: GagKind): ActiveGag => {
       return buildRabbit();
     case 'syncBar':
       return buildSyncBar();
+    case 'scriptGlitch':
+      return buildScriptGlitch();
     default:
       return { kind: 'syncBar', label: SYNC_LABELS[0] };
   }
@@ -261,6 +304,28 @@ export const HomeAmbientGags = () => {
           <div className={styles.syncTrack}>
             <div className={styles.syncFill} />
           </div>
+        </div>
+      )}
+
+      {gag.kind === 'scriptGlitch' && (
+        <div className={styles.scriptBurst}>
+          {gag.glyphs.map((g) => (
+            <span
+              key={g.id}
+              className={styles.scriptGlyph}
+              data-script={g.script}
+              data-rgb={g.rgb}
+              style={{
+                top: g.top,
+                left: g.left,
+                fontSize: g.size,
+                animationDelay: g.delay,
+                animationDuration: g.duration,
+              }}
+            >
+              {g.text}
+            </span>
+          ))}
         </div>
       )}
     </div>

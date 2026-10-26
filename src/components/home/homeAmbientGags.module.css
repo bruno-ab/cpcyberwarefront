@@ -309,6 +309,113 @@
   }
 }
 
+/* —— Arabic / Japanese chromatic script glitches —— */
+.scriptBurst {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: gagScriptBurstIn 0.25s ease-out forwards, gagScriptBurstOut 0.65s ease-in 3.85s forwards;
+}
+
+.scriptGlyph {
+  position: absolute;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.92);
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  animation: gagScriptGlyphLife ease-in-out forwards;
+  mix-blend-mode: screen;
+}
+
+.scriptGlyph[data-script='arabic'] {
+  font-family: 'Segoe UI', 'Traditional Arabic', 'Noto Naskh Arabic', 'Arial Unicode MS', sans-serif;
+  direction: rtl;
+}
+
+.scriptGlyph[data-script='japanese'] {
+  font-family: 'Segoe UI', 'Yu Gothic UI', 'Meiryo', 'MS Gothic', sans-serif;
+}
+
+.scriptGlyph[data-rgb='cmr'] {
+  text-shadow:
+    -2px 0 #00f0ff,
+    2px 0 #ff0055,
+    0 -1px #ff003c,
+    0 0 14px rgba(0, 240, 255, 0.55);
+}
+
+.scriptGlyph[data-rgb='myc'] {
+  text-shadow:
+    -2px 1px #ff0055,
+    2px -1px #fcee0a,
+    0 0 12px rgba(255, 0, 85, 0.5);
+}
+
+.scriptGlyph[data-rgb='ryc'] {
+  text-shadow:
+    -3px 0 #ff003c,
+    3px 0 #00f0ff,
+    1px 1px #fcee0a,
+    0 0 16px rgba(255, 0, 60, 0.45);
+}
+
+@keyframes gagScriptBurstIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gagScriptBurstOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes gagScriptGlyphLife {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) skewX(0deg);
+    filter: blur(3px);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-2px, 0) skewX(-4deg);
+    filter: blur(0);
+  }
+  28% {
+    opacity: 0.25;
+    transform: translate(3px, 1px) skewX(2deg);
+  }
+  42% {
+    opacity: 0.95;
+    transform: translate(-1px, -1px) skewX(-1deg);
+  }
+  58% {
+    opacity: 0.4;
+    transform: translate(2px, 0) skewX(3deg);
+  }
+  72% {
+    opacity: 0.88;
+    transform: translate(-3px, 1px);
+  }
+  88% {
+    opacity: 0.15;
+    transform: translate(1px, -2px);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(4px, 0) skewX(6deg);
+    filter: blur(4px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .matrixBurst,
   .matrixCol,
@@ -316,7 +423,9 @@
   .invasionFull,
   .rabbit,
   .syncWrap,
-  .syncFill {
+  .syncFill,
+  .scriptBurst,
+  .scriptGlyph {
     animation: none !important;
   }
 
