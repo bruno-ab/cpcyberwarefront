@@ -19,6 +19,7 @@
 - **Nav logado**: Campanhas / Mesa / Conta em destaque; Mesa desabilitada com tooltip quando não há campanha em `mine`.
 - **Campanhas**: skeletons na lista; botões PT (“Entrar na conta”, “Ver campanha”).
 - **Detalhe da campanha**: skeleton, “Abrir mesa” no hero, âncora “Convidar jogadores”, CTAs roster/cenas vazias, painel de acesso em 403/erro.
+- **Convites GM**: painel **Convites / Jogadores** logo após informações da campanha (antes de Cenas VTT), com CTA fixo no hero.
 - **Mesa**: painel direito recolhido por padrão (pref local); banner GM dismissível (`GmFirstVisitHints`).
 
 ## Próximo (não feito)

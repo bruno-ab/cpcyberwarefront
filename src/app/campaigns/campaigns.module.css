@@ -216,3 +216,25 @@
   gap: 0.5rem;
   margin-top: 0.75rem;
 }
+
+.heroActionsSticky {
+  position: sticky;
+  top: 0.35rem;
+  z-index: 20;
+  padding: 0.45rem 0;
+  background: color-mix(in srgb, var(--cp-bg) 92%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.sectionTitle + .list,
+.sectionTitle + .empty {
+  margin-top: 0.35rem;
+}
+
+#convites-campanha .sectionTitle {
+  margin-top: 1rem;
+}
+
+#convites-campanha .sectionTitle:first-of-type {
+  margin-top: 0.25rem;
+}

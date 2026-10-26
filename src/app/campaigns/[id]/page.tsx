@@ -241,7 +241,13 @@ const CampaignDetailPage = () => {
                 }`}
           </p>
           {campaign && !pageLoading ? (
-            <div className={styles.heroActions}>
+            <div
+              className={
+                isGm
+                  ? `${styles.heroActions} ${styles.heroActionsSticky}`
+                  : styles.heroActions
+              }
+            >
               <HudButton type="button" onClick={() => openTable(activeScene || undefined)}>
                 Abrir mesa
               </HudButton>
@@ -288,6 +294,92 @@ const CampaignDetailPage = () => {
             </form>
           </HudPanel>
         )}
+
+        {!pageLoading && campaign ? (
+          <div id="convites-campanha">
+            <HudPanel title={isGm ? 'Convites / Jogadores' : 'Jogadores'}>
+              {isGm ? (
+                <>
+                  <p className={styles.inviteHint}>
+                    Envie convites por e-mail ou pelo ID numérico da conta (em
+                    Conta). Jogadores aceitam em Campanhas → Convites pendentes.
+                  </p>
+                  <form className={styles.formRow} onSubmit={onInvite}>
+                    <input
+                      value={inviteEmail}
+                      onChange={(ev) => setInviteEmail(ev.target.value)}
+                      placeholder="E-mail do jogador"
+                      type="email"
+                      aria-label="E-mail do jogador"
+                    />
+                    <input
+                      value={invitePlayerId}
+                      onChange={(ev) => setInvitePlayerId(ev.target.value)}
+                      placeholder="ID do jogador (opcional)"
+                      inputMode="numeric"
+                      aria-label="ID do jogador"
+                    />
+                    <HudButton type="submit" disabled={busy}>
+                      Enviar convite
+                    </HudButton>
+                  </form>
+                </>
+              ) : null}
+
+              <h3 className={styles.sectionTitle}>Membros</h3>
+              {members.length === 0 ? (
+                <p className={styles.empty}>Nenhum jogador na campanha ainda.</p>
+              ) : (
+                <ul className={styles.list}>
+                  {members.map((m) => (
+                    <li key={m.playerId} className={styles.listItem}>
+                      <div>
+                        <strong>{m.name}</strong>
+                        <span className={styles.badge}>
+                          {m.role === 'gm' ? 'Narrador' : 'Jogador'}
+                        </span>
+                        {m.email ? (
+                          <p className={styles.meta}>{m.email}</p>
+                        ) : null}
+                      </div>
+                      {isGm && m.role !== 'gm' ? (
+                        <HudButton
+                          variant="ghost"
+                          type="button"
+                          disabled={busy}
+                          onClick={() => onRemoveMember(m.playerId)}
+                        >
+                          Remover
+                        </HudButton>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {isGm ? (
+                <>
+                  <h3 className={styles.sectionTitle}>Convites pendentes</h3>
+                  {pendingInvites.length === 0 ? (
+                    <p className={styles.empty}>Nenhum convite pendente.</p>
+                  ) : (
+                    <ul className={styles.list}>
+                      {pendingInvites.map((inv) => (
+                        <li key={inv.id} className={styles.listItem}>
+                          <span>
+                            {inv.email ||
+                              `Jogador #${inv.invitedPlayerId || '?'}`}
+                          </span>
+                          <span className={styles.meta}>pendente</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              ) : null}
+            </HudPanel>
+          </div>
+        ) : null}
 
         {!pageLoading && campaign ? (
         <HudPanel title="Cenas VTT">
@@ -356,82 +448,6 @@ const CampaignDetailPage = () => {
             </ul>
           )}
         </HudPanel>
-        ) : null}
-
-        {!pageLoading && campaign ? (
-        <HudPanel title="Jogadores">
-          {members.length === 0 ? (
-            <p className={styles.empty}>Nenhum jogador listado.</p>
-          ) : (
-            <ul className={styles.list}>
-              {members.map((m) => (
-                <li key={m.playerId} className={styles.listItem}>
-                  <div>
-                    <strong>{m.name}</strong>
-                    <span className={styles.badge}>
-                      {m.role === 'gm' ? 'Narrador' : 'Jogador'}
-                    </span>
-                    {m.email ? (
-                      <p className={styles.meta}>{m.email}</p>
-                    ) : null}
-                  </div>
-                  {isGm && m.role !== 'gm' ? (
-                    <HudButton
-                      variant="ghost"
-                      type="button"
-                      disabled={busy}
-                      onClick={() => onRemoveMember(m.playerId)}
-                    >
-                      Remover
-                    </HudButton>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </HudPanel>
-        ) : null}
-
-        {!pageLoading && campaign && isGm ? (
-          <div id="convites-campanha">
-          <HudPanel title="Convites">
-            <p className={styles.inviteHint}>
-              Convide por e-mail ou pelo ID numérico da conta do jogador (visível
-              em Conta). Convites pendentes aparecem abaixo.
-            </p>
-            <form className={styles.formRow} onSubmit={onInvite}>
-              <input
-                value={inviteEmail}
-                onChange={(ev) => setInviteEmail(ev.target.value)}
-                placeholder="E-mail do jogador"
-                type="email"
-              />
-              <input
-                value={invitePlayerId}
-                onChange={(ev) => setInvitePlayerId(ev.target.value)}
-                placeholder="ID do jogador (opcional)"
-                inputMode="numeric"
-              />
-              <HudButton type="submit" disabled={busy}>
-                Convidar
-              </HudButton>
-            </form>
-            {pendingInvites.length === 0 ? (
-              <p className={styles.empty}>Nenhum convite pendente.</p>
-            ) : (
-              <ul className={styles.list}>
-                {pendingInvites.map((inv) => (
-                  <li key={inv.id} className={styles.listItem}>
-                    <span>
-                      {inv.email || `Jogador #${inv.invitedPlayerId || '?'}`}
-                    </span>
-                    <span className={styles.meta}>pendente</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </HudPanel>
-          </div>
         ) : null}
 
         {!pageLoading && campaign ? (
