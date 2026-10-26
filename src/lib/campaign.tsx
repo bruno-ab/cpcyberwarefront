@@ -76,7 +76,16 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         setEffects(null);
         return;
       }
-      const allowed = await resolveAllowedCampaignId(campaignId);
+      let allowed: Awaited<ReturnType<typeof resolveAllowedCampaignId>>;
+      try {
+        allowed = await resolveAllowedCampaignId(campaignId);
+      } catch {
+        allowed = {
+          campaignId: campaignId > 0 ? campaignId : null,
+          forbidden: false,
+          loggedIn: true,
+        };
+      }
       if (!allowed.loggedIn) {
         setCampaign(null);
         return;

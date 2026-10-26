@@ -42,7 +42,9 @@ export const resolveAllowedCampaignId = async (
   }
   const mine = await fetchMineCampaigns();
   if (!mine) {
-    return { campaignId: null, forbidden: true, loggedIn: true };
+    const fallbackId =
+      Number.isFinite(preferredId) && preferredId > 0 ? preferredId : null;
+    return { campaignId: fallbackId, forbidden: false, loggedIn: true };
   }
   if (playerCanUseCampaign(preferredId, mine)) {
     return { campaignId: preferredId, forbidden: false, loggedIn: true };

@@ -1,4 +1,4 @@
-import { apiUrl, authHeaders } from './api';
+import { apiFetch, authHeaders } from './api';
 
 export type CampaignRow = {
   id: number;
@@ -57,69 +57,89 @@ export type ScenesListResponse = {
   scenes: VttSceneSummary[];
 };
 
+const authJsonHeaders = (): HeadersInit => authHeaders();
+
 export const fetchMineCampaigns = async (): Promise<MineCampaignsResponse | null> => {
-  const res = await fetch(apiUrl('/api/campaigns/mine'), {
-    headers: authHeaders(),
-  });
-  if (!res.ok) return null;
-  return res.json();
+  const res = await apiFetch('/api/campaigns/mine', { headers: authJsonHeaders() });
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export const createCampaign = async (name: string): Promise<CampaignRow | null> => {
-  const res = await fetch(apiUrl('/api/campaigns'), {
+  const res = await apiFetch('/api/campaigns', {
     method: 'POST',
-    headers: authHeaders(),
+    headers: authJsonHeaders(),
     body: JSON.stringify({ name }),
   });
-  if (!res.ok) return null;
-  return res.json();
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export const updateCampaign = async (
   id: number,
   patch: Partial<CampaignRow>,
 ): Promise<CampaignRow | null> => {
-  const res = await fetch(apiUrl(`/api/campaigns/${id}`), {
+  const res = await apiFetch(`/api/campaigns/${id}`, {
     method: 'PUT',
-    headers: authHeaders(),
+    headers: authJsonHeaders(),
     body: JSON.stringify(patch),
   });
-  if (!res.ok) return null;
-  return res.json();
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export const fetchCampaignScenes = async (
   campaignId: number,
 ): Promise<ScenesListResponse | null> => {
-  const res = await fetch(apiUrl(`/api/vtt/campaigns/${campaignId}/scenes`), {
-    headers: authHeaders(),
+  const res = await apiFetch(`/api/vtt/campaigns/${campaignId}/scenes`, {
+    headers: authJsonHeaders(),
   });
-  if (!res.ok) return null;
-  return res.json();
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export const createScene = async (
   campaignId: number,
   body: { name: string; description?: string },
 ): Promise<ScenesListResponse | null> => {
-  const res = await fetch(apiUrl(`/api/vtt/campaigns/${campaignId}/scenes`), {
+  const res = await apiFetch(`/api/vtt/campaigns/${campaignId}/scenes`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: authJsonHeaders(),
     body: JSON.stringify(body),
   });
-  if (!res.ok) return null;
-  return res.json();
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export const activateScene = async (
   campaignId: number,
   sceneId: string,
 ): Promise<boolean> => {
-  const res = await fetch(
-    apiUrl(`/api/vtt/campaigns/${campaignId}/scenes/${sceneId}/activate`),
-    { method: 'POST', headers: authHeaders() },
+  const res = await apiFetch(
+    `/api/vtt/campaigns/${campaignId}/scenes/${sceneId}/activate`,
+    { method: 'POST', headers: authJsonHeaders() },
   );
-  return res.ok;
+  return res?.ok ?? false;
 };
 
 export type RosterResponse = {
@@ -128,11 +148,15 @@ export type RosterResponse = {
 };
 
 export const fetchRoster = async (campaignId: number): Promise<RosterResponse | null> => {
-  const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/roster`), {
-    headers: authHeaders(),
+  const res = await apiFetch(`/api/campaigns/${campaignId}/roster`, {
+    headers: authJsonHeaders(),
   });
-  if (!res.ok) return null;
-  return res.json();
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export type CampaignNpc = {
@@ -150,73 +174,89 @@ export type CampaignNpc = {
 export const fetchCampaignNpcs = async (
   campaignId: number,
 ): Promise<CampaignNpc[]> => {
-  const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/npcs`), {
-    headers: authHeaders(),
+  const res = await apiFetch(`/api/campaigns/${campaignId}/npcs`, {
+    headers: authJsonHeaders(),
   });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return Array.isArray(data?.npcs) ? data.npcs : [];
+  if (!res?.ok) return [];
+  try {
+    const data = await res.json();
+    return Array.isArray(data?.npcs) ? data.npcs : [];
+  } catch {
+    return [];
+  }
 };
 
 export const fetchMyCampaignInvites = async (): Promise<CampaignInvite[]> => {
-  const res = await fetch(apiUrl('/api/campaigns/invites/mine'), {
-    headers: authHeaders(),
+  const res = await apiFetch('/api/campaigns/invites/mine', {
+    headers: authJsonHeaders(),
   });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return Array.isArray(data) ? data : [];
+  if (!res?.ok) return [];
+  try {
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 };
 
 export const acceptCampaignInvite = async (
   inviteId: number,
 ): Promise<boolean> => {
-  const res = await fetch(apiUrl(`/api/campaigns/invites/${inviteId}/accept`), {
+  const res = await apiFetch(`/api/campaigns/invites/${inviteId}/accept`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: authJsonHeaders(),
   });
-  return res.ok;
+  return res?.ok ?? false;
 };
 
 export const declineCampaignInvite = async (
   inviteId: number,
 ): Promise<boolean> => {
-  const res = await fetch(
-    apiUrl(`/api/campaigns/invites/${inviteId}/decline`),
-    { method: 'POST', headers: authHeaders() },
-  );
-  return res.ok;
+  const res = await apiFetch(`/api/campaigns/invites/${inviteId}/decline`, {
+    method: 'POST',
+    headers: authJsonHeaders(),
+  });
+  return res?.ok ?? false;
 };
 
 export const fetchCampaignMembers = async (
   campaignId: number,
 ): Promise<CampaignMembersResponse | null> => {
-  const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/members`), {
-    headers: authHeaders(),
+  const res = await apiFetch(`/api/campaigns/${campaignId}/members`, {
+    headers: authJsonHeaders(),
   });
-  if (!res.ok) return null;
-  return res.json();
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export const inviteToCampaign = async (
   campaignId: number,
   body: { email?: string; playerId?: number },
 ): Promise<CampaignInvite | null> => {
-  const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/invites`), {
+  const res = await apiFetch(`/api/campaigns/${campaignId}/invites`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: authJsonHeaders(),
     body: JSON.stringify(body),
   });
-  if (!res.ok) return null;
-  return res.json();
+  if (!res?.ok) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 };
 
 export const removeCampaignMember = async (
   campaignId: number,
   playerId: number,
 ): Promise<boolean> => {
-  const res = await fetch(
-    apiUrl(`/api/campaigns/${campaignId}/members/${playerId}`),
-    { method: 'DELETE', headers: authHeaders() },
+  const res = await apiFetch(
+    `/api/campaigns/${campaignId}/members/${playerId}`,
+    { method: 'DELETE', headers: authJsonHeaders() },
   );
-  return res.ok;
+  return res?.ok ?? false;
 };
