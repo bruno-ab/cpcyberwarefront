@@ -34,3 +34,5 @@ npm run dev
 ```
 
 Abrir `http://localhost:3000/` — toggles **FX ON/OFF** e **SFX** no header do AppShell continuam valendo.
+
+Layout: grids usam `minmax(0, 1fr)` + ticker contido; glitch FX em overlay fixo (não `filter` no root) para não quebrar `position: fixed`.

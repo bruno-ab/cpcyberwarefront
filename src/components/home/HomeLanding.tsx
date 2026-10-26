@@ -208,13 +208,15 @@ export const HomeLanding = () => {
   const fichasHref = loggedIn ? '/characters' : '/login';
 
   return (
-    <div
-      ref={rootRef}
-      className={`${styles.landing} ${glitchFlash ? styles.glitchFlash : ''}`}
-    >
+    <div ref={rootRef} className={styles.landing}>
       <HomeCyberGrid />
       <div className={styles.scanlines} aria-hidden />
       <div className={styles.alarmOverlay} data-active={alarm || undefined} aria-hidden />
+      <div
+        className={styles.glitchFlashOverlay}
+        data-active={glitchFlash || undefined}
+        aria-hidden
+      />
 
       <div className={styles.inner}>
         <div className={styles.statusBar}>
