@@ -52,6 +52,7 @@ const CampaignsPage = () => {
   const [ok, setOk] = useState(false);
   const [hasToken, setHasToken] = useState(false);
   const [invites, setInvites] = useState<CampaignInvite[]>([]);
+  const [invitesError, setInvitesError] = useState<string | null>(null);
 
   const playerId = useMemo(() => getPlayerIdFromToken(), [hasToken]);
 
@@ -63,6 +64,7 @@ const CampaignsPage = () => {
     if (!token) {
       setMine(null);
       setInvites([]);
+      setInvitesError(null);
       setLoading(false);
       return;
     }
@@ -71,12 +73,19 @@ const CampaignsPage = () => {
       fetchMyCampaignInvites(),
     ]);
     setMine(data);
-    setInvites(pending);
+    setInvites(pending.invites);
+    setInvitesError(pending.error);
     setLoading(false);
   }, []);
 
   useEffect(() => {
     void reload();
+  }, [reload]);
+
+  useEffect(() => {
+    const onFocus = () => void reload();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, [reload]);
 
   const onAcceptInvite = async (inviteId: number) => {
@@ -170,6 +179,10 @@ const CampaignsPage = () => {
                   <div className={styles.skeletonCard} />
                   <div className={styles.skeletonCard} />
                 </div>
+              ) : invitesError ? (
+                <p className={styles.status} data-ok={false}>
+                  {invitesError}
+                </p>
               ) : invites.length === 0 ? (
                 <p className={styles.empty}>
                   Nenhum convite pendente. O narrador envia convites pelo e-mail

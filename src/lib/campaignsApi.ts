@@ -186,16 +186,35 @@ export const fetchCampaignNpcs = async (
   }
 };
 
-export const fetchMyCampaignInvites = async (): Promise<CampaignInvite[]> => {
+export type MyCampaignInvitesResult = {
+  invites: CampaignInvite[];
+  error: string | null;
+};
+
+export const fetchMyCampaignInvites = async (): Promise<MyCampaignInvitesResult> => {
   const res = await apiFetch('/api/campaigns/invites/mine', {
     headers: authJsonHeaders(),
   });
-  if (!res?.ok) return [];
+  if (!res?.ok) {
+    let error = `Não foi possível carregar convites (${res?.status ?? '?'})`;
+    try {
+      const body = (await res?.json()) as { message?: string | string[] };
+      const msg = body?.message;
+      if (typeof msg === 'string') error = msg;
+      else if (Array.isArray(msg)) error = msg.join(', ');
+    } catch {
+      /* ignore parse errors */
+    }
+    return { invites: [], error };
+  }
   try {
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    return {
+      invites: Array.isArray(data) ? data : [],
+      error: null,
+    };
   } catch {
-    return [];
+    return { invites: [], error: 'Resposta inválida ao carregar convites.' };
   }
 };
 
