@@ -12,8 +12,14 @@ import {
 import { apiUrl, authHeaders } from './api';
 import type { CampaignHeat, HeatEffects } from './heat';
 import { DEFAULT_HEAT } from './heat';
+import { getAccessToken } from './authSession';
+import {
+  CP_CAMPAIGN_STORAGE_KEY,
+  clearStoredCampaignId,
+  resolveAllowedCampaignId,
+} from './campaignAccess';
 
-const STORAGE_KEY = 'cp-campaign-id';
+const STORAGE_KEY = CP_CAMPAIGN_STORAGE_KEY;
 
 type CampaignSummary = {
   id: number;
@@ -65,11 +71,37 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
+      if (!getAccessToken()) {
+        setCampaign(null);
+        setEffects(null);
+        return;
+      }
+      const allowed = await resolveAllowedCampaignId(campaignId);
+      if (!allowed.loggedIn) {
+        setCampaign(null);
+        return;
+      }
+      if (allowed.forbidden && allowed.campaignId == null) {
+        clearStoredCampaignId();
+        setCampaign(null);
+        return;
+      }
+      const effectiveId = allowed.campaignId ?? campaignId;
+      if (effectiveId !== campaignId) {
+        setCampaignIdState(effectiveId);
+        try {
+          localStorage.setItem(STORAGE_KEY, String(effectiveId));
+        } catch {
+          /* ignore */
+        }
+      }
       const [camp, heatRes] = await Promise.all([
-        fetch(apiUrl(`/api/campaigns/${campaignId}`), { headers: authHeaders() })
+        fetch(apiUrl(`/api/campaigns/${effectiveId}`), {
+          headers: authHeaders(),
+        })
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null),
-        fetch(apiUrl(`/api/campaigns/${campaignId}/heat`), {
+        fetch(apiUrl(`/api/campaigns/${effectiveId}/heat`), {
           headers: authHeaders(),
         })
           .then((r) => (r.ok ? r.json() : null))

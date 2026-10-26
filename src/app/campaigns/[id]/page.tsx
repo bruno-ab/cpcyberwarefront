@@ -59,6 +59,15 @@ const CampaignDetailPage = () => {
     const res = await fetch(apiUrl(`/api/campaigns/${campaignId}`), {
       headers: authHeaders(),
     });
+    if (res.status === 401) {
+      router.replace('/login?next=/campaigns/' + campaignId);
+      return;
+    }
+    if (res.status === 403) {
+      setMsg('Sem acesso a esta campanha');
+      setCampaign(null);
+      return;
+    }
     if (!res.ok) {
       setCampaign(null);
       return;
@@ -92,7 +101,10 @@ const CampaignDetailPage = () => {
   }, [campaignId]);
 
   useEffect(() => {
-    if (!getAccessToken()) return;
+    if (!getAccessToken()) {
+      router.replace('/login?next=/campaigns/' + campaignId);
+      return;
+    }
     void loadCampaign();
     void loadScenes();
     void loadRoster();

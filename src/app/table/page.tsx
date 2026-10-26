@@ -102,6 +102,12 @@ import {
   type AimPreview,
 } from '../../lib/vttAim';
 import { useCampaign } from '../../lib/campaign';
+import { useRouter } from 'next/navigation';
+import { getAccessToken } from '../../lib/authSession';
+import {
+  clearStoredCampaignId,
+  resolveAllowedCampaignId,
+} from '../../lib/campaignAccess';
 import { useTranslations } from '../../i18n/useTranslations';
 import {
   characterImageSrc,
@@ -372,7 +378,10 @@ const parseJwt = (token: string) => {
 };
 
 const TablePage = () => {
-  const { campaignId, campaign } = useCampaign();
+  const router = useRouter();
+  const { campaignId, setCampaignId, campaign } = useCampaign();
+  const [campaignAccessOk, setCampaignAccessOk] = useState(false);
+  const [accessNotice, setAccessNotice] = useState('');
   const { t: tAr } = useTranslations('vtt.ar');
   const { t: tTokenEmote } = useTranslations('vtt.tokenEmote');
 
@@ -807,13 +816,45 @@ const TablePage = () => {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      setCampaignAccessOk(false);
+      if (!getAccessToken()) {
+        setAccessNotice('Faça login');
+        router.replace('/login?next=/table');
+        return;
+      }
+      const resolved = await resolveAllowedCampaignId(campaignId);
+      if (cancelled) return;
+      if (!resolved.campaignId) {
+        clearStoredCampaignId();
+        setAccessNotice('Sem acesso a esta campanha');
+        router.replace('/campaigns');
+        return;
+      }
+      if (resolved.campaignId !== campaignId) {
+        setCampaignId(resolved.campaignId);
+      }
+      if (resolved.forbidden) {
+        setAccessNotice('Sem acesso a esta campanha');
+      } else {
+        setAccessNotice('');
+      }
+      setCampaignAccessOk(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [campaignId, router, setCampaignId]);
+
+  useEffect(() => {
     setRosterHydrated(false);
     tableBootShownRef.current = false;
     setChromeBootOpen(false);
   }, [campaignId]);
 
   useEffect(() => {
-    if (!sceneId) return;
+    if (!sceneId || !campaignAccessOk || !getAccessToken()) return;
 
     const token =
       typeof window !== 'undefined'
@@ -840,9 +881,26 @@ const TablePage = () => {
         { sessionId, campaignId, sceneId, name },
         (
           ack:
-            | { role?: string; sessionId?: string; sceneId?: string }
+            | {
+                ok?: boolean;
+                error?: string;
+                role?: string;
+                sessionId?: string;
+                sceneId?: string;
+              }
             | undefined,
         ) => {
+          if (ack?.ok === false) {
+            if (ack.error === 'unauthorized') {
+              setAccessNotice('Faça login');
+              router.replace('/login?next=/table');
+            } else {
+              setAccessNotice('Sem acesso a esta campanha');
+              clearStoredCampaignId();
+              router.replace('/campaigns');
+            }
+            return;
+          }
           if (ack?.role === 'gm' || ack?.role === 'player') {
             setMyRole(ack.role);
           }
@@ -1137,6 +1195,8 @@ const TablePage = () => {
     sessionId,
     campaignId,
     sceneId,
+    campaignAccessOk,
+    router,
     loadScenes,
     pushTokenEmoteBubble,
     enqueueDiceRoll,

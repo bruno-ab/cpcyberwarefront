@@ -22,6 +22,8 @@ import { DEFAULT_SHEET_ROLE_ID } from '../../theme/sheetRoleThemes';
 import { CyberpsychosisMeter } from '../../components/sheet/CyberpsychosisMeter';
 import styles from './page.module.css';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { useRouter } from 'next/navigation';
+import { getAccessToken } from '../../lib/authSession';
 
 type TabId =
   | 'resumo'
@@ -43,6 +45,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
 ];
 
 const Sheet = () => {
+  const router = useRouter();
   const [characterData, setCharacterData] = useState<any>(null);
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -61,6 +64,16 @@ const Sheet = () => {
         method: 'GET',
         headers: authHeaders(),
       });
+      if (response.status === 401) {
+        setError('Faça login');
+        router.replace('/login?next=/sheet' + (id ? '?id=' + encodeURIComponent(id) : ''));
+        return;
+      }
+      if (response.status === 403) {
+        setError('Sem acesso a este personagem.');
+        setCharacterData(null);
+        return;
+      }
       if (response.ok) {
         setCharacterData(await response.json());
         setError('');
@@ -77,7 +90,10 @@ const Sheet = () => {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (!getAccessToken()) {
+      router.replace('/login?next=/sheet');
+    }
+  }, [router]);
 
   useEffect(() => {
     fetchCharacterData();
