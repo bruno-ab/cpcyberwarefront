@@ -26,6 +26,14 @@ export const canAffordMoveTo = (
   y: number,
 ): boolean => consumedFromTurnStart(move, x, y) <= move.max;
 
+/** Destinations allowed this turn (Chebyshev from turn start, uses max not remaining). */
+export const budgetReachableCells = (
+  move: TurnMovement,
+  mapW: number,
+  mapH: number,
+): Array<{ x: number; y: number }> =>
+  reachableCells(move.startX, move.startY, move.max, mapW, mapH);
+
 export const reachableCells = (
   fromX: number,
   fromY: number,

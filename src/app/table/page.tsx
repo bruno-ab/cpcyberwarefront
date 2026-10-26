@@ -56,7 +56,7 @@ import {
   canMoveTokenForRole,
   tokenMoveBlockedHint,
 } from '../../lib/vtt/turnMoveLock';
-import { canAffordMoveTo, reachableCells } from '../../lib/vtt/movement';
+import { budgetReachableCells, canAffordMoveTo } from '../../lib/vtt/movement';
 import {
   ReactionBar,
   type ReactionId,
@@ -2149,13 +2149,7 @@ const TablePage = () => {
 
   const reachableSet = useMemo(() => {
     if (!turnMovementForSelected || !selectedToken) return null;
-    const cells = reachableCells(
-      selectedToken.x,
-      selectedToken.y,
-      turnMovementForSelected.remaining,
-      mapW,
-      mapH,
-    );
+    const cells = budgetReachableCells(turnMovementForSelected, mapW, mapH);
     return new Set(cells.map((c) => `${c.x},${c.y}`));
   }, [turnMovementForSelected, selectedToken, mapW, mapH]);
 
