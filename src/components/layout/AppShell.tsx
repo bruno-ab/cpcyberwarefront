@@ -16,8 +16,16 @@ import styles from './AppShell.module.css';
 
 const PRIMARY_WHEN_LOGGED_IN = [
   { href: '/campaigns', key: 'campaigns' as const },
+  { href: '/characters', key: 'characters' as const },
   { href: '/table', key: 'table' as const, requiresTable: true },
   { href: '/account', key: 'account' as const },
+] as const;
+
+/** Visible when logged out — routes to jack-in with sensible return paths */
+const PRIMARY_WHEN_LOGGED_OUT = [
+  { href: '/login', key: 'login' as const },
+  { href: '/login?next=/characters', key: 'characters' as const },
+  { href: '/login?next=/account', key: 'account' as const },
 ] as const;
 
 const NAV = [
@@ -47,8 +55,10 @@ export const AppNav = () => {
   const { canOpen: canOpenTable, loading: tableNavLoading } = useCanOpenTable();
   const { isGm: isCampaignGm, loading: gmNavLoading } = useIsCampaignGm();
 
-  const primaryHrefs = new Set(
-    PRIMARY_WHEN_LOGGED_IN.map((item) => item.href),
+  const primaryHrefs = new Set<string>(
+    loggedIn
+      ? PRIMARY_WHEN_LOGGED_IN.map((item) => item.href)
+      : [],
   );
 
   return (
@@ -61,33 +71,33 @@ export const AppNav = () => {
         </span>
       </Link>
       <nav className={styles.nav} aria-label="Main">
-        {loggedIn
-          ? PRIMARY_WHEN_LOGGED_IN.map((item) => {
-              if (item.key === 'table') {
-                const disabled = !tableNavLoading && !canOpenTable;
-                if (disabled) {
-                  return (
-                    <span
-                      key={item.href}
-                      className={`${styles.navLink} ${styles.navLinkDisabled}`}
-                      title="Entre em uma campanha em Campanhas para abrir a mesa."
-                    >
-                      {t(`nav.${item.key}`)}
-                    </span>
-                  );
-                }
+        {(loggedIn ? PRIMARY_WHEN_LOGGED_IN : PRIMARY_WHEN_LOGGED_OUT).map(
+          (item) => {
+            if (loggedIn && item.key === 'table') {
+              const disabled = !tableNavLoading && !canOpenTable;
+              if (disabled) {
+                return (
+                  <span
+                    key={item.href}
+                    className={`${styles.navLink} ${styles.navLinkDisabled}`}
+                    title="Entre em uma campanha em Campanhas para abrir a mesa."
+                  >
+                    {t(`nav.${item.key}`)}
+                  </span>
+                );
               }
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`${styles.navLink} ${styles.navLinkPrimary}`}
-                >
-                  {t(`nav.${item.key}`)}
-                </Link>
-              );
-            })
-          : null}
+            }
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${styles.navLink} ${styles.navLinkPrimary}`}
+              >
+                {t(`nav.${item.key}`)}
+              </Link>
+            );
+          },
+        )}
         {NAV.filter((item) => {
           if (loggedIn && primaryHrefs.has(item.href)) return false;
           if (
