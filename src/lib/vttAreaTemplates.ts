@@ -50,7 +50,7 @@ export const cellsForAreaTemplate = (
     }
   }
 
-  return [...out].map((k) => {
+  return Array.from(out).map((k) => {
     const [x, y] = k.split(',').map(Number);
     return { x, y };
   });

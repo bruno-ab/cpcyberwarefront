@@ -1504,7 +1504,7 @@ const TablePage = () => {
         dirY,
         length: areaPlaceKind === 'burst' ? 0 : 5,
         radius: 3,
-        floor: currentFloor,
+        floor: state?.floor ?? 0,
         label: tP2(`area.${areaPlaceKind}`),
       });
       setAreaPlaceKind(null);
@@ -1513,10 +1513,10 @@ const TablePage = () => {
       areaPlaceKind,
       isGm,
       state?.tokens,
+      state?.floor,
       selectedTokenId,
       aimMode,
       intent,
-      currentFloor,
       tP2,
     ],
   );
