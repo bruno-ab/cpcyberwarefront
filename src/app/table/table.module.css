@@ -702,8 +702,23 @@
 }
 
 .token[data-aura='sandevistan'] {
-  filter: saturate(1.4) hue-rotate(-10deg);
-  box-shadow: 0 0 12px rgba(254, 211, 63, 0.8);
+  filter: saturate(1.35) contrast(1.08);
+  box-shadow:
+    -2px 0 0 color-mix(in srgb, #ff0055 70%, transparent),
+    2px 0 0 color-mix(in srgb, #00f0ff 70%, transparent),
+    0 0 14px color-mix(in srgb, #39ff14 35%, transparent),
+    0 0 18px color-mix(in srgb, #fcee0a 45%, transparent);
+  animation: sandyTokenRgb 0.55s steps(2) infinite;
+}
+
+@keyframes sandyTokenRgb {
+  0%,
+  100% {
+    filter: saturate(1.35) contrast(1.08) hue-rotate(0deg);
+  }
+  50% {
+    filter: saturate(1.55) contrast(1.15) hue-rotate(18deg);
+  }
 }
 
 .token[data-aura='reflex-boost'] {
@@ -759,8 +774,12 @@
 }
 
 .boardRoot[data-sandy='1'] .mapWorld {
-  filter: contrast(1.15) saturate(0.7) hue-rotate(-15deg);
+  filter: contrast(1.06) saturate(0.92);
   transition: filter 0.2s linear;
+}
+
+.boardRoot[data-sandy='1'] .token[data-aura='sandevistan'] {
+  animation: sandyTokenRgb 0.35s steps(2) infinite;
 }
 
 .boardRoot[data-humanity='low'] .stage {
@@ -813,6 +832,7 @@
 :global(html[data-safe-vision='on']) .token[data-aura='hacked'],
 :global(html[data-safe-vision='on']) .token[data-aura='reflex-boost'],
 :global(html[data-safe-vision='on']) .token[data-aura='stealth-camo'],
+:global(html[data-safe-vision='on']) .token[data-aura='sandevistan'],
 :global(html[data-safe-vision='on']) .boardRoot[data-sandy='1'] .mapWorld {
   animation: none !important;
   filter: none !important;

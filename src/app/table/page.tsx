@@ -1114,9 +1114,10 @@ const TablePage = () => {
                 x: from.x,
                 y: from.y,
                 color: fx.color || '#FCEE0A',
+                tokenId: fx.tokenId,
               },
               ...prev,
-            ].slice(0, 24),
+            ].slice(0, 36),
           );
         }
         if (fx?.type === 'damage') {
