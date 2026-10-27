@@ -481,7 +481,7 @@ const TablePage = () => {
   );
   const [gmTab, setGmTab] = useState<'tokens' | 'map' | 'scene'>('tokens');
   const canvasWrapRef = useRef<HTMLDivElement>(null);
-  const [boardSize, setBoardSize] = useState({ w: 900, h: 560 });
+  const [boardSize, setBoardSize] = useState({ w: 0, h: 0 });
   const [leftHudCollapsed, setLeftHudCollapsed] = useState(false);
   const [rightHudCollapsed, setRightHudCollapsed] = useState(false);
   const [handoutBody, setHandoutBody] = useState('');
@@ -2270,18 +2270,31 @@ const TablePage = () => {
     });
   }, []);
 
+  const boardMounted =
+    campaignGate === 'ok' &&
+    scenesReady &&
+    !!sceneId &&
+    !joinError &&
+    !joinPending;
+
   useEffect(() => {
+    if (!boardMounted) return;
     const el = canvasWrapRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
+    const applySize = (width: number, height: number) => {
       setBoardSize({
-        w: Math.max(280, entry.contentRect.width),
-        h: Math.max(200, entry.contentRect.height),
+        w: Math.max(280, Math.floor(width)),
+        h: Math.max(200, Math.floor(height)),
       });
+    };
+    const rect = el.getBoundingClientRect();
+    applySize(rect.width, rect.height);
+    const ro = new ResizeObserver(([entry]) => {
+      applySize(entry.contentRect.width, entry.contentRect.height);
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [boardMounted]);
 
   const navPanActive = useCallback(
     () =>
@@ -2482,8 +2495,8 @@ const TablePage = () => {
     intent('token:reset-move', { tokenId: selectedTokenId });
   }, [selectedTokenId, turnMovementForSelected, intent]);
 
-  const boardViewW = boardSize.w;
-  const boardViewH = boardSize.h;
+  const boardViewW = boardSize.w > 0 ? boardSize.w : '100%';
+  const boardViewH = boardSize.h > 0 ? boardSize.h : '100%';
 
   const setViewModeShortcut = useCallback(
     (m: ViewMode) => {

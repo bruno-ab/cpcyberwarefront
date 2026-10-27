@@ -96,11 +96,14 @@
 }
 
 .stageBody {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .sceneDock {
@@ -206,12 +209,15 @@
 
 .canvasWrap {
   position: relative;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
+  align-self: stretch;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--cp-cyan, #02d7f2) 22%, transparent);
   background: #050608;
   width: 100%;
+  height: 100%;
 }
 
 .boardRoot[data-view='scan'] .mapWorld {
@@ -220,12 +226,13 @@
 }
 
 .mapStage {
-  position: relative;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   touch-action: none;
   cursor: default;
   background: #050608;
-  max-width: 100%;
+  max-width: none;
   width: 100%;
   height: 100%;
 }
