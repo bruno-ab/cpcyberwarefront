@@ -1,0 +1,33 @@
+.root {
+  pointer-events: none;
+}
+
+.template[data-kind='burst'] .cell {
+  fill: rgba(255, 42, 109, 0.22);
+  stroke: rgba(255, 42, 109, 0.55);
+  stroke-width: 1;
+}
+
+.template[data-kind='cone'] .cell {
+  fill: rgba(254, 211, 63, 0.18);
+  stroke: rgba(254, 211, 63, 0.5);
+  stroke-width: 1;
+}
+
+.template[data-kind='line'] .cell {
+  fill: rgba(2, 215, 242, 0.16);
+  stroke: rgba(2, 215, 242, 0.45);
+  stroke-width: 1;
+}
+
+.label {
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  text-align: center;
+  color: var(--cp-yellow, #fed33f);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(0, 8, 12, 0.75);
+  border: 1px solid rgba(254, 211, 63, 0.35);
+  padding: 0.15rem 0.25rem;
+}

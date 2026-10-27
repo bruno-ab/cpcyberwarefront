@@ -387,11 +387,43 @@
       "dragHint": "Arraste para a mesa ou clique na ficha e depois no mapa.",
       "charactersHeading": "Personagens",
       "npcsHeading": "NPCs",
+      "libraryHeading": "Biblioteca (favoritos)",
+      "libraryStamp": "Favorito",
+      "toggleLibrary": "Fixar na biblioteca",
       "emptyCharacters": "Nenhum personagem no roster da campanha.",
       "emptyNpcs": "Nenhum NPC vinculado à campanha.",
       "dragOrClick": "Arrastar para o mapa ou clicar para posicionar",
       "alreadyOnTable": "Token já está na mesa",
       "onTable": "Na mesa"
+    },
+    "p2": {
+      "chatDiceTitle": "Chat / Dados",
+      "chatEmpty": "Sem tráfego ainda.",
+      "chatPlaceholder": "Falar na mesa… (/w nome texto · /gmroll [rótulo])",
+      "send": "Enviar",
+      "roll": "Rolar",
+      "channel": "Canal",
+      "channelAll": "Mesa",
+      "channelWhisper": "Sussurro",
+      "channelGm": "Só GM",
+      "whisperTo": "Para",
+      "pickPlayer": "Jogador…",
+      "whisperTag": "sussurro",
+      "gmTag": "GM",
+      "gmRollBtn": "GM roll",
+      "gmRollLabel": "Rolagem oculta",
+      "saveMacro": "+ Macro da ficha",
+      "macroNamePrompt": "Nome da macro (ex.: Reflexos)",
+      "psychosisWarn": "⚠ Cyberpsicose crítica detectada em {name} — biomonitor em alerta.",
+      "wallTool": "Parede",
+      "undo": "Desfazer",
+      "redo": "Refazer",
+      "area": {
+        "cone": "Cone",
+        "burst": "Explosão",
+        "line": "Linha",
+        "clear": "Limpar áreas"
+      }
     }
   }
 }

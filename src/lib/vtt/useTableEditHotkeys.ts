@@ -38,6 +38,8 @@ export type TableEditHotkeysArgs = {
   canDragToken: (t: { id: string }) => boolean;
   moveSelectedToken?: (dx: number, dy: number) => void;
   onResetMovement?: () => void;
+  onHistoryUndo?: () => void;
+  onHistoryRedo?: () => void;
   spaceHeldRef: MutableRefObject<boolean>;
   spacePanUsedRef: MutableRefObject<boolean>;
   setSpaceHeld: (v: boolean) => void;
@@ -72,6 +74,8 @@ export function useTableEditHotkeys({
   canDragToken,
   moveSelectedToken,
   onResetMovement,
+  onHistoryUndo,
+  onHistoryRedo,
   spaceHeldRef,
   spacePanUsedRef,
   setSpaceHeld,
@@ -161,6 +165,13 @@ export function useTableEditHotkeys({
       ) {
         e.preventDefault();
         deleteSelectedGm();
+        return;
+      }
+
+      if (isGm && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) onHistoryRedo?.();
+        else onHistoryUndo?.();
         return;
       }
 

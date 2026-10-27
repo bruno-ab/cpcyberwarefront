@@ -96,3 +96,38 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+
+.ringLabel {
+  fill: var(--cp-text-dim, #8a9aa8);
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ringLabel[data-band='close'] {
+  fill: #7cff6b;
+}
+
+.ringLabel[data-band='medium'] {
+  fill: #fed33f;
+}
+
+.ringLabel[data-band='long'] {
+  fill: #ff9f1c;
+}
+
+.coverRing {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 3 2;
+}
+
+.coverRing[data-cover='partial'] {
+  stroke: #fed33f;
+}
+
+.coverRing[data-cover='total'] {
+  stroke: #ff9f1c;
+  stroke-width: 3;
+}

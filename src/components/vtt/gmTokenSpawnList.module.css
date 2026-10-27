@@ -36,6 +36,20 @@
   color: var(--cp-text-dim, #8a9aa8);
 }
 
+.star {
+  margin-left: auto;
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.35;
+  cursor: pointer;
+  user-select: none;
+}
+
+.star[data-on='1'] {
+  opacity: 1;
+  color: var(--cp-yellow, #fed33f);
+}
+
 .list {
   list-style: none;
   margin: 0;

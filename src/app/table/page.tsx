@@ -84,6 +84,7 @@ import {
 } from '../../components/vtt/QuickhackMenu';
 import { DroneHud } from '../../components/vtt/DroneHud';
 import { AimOverlay } from '../../components/vtt/AimOverlay';
+import { AreaTemplateOverlay } from '../../components/vtt/AreaTemplateOverlay';
 import { RunnerPanel } from '../../components/vtt/RunnerPanel';
 import { RunnerSheetPopup } from '../../components/vtt/RunnerSheetPopup';
 import {
@@ -110,6 +111,18 @@ import {
 } from '../../lib/campaignAccess';
 import { vttJoinErrorMessage } from '../../lib/vttJoinMessages';
 import { useTranslations } from '../../i18n/useTranslations';
+import { psychosisCriticalFromSheet } from '../../lib/vttPsychosis';
+import {
+  loadCharacterMacros,
+  saveCharacterMacros,
+  type CharacterMacro,
+} from '../../lib/characterMacros';
+import {
+  loadTokenLibrary,
+  toggleTokenLibraryStamp,
+  type TokenLibraryStamp,
+} from '../../lib/tokenLibrary';
+import type { VttAreaTemplate } from '../../lib/vttAreaTemplates';
 import {
   characterImageSrc,
   npcImageSrc,
@@ -203,6 +216,10 @@ type ChatMsg = {
   text: string;
   kind?: string;
   at?: string;
+  channel?: string;
+  toPlayerId?: number;
+  gmOnly?: boolean;
+  playerId?: number;
 };
 
 type VttState = {
@@ -229,7 +246,9 @@ type VttState = {
     y2: number;
     door?: boolean;
     open?: boolean;
+    portalId?: string;
   }>;
+  areaTemplates?: VttAreaTemplate[];
   lights?: Array<{
     id: string;
     x: number;
@@ -472,6 +491,21 @@ const TablePage = () => {
   const [bgLoadError, setBgLoadError] = useState<string | null>(null);
   const [importingUvtt, setImportingUvtt] = useState(false);
   const [aimMode, setAimMode] = useState(false);
+  const [areaPlaceKind, setAreaPlaceKind] = useState<
+    'cone' | 'burst' | 'line' | null
+  >(null);
+  const [selectedTokenIds, setSelectedTokenIds] = useState<string[]>([]);
+  const [chatChannel, setChatChannel] = useState<'all' | 'whisper' | 'gm'>(
+    'all',
+  );
+  const [whisperTargetId, setWhisperTargetId] = useState<number | ''>('');
+  const [characterMacros, setCharacterMacros] = useState<CharacterMacro[]>([]);
+  const [tokenLibrary, setTokenLibrary] = useState<TokenLibraryStamp[]>([]);
+  const dragGroupStartRef = useRef<Record<string, { x: number; y: number }>>(
+    {},
+  );
+  const psychosisWarnedRef = useRef<Set<string>>(new Set());
+  const { t: tP2 } = useTranslations('vtt.p2');
   const [aimHoverId, setAimHoverId] = useState<string | null>(null);
   const [sheetPopupOpen, setSheetPopupOpen] = useState(false);
   const [safeVision, setSafeVision] = useState(false);
@@ -521,6 +555,19 @@ const TablePage = () => {
   const isGm = myRole === 'gm';
 
   useEffect(() => {
+    if (!campaignId) return;
+    setTokenLibrary(loadTokenLibrary(Number(campaignId)));
+  }, [campaignId]);
+
+  useEffect(() => {
+    if (!selectedCharId) {
+      setCharacterMacros([]);
+      return;
+    }
+    loadCharacterMacros(selectedCharId).then(setCharacterMacros);
+  }, [selectedCharId]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     const raw = localStorage.getItem(INITIATIVE_TIMELINE_PREF);
     if (raw === '0') setInitiativeTimelineVisible(false);
@@ -561,6 +608,25 @@ const TablePage = () => {
     },
     [sessionId, state?.version],
   );
+
+  useEffect(() => {
+    if (!state?.tokens?.length || !roster.length) return;
+    for (const t of state.tokens) {
+      if (!t.characterId) continue;
+      const char = roster.find((c) => String(c.id) === String(t.characterId));
+      if (!char?.sheetSummary || !psychosisCriticalFromSheet(char.sheetSummary)) {
+        continue;
+      }
+      const key = String(t.characterId);
+      if (psychosisWarnedRef.current.has(key)) continue;
+      psychosisWarnedRef.current.add(key);
+      if (t.ownerPlayerId === myPlayerId || isGm) {
+        intent('chat:message', {
+          text: tP2('psychosisWarn').replace('{name}', t.name),
+        });
+      }
+    }
+  }, [state?.tokens, state?.version, roster, myPlayerId, isGm, intent, tP2]);
 
   const pushTokenEmoteBubble = useCallback((bubble: TokenEmoteBubble) => {
     setTokenEmoteBubbles((prev) => [...prev.slice(-12), bubble]);
@@ -1402,10 +1468,58 @@ const TablePage = () => {
   const sendChat = () => {
     const text = chatText.trim();
     if (!text) return;
-    intent('chat:message', { text });
+    if (text.match(/^\/gmroll\b/i)) {
+      intent('chat:message', {
+        text,
+        pool: selectedChar?.sheetSummary ? sheetPool : pool,
+        difficulty,
+      });
+    } else if (chatChannel === 'whisper' && whisperTargetId) {
+      intent('chat:whisper', { text, toPlayerId: Number(whisperTargetId) });
+    } else if (chatChannel === 'gm' && isGm) {
+      intent('chat:whisper', { text, gmOnly: true });
+    } else {
+      intent('chat:message', { text });
+    }
     setChatText('');
     playCyberSound('ui', { volume: 0.3 });
   };
+
+  const placeAreaTemplate = useCallback(
+    (x: number, y: number) => {
+      if (!areaPlaceKind || !isGm) return;
+      const attacker = state?.tokens?.find((t) => t.id === selectedTokenId);
+      let dirX = 1;
+      let dirY = 0;
+      if (attacker && aimMode) {
+        dirX = Math.sign(x - attacker.x) || 1;
+        dirY = Math.sign(y - attacker.y);
+        if (dirX === 0 && dirY === 0) dirY = 0;
+      }
+      intent('area:place', {
+        kind: areaPlaceKind,
+        x,
+        y,
+        dirX,
+        dirY,
+        length: areaPlaceKind === 'burst' ? 0 : 5,
+        radius: 3,
+        floor: currentFloor,
+        label: tP2(`area.${areaPlaceKind}`),
+      });
+      setAreaPlaceKind(null);
+    },
+    [
+      areaPlaceKind,
+      isGm,
+      state?.tokens,
+      selectedTokenId,
+      aimMode,
+      intent,
+      currentFloor,
+      tP2,
+    ],
+  );
 
   const rollDice = (opts?: {
     attr?: string;
@@ -2320,9 +2434,37 @@ const TablePage = () => {
       ) {
         return;
       }
-      intent('token:move', { tokenId, x: nx, y: ny });
+      const group =
+        isGm && selectedTokenIds.length > 1 && selectedTokenIds.includes(tokenId)
+          ? selectedTokenIds
+          : [tokenId];
+      const anchor = dragGroupStartRef.current[tokenId] || {
+        x: tok.x,
+        y: tok.y,
+      };
+      const dx = nx - anchor.x;
+      const dy = ny - anchor.y;
+      for (const id of group) {
+        const start = dragGroupStartRef.current[id];
+        const other = state?.tokens?.find((t) => t.id === id);
+        if (!start || !other || !canDragToken(other)) continue;
+        const ox = Math.max(0, Math.min(mapW - 1, start.x + dx));
+        const oy = Math.max(0, Math.min(mapH - 1, start.y + dy));
+        if (ox === other.x && oy === other.y) continue;
+        intent('token:move', { tokenId: id, x: ox, y: oy });
+      }
     },
-    [state?.tokens, state?.combat?.active, state?.turnMovement, canDragToken, mapW, mapH, intent],
+    [
+      state?.tokens,
+      state?.combat?.active,
+      state?.turnMovement,
+      canDragToken,
+      mapW,
+      mapH,
+      intent,
+      isGm,
+      selectedTokenIds,
+    ],
   );
 
   const moveSelectedToken = useCallback(
@@ -2385,6 +2527,8 @@ const TablePage = () => {
     },
     moveSelectedToken,
     onResetMovement: resetSelectedMovement,
+    onHistoryUndo: isGm ? () => intent('history:undo', {}) : undefined,
+    onHistoryRedo: isGm ? () => intent('history:redo', {}) : undefined,
     spaceHeldRef,
     spacePanUsedRef,
     setSpaceHeld,
@@ -2439,6 +2583,13 @@ const TablePage = () => {
         onTableCharacterIds={onTableCharacterIds}
         placement={spawnPlacement}
         onSelectPlacement={setSpawnPlacement}
+        library={tokenLibrary}
+        onToggleLibrary={(stamp) => {
+          if (!campaignId) return;
+          setTokenLibrary(
+            toggleTokenLibraryStamp(Number(campaignId), stamp),
+          );
+        }}
       />
       <HudButton onClick={spawnRoster}>Spawn roster (todos)</HudButton>
       <HudButton
@@ -2633,8 +2784,45 @@ const TablePage = () => {
         variant={tool === 'wall' ? 'primary' : 'ghost'}
         onClick={() => setTool(tool === 'wall' ? 'select' : 'wall')}
       >
-        Wall
+        {tP2('wallTool')}
       </HudButton>
+      <HudButton
+        variant={areaPlaceKind === 'cone' ? 'primary' : 'ghost'}
+        onClick={() =>
+          setAreaPlaceKind((k) => (k === 'cone' ? null : 'cone'))
+        }
+      >
+        {tP2('area.cone')}
+      </HudButton>
+      <HudButton
+        variant={areaPlaceKind === 'burst' ? 'primary' : 'ghost'}
+        onClick={() =>
+          setAreaPlaceKind((k) => (k === 'burst' ? null : 'burst'))
+        }
+      >
+        {tP2('area.burst')}
+      </HudButton>
+      <HudButton
+        variant={areaPlaceKind === 'line' ? 'primary' : 'ghost'}
+        onClick={() =>
+          setAreaPlaceKind((k) => (k === 'line' ? null : 'line'))
+        }
+      >
+        {tP2('area.line')}
+      </HudButton>
+      <HudButton variant="ghost" onClick={() => intent('area:clear', {})}>
+        {tP2('area.clear')}
+      </HudButton>
+      {isGm && (
+        <>
+          <HudButton variant="ghost" onClick={() => intent('history:undo', {})}>
+            {tP2('undo')}
+          </HudButton>
+          <HudButton variant="ghost" onClick={() => intent('history:redo', {})}>
+            {tP2('redo')}
+          </HudButton>
+        </>
+      )}
       <HudButton
         variant={tool === 'pan' ? 'primary' : 'ghost'}
         onClick={() => {
@@ -3155,6 +3343,11 @@ const TablePage = () => {
                   placeSpawnToken(spawnPlacement, c.x, c.y);
                   return;
                 }
+                if (isGm && areaPlaceKind && e.button === 0) {
+                  const c = cellFromEvent(e);
+                  placeAreaTemplate(c.x, c.y);
+                  return;
+                }
                 if (e.shiftKey) {
                   const c = cellFromEvent(e);
                   setRuler({ x1: c.x, y1: c.y, x2: c.x, y2: c.y });
@@ -3308,6 +3501,10 @@ const TablePage = () => {
                                 e.stopPropagation();
                                 selectMapWall(w.id);
                               }}
+                              onDoubleClick={(e) => {
+                                e.stopPropagation();
+                                if (w.door) intent('wall:toggle', { wallId: w.id });
+                              }}
                             />
                           )}
                           <line
@@ -3374,6 +3571,11 @@ const TablePage = () => {
                       showRings
                     />
                   )}
+                  <AreaTemplateOverlay
+                    grid={GRID}
+                    templates={state?.areaTemplates || []}
+                    floor={currentFloor}
+                  />
                 </svg>
                 <FogCanvas
                   width={mapW}
@@ -3542,7 +3744,14 @@ const TablePage = () => {
                     const turn =
                       state?.initiative?.[state.turnIndex || 0]?.tokenId ===
                       t.id;
-                    const selected = selectedTokenId === t.id;
+                    const selected =
+                      selectedTokenId === t.id || selectedTokenIds.includes(t.id);
+                    const psychoCritical =
+                      t.characterId != null &&
+                      psychosisCriticalFromSheet(
+                        roster.find((c) => String(c.id) === String(t.characterId))
+                          ?.sheetSummary,
+                      );
                     const portrait =
                       resolveMediaSrc(t.portraitUrl) || t.portraitUrl || null;
                     const mine = canDragToken(t);
@@ -3588,8 +3797,11 @@ const TablePage = () => {
                         data-hidden={t.hidden ? '1' : '0'}
                         data-scan={scanHot ? '1' : '0'}
                         data-threat={intel?.threat || ''}
-                        data-aura={auraPrimary}
+                        data-aura={
+                          psychoCritical ? 'cyberpsychosis' : auraPrimary
+                        }
                         data-passive={passiveTags.join(' ')}
+                        data-psycho={psychoCritical ? '1' : '0'}
                         style={{
                           left: t.x * GRID,
                           top: t.y * GRID,
@@ -3616,7 +3828,19 @@ const TablePage = () => {
                           }
                           e.stopPropagation();
                           if (e.button !== 0) return;
-                          setSelectedTokenId(t.id);
+                          if (isGm && e.shiftKey) {
+                            setSelectedTokenIds((prev) => {
+                              const has = prev.includes(t.id);
+                              const next = has
+                                ? prev.filter((id) => id !== t.id)
+                                : [...prev, t.id];
+                              setSelectedTokenId(next[next.length - 1] || t.id);
+                              return next.length ? next : [t.id];
+                            });
+                          } else {
+                            setSelectedTokenId(t.id);
+                            setSelectedTokenIds([t.id]);
+                          }
                           setSelectedDeviceId(null);
                           setSelectedWallId(null);
                           setSelectedNetLink(null);
@@ -3648,6 +3872,17 @@ const TablePage = () => {
                           ) {
                             return;
                           }
+                          const group =
+                            isGm && selectedTokenIds.includes(t.id)
+                              ? selectedTokenIds
+                              : [t.id];
+                          const starts: Record<string, { x: number; y: number }> =
+                            {};
+                          for (const id of group) {
+                            const tok = state?.tokens?.find((x) => x.id === id);
+                            if (tok) starts[id] = { x: tok.x, y: tok.y };
+                          }
+                          dragGroupStartRef.current = starts;
                           setDragging(t.id);
                         }}
                         onContextMenu={(e) => {
@@ -4052,7 +4287,7 @@ const TablePage = () => {
           )}
 
           <HudPanel
-            title="Chat / Dice"
+            title={tP2('chatDiceTitle')}
             sectionKey="chat-dice"
             className={styles.chatPanel}
             bodyClassName={styles.chatPanelBody}
@@ -4060,12 +4295,18 @@ const TablePage = () => {
             <div className={styles.chatStack}>
               <div className={styles.chat} ref={chatLogRef}>
                 {(state?.chat || []).length === 0 ? (
-                  <p className={styles.chatEmpty}>Sem tráfego ainda.</p>
+                  <p className={styles.chatEmpty}>{tP2('chatEmpty')}</p>
                 ) : (
                   (state?.chat || []).slice(-40).map((m) => (
-                    <p key={m.id} data-kind={m.kind || 'chat'}>
+                    <p
+                      key={m.id}
+                      data-kind={m.kind || 'chat'}
+                      data-channel={m.channel || 'all'}
+                    >
                       <span className={styles.chatMeta}>
                         {m.at ? m.at.slice(11, 19) : ''} {m.name}
+                        {m.channel === 'whisper' ? ` · ${tP2('whisperTag')}` : ''}
+                        {m.gmOnly ? ` · ${tP2('gmTag')}` : ''}
                       </span>
                       <span className={styles.chatBody}>{m.text}</span>
                       {m.kind === 'attack' && lastAttack?.id === m.id && (
@@ -4098,6 +4339,47 @@ const TablePage = () => {
 
               <div className={styles.composer}>
                 <div className={styles.chatRow}>
+                  <label className={styles.diceLabel}>
+                    {tP2('channel')}
+                    <select
+                      value={chatChannel}
+                      onChange={(e) =>
+                        setChatChannel(
+                          e.target.value as 'all' | 'whisper' | 'gm',
+                        )
+                      }
+                    >
+                      <option value="all">{tP2('channelAll')}</option>
+                      <option value="whisper">{tP2('channelWhisper')}</option>
+                      {isGm && (
+                        <option value="gm">{tP2('channelGm')}</option>
+                      )}
+                    </select>
+                  </label>
+                  {chatChannel === 'whisper' && (
+                    <label className={styles.diceLabel}>
+                      {tP2('whisperTo')}
+                      <select
+                        value={whisperTargetId}
+                        onChange={(e) =>
+                          setWhisperTargetId(
+                            e.target.value ? Number(e.target.value) : '',
+                          )
+                        }
+                      >
+                        <option value="">{tP2('pickPlayer')}</option>
+                        {(state?.presence || [])
+                          .filter((p) => p.role !== 'gm' || isGm)
+                          .map((p) => (
+                            <option key={p.playerId} value={p.playerId}>
+                              {p.name}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                  )}
+                </div>
+                <div className={styles.chatRow}>
                   <input
                     value={chatText}
                     maxLength={CHAT_MAX}
@@ -4108,15 +4390,29 @@ const TablePage = () => {
                         sendChat();
                       }
                     }}
-                    placeholder="Falar na mesa…"
-                    aria-label="Mensagem da mesa"
+                    placeholder={tP2('chatPlaceholder')}
+                    aria-label={tP2('chatPlaceholder')}
                   />
                   <HudButton
                     onClick={sendChat}
                     disabled={!chatText.trim()}
                   >
-                    Enviar
+                    {tP2('send')}
                   </HudButton>
+                  {isGm && (
+                    <HudButton
+                      variant="ghost"
+                      onClick={() =>
+                        intent('dice:gmroll', {
+                          pool: selectedChar?.sheetSummary ? sheetPool : pool,
+                          difficulty,
+                          label: tP2('gmRollLabel'),
+                        })
+                      }
+                    >
+                      {tP2('gmRollBtn')}
+                    </HudButton>
+                  )}
                 </div>
                 <div className={styles.charCount}>
                   {chatText.length}/{CHAT_MAX}
@@ -4187,8 +4483,50 @@ const TablePage = () => {
                       aria-label="Dificuldade"
                     />
                   </label>
-                  <HudButton onClick={() => rollDice()}>Rolar</HudButton>
+                  <HudButton onClick={() => rollDice()}>{tP2('roll')}</HudButton>
                 </div>
+                {characterMacros.length > 0 && (
+                  <div className={styles.diceHints}>
+                    {characterMacros.slice(0, 8).map((macro) => (
+                      <HudButton
+                        key={macro.id}
+                        variant="ghost"
+                        onClick={() =>
+                          rollDice({
+                            attr: macro.attr,
+                            skill: macro.skill,
+                            label: macro.label || macro.name,
+                          })
+                        }
+                      >
+                        {macro.name}
+                      </HudButton>
+                    ))}
+                  </div>
+                )}
+                {selectedCharId && (
+                  <HudButton
+                    variant="ghost"
+                    onClick={() => {
+                      const name = window.prompt(tP2('macroNamePrompt'));
+                      if (!name?.trim()) return;
+                      const next = [
+                        ...characterMacros,
+                        {
+                          id: `m_${Date.now()}`,
+                          name: name.trim(),
+                          attr: attrKey,
+                          skill: skillKey,
+                          label: `${name.trim()} (${attrKey}+${skillKey})`,
+                        },
+                      ];
+                      setCharacterMacros(next);
+                      saveCharacterMacros(selectedCharId, next);
+                    }}
+                  >
+                    {tP2('saveMacro')}
+                  </HudButton>
+                )}
                 <div className={styles.diceHints}>
                   <HudButton
                     variant="ghost"

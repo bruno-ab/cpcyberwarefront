@@ -34,15 +34,33 @@ export const AimOverlay = ({
     <g className={styles.root} data-band={band} data-cover={cover}>
       {showRings &&
         AIM_RANGE_RINGS.map((ring) => (
-          <circle
-            key={ring.band}
-            cx={ax}
-            cy={ay}
-            r={ring.radius * grid}
-            className={styles.ring}
-            data-band={ring.band}
-          />
+          <g key={ring.band}>
+            <circle
+              cx={ax}
+              cy={ay}
+              r={ring.radius * grid}
+              className={styles.ring}
+              data-band={ring.band}
+            />
+            <text
+              x={ax + ring.radius * grid}
+              y={ay - 4}
+              className={styles.ringLabel}
+              data-band={ring.band}
+            >
+              {ring.label}
+            </text>
+          </g>
         ))}
+      {preview && preview.cover.level !== 'none' && target && (
+        <circle
+          cx={tx}
+          cy={ty}
+          r={grid * 0.55}
+          className={styles.coverRing}
+          data-cover={preview.cover.level}
+        />
+      )}
       <circle cx={ax} cy={ay} r={6} className={styles.origin} />
       {target && preview && (
         <>

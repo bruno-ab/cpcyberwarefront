@@ -387,11 +387,43 @@
       "dragHint": "Drag onto the table or select an entry then click the map.",
       "charactersHeading": "Characters",
       "npcsHeading": "NPCs",
+      "libraryHeading": "Library (favorites)",
+      "libraryStamp": "Favorite",
+      "toggleLibrary": "Pin to library",
       "emptyCharacters": "No characters on the campaign roster.",
       "emptyNpcs": "No NPCs linked to this campaign.",
       "dragOrClick": "Drag to map or click to place",
       "alreadyOnTable": "Token already on the table",
       "onTable": "On table"
+    },
+    "p2": {
+      "chatDiceTitle": "Chat / Dice",
+      "chatEmpty": "No traffic yet.",
+      "chatPlaceholder": "Table chat… (/w name text · /gmroll [label])",
+      "send": "Send",
+      "roll": "Roll",
+      "channel": "Channel",
+      "channelAll": "Table",
+      "channelWhisper": "Whisper",
+      "channelGm": "GM only",
+      "whisperTo": "To",
+      "pickPlayer": "Player…",
+      "whisperTag": "whisper",
+      "gmTag": "GM",
+      "gmRollBtn": "GM roll",
+      "gmRollLabel": "Hidden roll",
+      "saveMacro": "+ Sheet macro",
+      "macroNamePrompt": "Macro name (e.g. Reflexes)",
+      "psychosisWarn": "⚠ Critical cyberpsychosis on {name} — biomon alert.",
+      "wallTool": "Wall",
+      "undo": "Undo",
+      "redo": "Redo",
+      "area": {
+        "cone": "Cone",
+        "burst": "Burst",
+        "line": "Line",
+        "clear": "Clear areas"
+      }
     }
   }
 }
