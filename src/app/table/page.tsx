@@ -144,6 +144,8 @@ import {
   AttackResultCard,
   type AttackResultCard as AttackCardPayload,
 } from '../../components/vtt/AttackResultCard';
+import { ItemQuickMenu } from '../../components/vtt/ItemQuickMenu';
+import { ConditionsStrip } from '../../components/vtt/ConditionsStrip';
 import styles from './table.module.css';
 
 type Token = {
@@ -526,6 +528,7 @@ const TablePage = () => {
     fromName: string;
   } | null>(null);
   const [lastAttack, setLastAttack] = useState<AttackCardPayload | null>(null);
+  const [itemMenuOpen, setItemMenuOpen] = useState(false);
   const [emoteToasts, setEmoteToasts] = useState<EmoteToast[]>([]);
   const [tokenEmoteBubbles, setTokenEmoteBubbles] = useState<
     TokenEmoteBubble[]
@@ -2194,7 +2197,20 @@ const TablePage = () => {
     const targetId = aimTarget?.id || selectedTokenId;
     if (!targetId || targetId === attackerToken.id) return;
     if (aimPreview && !aimPreview.canShoot) {
-      setScanToast('Fora de alcance');
+      setScanToast('Fora de alcance / LoS bloqueada');
+      window.setTimeout(() => setScanToast(null), 2200);
+      playCyberSound('deny', { volume: 0.4 });
+      return;
+    }
+    const eco = state?.turnEconomy;
+    if (
+      state?.combat?.active &&
+      !isGm &&
+      eco?.tokenId === attackerToken.id &&
+      eco.mainUsed &&
+      eco.extraActions <= 0
+    ) {
+      setScanToast('Ação principal já usada neste turno');
       window.setTimeout(() => setScanToast(null), 2200);
       playCyberSound('deny', { volume: 0.4 });
       return;
@@ -2214,7 +2230,39 @@ const TablePage = () => {
     selectedTokenId,
     aimPreview,
     intent,
+    state?.turnEconomy,
+    state?.combat?.active,
+    isGm,
   ]);
+
+  const quickGearItems = useMemo(() => {
+    const char =
+      roster.find(
+        (c) =>
+          myRosterChar && String(c.id) === String(myRosterChar.id),
+      ) || myRosterChar;
+    const gear = char?.sheetSummary?.gear;
+    if (!Array.isArray(gear)) return [];
+    return gear
+      .map((g: any) => ({
+        id: g?.id,
+        name: String(g?.name || '').trim(),
+        qty: Number(g?.qty ?? g?.charges ?? 1) || 1,
+        charges: Number(g?.charges ?? g?.qty ?? 1) || 1,
+        type: g?.type,
+        effect: g?.effect,
+        heal: g?.heal,
+      }))
+      .filter((g: { name: string; qty: number }) => g.name && g.qty > 0);
+  }, [roster, myRosterChar]);
+
+  const itemTokenId =
+    state?.turnEconomy?.tokenId ||
+    (selectedTokenId && myTokenIds.includes(selectedTokenId)
+      ? selectedTokenId
+      : null) ||
+    myTokenIds[0] ||
+    null;
 
   const rangeLabel = !ruler
     ? ''
@@ -4059,6 +4107,19 @@ const TablePage = () => {
                 (combatMyTurn || isGm) &&
                 (!!selectedTokenId || !!aimTarget)
               }
+              canUseItem={
+                !!itemTokenId &&
+                quickGearItems.length > 0 &&
+                (combatMyTurn || isGm || !state?.combat?.active)
+              }
+              turnEconomy={
+                state?.turnEconomy &&
+                (combatMyTurn || isGm) &&
+                (isGm ||
+                  state.turnEconomy.tokenId === combatCurrent?.tokenId)
+                  ? state.turnEconomy
+                  : null
+              }
               onShoot={() => {
                 if (!aimMode) {
                   setAimMode(true);
@@ -4069,16 +4130,40 @@ const TablePage = () => {
                 fireAttack();
               }}
               onQuickhack={() => setViewModeShortcut('net')}
-              onDodge={() =>
+              onDodge={() => {
+                if (
+                  state?.combat?.active &&
+                  combatMyTurn &&
+                  state.turnEconomy &&
+                  !state.turnEconomy.reactionUsed
+                ) {
+                  intent('turn:action', { kind: 'reaction' });
+                }
                 rollDice({
                   attr: 'dexterity',
                   skill: 'athletics',
                   label: 'Reflexos + Esquiva',
-                })
-              }
-              onUseItem={() => {}}
+                });
+              }}
+              onUseItem={() => setItemMenuOpen(true)}
+              onTurnAction={(kind) => intent('turn:action', { kind })}
               onPassTurn={() => {
                 if (isGm || combatMyTurn) intent('initiative:next', {});
+              }}
+            />
+            <ItemQuickMenu
+              open={itemMenuOpen}
+              items={quickGearItems}
+              onClose={() => setItemMenuOpen(false)}
+              onUse={(item) => {
+                if (!itemTokenId) return;
+                intent('item:use', {
+                  tokenId: itemTokenId,
+                  itemId: item.id,
+                  itemName: item.name,
+                });
+                setItemMenuOpen(false);
+                playCyberSound('confirm', { volume: 0.4 });
               }}
             />
           </div>
@@ -4203,6 +4288,25 @@ const TablePage = () => {
                 />
               </HudPanel>
             )}
+          {selectedToken ? (
+            <HudPanel title="Condições" sectionKey="conditions">
+              <ConditionsStrip
+                tokenId={selectedToken.id}
+                tokenName={selectedToken.name}
+                conditions={state?.conditions || []}
+                isGm={isGm}
+                onAdd={(kind, label, roundsLeft) =>
+                  intent('condition:add', {
+                    tokenId: selectedToken.id,
+                    kind,
+                    label,
+                    roundsLeft,
+                  })
+                }
+                onRemove={(id) => intent('condition:remove', { id })}
+              />
+            </HudPanel>
+          ) : null}
           {isGm && (
             <HudPanel title="Notas GM" sectionKey="gm-notes">
               <GmNotesPanel

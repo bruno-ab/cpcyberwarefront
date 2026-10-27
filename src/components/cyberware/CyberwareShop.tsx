@@ -434,7 +434,10 @@ export const CyberwareShop = ({
     }
   };
 
-  const installOwned = async (item: CatalogItem | OwnedChrome) => {
+  const installOwned = async (
+    item: CatalogItem | OwnedChrome,
+    allowOverclock = false,
+  ) => {
     const cost = edgeCostOf(item);
     if (edges < cost) {
       playCyberSound('deny');
@@ -451,17 +454,40 @@ export const CyberwareShop = ({
         {
           method: 'POST',
           headers: authHeaders(),
-          body: JSON.stringify({ cyberwareId: Number(item.id) }),
+          body: JSON.stringify({
+            cyberwareId: Number(item.id),
+            allowOverclock: !!allowOverclock,
+          }),
         },
       );
       const payload = await install.json().catch(() => ({}));
       if (!install.ok) {
+        const capacityMsg = String(payload.message || '');
+        if (
+          !allowOverclock &&
+          /capacity exceeded|allowOverclock|cyberpsychosis/i.test(capacityMsg)
+        ) {
+          const force = window.confirm(
+            `${capacityMsg}\n\nForçar instalação (overclock) e arriscar cyberpsychosis?`,
+          );
+          setBusy(false);
+          if (force) {
+            await installOwned(item, true);
+          }
+          return;
+        }
         throw new Error(
-          payload.message ||
+          capacityMsg ||
             'Não foi possível instalar (Edges / capacidade / slot).',
         );
       }
       playCyberSound('install');
+      if (payload?.psychosis?.triggered) {
+        playCyberSound('glitch');
+        setMsg(
+          `CYBERPSYCHOSIS · severidade ${payload.psychosis.severity} · capacidade ${payload.psychosis.remaining}`,
+        );
+      }
       const nextEdges =
         payload.edges != null ? Number(payload.edges) : Math.max(0, edges - cost);
       setEdges(nextEdges);
@@ -487,6 +513,9 @@ export const CyberwareShop = ({
         id: String(characterId),
         name: String(item.name || 'chrome'),
       });
+      if (payload?.psychosis?.triggered) {
+        q.set('psychosis', String(payload.psychosis.severity || 1));
+      }
       router.push(`/installation?${q.toString()}`);
     } catch (e: any) {
       playCyberSound('deny');

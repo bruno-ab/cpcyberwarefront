@@ -7,10 +7,20 @@ export type AttackResultCard = {
   id: string;
   attackerTokenId?: string;
   targetTokenId?: string;
-  hit?: { successes?: number; botch?: boolean };
+  hit?: {
+    successes?: number;
+    botch?: boolean;
+    crit?: boolean;
+    tens?: number;
+    ones?: number;
+  };
   damage?: { successes?: number } | null;
   range?: { label?: string; band?: string };
   cover?: { label?: string; level?: string };
+  los?: { clear?: boolean; label?: string };
+  conditions?: Array<{ id: string; kind: string; label: string; roundsLeft: number }>;
+  verdict?: 'botch' | 'crit' | 'hit' | 'miss';
+  difficulty?: number;
 };
 
 type Props = {
@@ -30,11 +40,29 @@ export function AttackResultCard({
 }: Props) {
   const hits = card.hit?.successes ?? 0;
   const dmg = card.damage?.successes ?? 0;
-  const missed = hits <= 0 || card.hit?.botch;
+  const botch = !!card.hit?.botch || card.verdict === 'botch';
+  const crit = !!card.hit?.crit || card.verdict === 'crit';
+  const missed = botch || hits <= 0 || card.verdict === 'miss';
+  const verdictLabel = botch
+    ? 'BOTCH'
+    : crit
+      ? 'CRÍTICO'
+      : missed
+        ? 'ERROU'
+        : 'ACERTO';
 
   return (
-    <article className={styles.card} data-testid="attack-result-card">
-      <header className={styles.head}>Ataque</header>
+    <article
+      className={styles.card}
+      data-testid="attack-result-card"
+      data-verdict={botch ? 'botch' : crit ? 'crit' : missed ? 'miss' : 'hit'}
+    >
+      <header className={styles.head}>
+        Ataque
+        <span className={styles.verdict} data-verdict={botch ? 'botch' : crit ? 'crit' : missed ? 'miss' : 'hit'}>
+          {verdictLabel}
+        </span>
+      </header>
       <p className={styles.line}>
         <strong>{attackerName || 'Atacante'}</strong>
         {' → '}
@@ -48,15 +76,32 @@ export function AttackResultCard({
             Dano: <strong>{dmg}</strong>
           </>
         ) : null}
-        {missed ? ' · Errou' : null}
+        {card.difficulty != null ? (
+          <>
+            {' · '}
+            Dif: <strong>{card.difficulty}</strong>
+          </>
+        ) : null}
       </p>
-      {(card.range?.label || card.cover?.label) && (
-        <p className={styles.meta}>
-          {[card.range?.label || card.range?.band, card.cover?.label]
-            .filter(Boolean)
-            .join(' · ')}
+      <p className={styles.meta}>
+        {[
+          card.range?.label || card.range?.band,
+          card.cover?.label ||
+            (card.los?.clear === false
+              ? card.los?.label || 'cobertura'
+              : card.los?.label || 'LoS limpa'),
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+      </p>
+      {card.conditions && card.conditions.length > 0 ? (
+        <p className={styles.conds}>
+          Condições no alvo:{' '}
+          {card.conditions
+            .map((c) => `${c.label} (${c.roundsLeft}r)`)
+            .join(', ')}
         </p>
-      )}
+      ) : null}
       {canApplyDamage && !missed && dmg > 0 && card.targetTokenId && (
         <HudButton variant="ghost" onClick={onApplyDamage}>
           Aplicar dano

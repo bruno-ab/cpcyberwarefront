@@ -6,12 +6,51 @@
   font-size: 0.85rem;
 }
 
+.card[data-verdict='botch'] {
+  border-left-color: #ff2a6d;
+}
+
+.card[data-verdict='crit'] {
+  border-left-color: #39ff14;
+}
+
+.card[data-verdict='miss'] {
+  border-left-color: #8a9aa8;
+}
+
 .head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fcee0a;
   margin-bottom: 0.25rem;
+}
+
+.verdict {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid currentColor;
+}
+
+.verdict[data-verdict='botch'] {
+  color: #ff2a6d;
+}
+
+.verdict[data-verdict='crit'] {
+  color: #39ff14;
+}
+
+.verdict[data-verdict='miss'] {
+  color: #8a9aa8;
+}
+
+.verdict[data-verdict='hit'] {
+  color: #02d7f2;
 }
 
 .line {
@@ -20,6 +59,13 @@
 
 .meta {
   margin: 0.2rem 0 0;
-  opacity: 0.75;
+  opacity: 0.85;
   font-size: 0.75rem;
+  color: var(--cp-cyan, #02d7f2);
+}
+
+.conds {
+  margin: 0.25rem 0 0;
+  font-size: 0.7rem;
+  color: #ff9f1c;
 }

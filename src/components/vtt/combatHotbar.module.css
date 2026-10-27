@@ -38,6 +38,17 @@
   color: var(--cp-magenta, #ff2a6d);
 }
 
+.economy {
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.28rem 0.45rem;
+  background: rgba(10, 12, 18, 0.9);
+  border: 1px dashed color-mix(in srgb, var(--cp-yellow, #fed33f) 45%, transparent);
+}
+
 .actions {
   pointer-events: auto;
   display: flex;
@@ -51,6 +62,10 @@
   box-shadow:
     0 8px 28px rgba(0, 0, 0, 0.55),
     0 0 16px rgba(2, 215, 242, 0.12);
+}
+
+.wrapDocked .economy {
+  width: 100%;
 }
 
 .hint {
