@@ -24,7 +24,10 @@ const CharacterDetails = () => {
   const [characterData, setCharacterData] = useState(initialCharacterData);
   const [currentQuote, setCurrentQuote] = useState(0);
 
-  const handleInputChange = (key, event) => {
+  const handleInputChange = (
+    key: keyof typeof initialCharacterData.metadata,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setCharacterData(prevData => ({
       ...prevData,
       metadata: {
@@ -34,7 +37,7 @@ const CharacterDetails = () => {
     }));
   };
 
-  const handleTextAreaChange = (event) => {
+  const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCharacterData(prevData => ({
       ...prevData,
       metadata: {
@@ -102,7 +105,7 @@ const CharacterDetails = () => {
         width="100%"
         height="352"
         frameBorder="0"
-        allowFullScreen=""
+        allowFullScreen
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"
       ></iframe>

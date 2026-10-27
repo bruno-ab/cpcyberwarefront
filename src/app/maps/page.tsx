@@ -10,9 +10,9 @@ const NightCityMap = () => {
         height="100%"
         frameBorder="0"
         style={{ border: 0 }}
-        allowFullScreen=""
-        aria-hidden="false"
-        tabIndex="0"
+        allowFullScreen
+        aria-hidden={false}
+        tabIndex={0}
       ></iframe>
     </div>
   );

@@ -27,7 +27,7 @@ export function CreateCharacterForm() {
     void loadCampaigns();
   }, [loadCampaigns]);
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!campaignId) {

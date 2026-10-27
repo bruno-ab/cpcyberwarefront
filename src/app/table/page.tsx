@@ -1019,12 +1019,13 @@ const TablePage = () => {
           playCyberSound('glitch', { volume: 0.45 });
         }
         if (fx?.type === 'sandevistan-trail' && fx.from) {
+          const from = fx.from;
           setSandyTrailFx((prev) =>
             [
               {
                 id: `fx_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
-                x: fx.from.x,
-                y: fx.from.y,
+                x: from.x,
+                y: from.y,
                 color: fx.color || '#FCEE0A',
               },
               ...prev,
@@ -2324,7 +2325,10 @@ const TablePage = () => {
     currentFloor,
     mapW,
     mapH,
-    canDragToken,
+    canDragToken: (t) => {
+      const tok = state?.tokens?.find((x) => x.id === t.id);
+      return tok ? canDragToken(tok) : false;
+    },
     moveSelectedToken,
     onResetMovement: resetSelectedMovement,
     spaceHeldRef,

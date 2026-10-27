@@ -9,8 +9,10 @@ import { cyberwareImageSrc } from '../../../../lib/media';
 
 function Skeleton({ characterData}: any) {
   const router =  useRouter();
-  const [cyberwareData, setCyberwareData] = useState(null);
-  const [installedCyberwares, setInstalledCyberwares] = useState([]);
+  const [cyberwareData, setCyberwareData] = useState<
+    Array<{ id: string | number; name: string; type: string; description?: string; benefits?: string; rarity?: string }> | null
+  >(null);
+  const [installedCyberwares, setInstalledCyberwares] = useState<unknown[]>([]);
   const [selectedCyberwareId, setSelectedCyberwareId] = useState('');
   const characterCyberwares = characterData?.cyberwares || [];
   const skeletonMaximumSlots = maximumSlots.skeleton;
@@ -39,7 +41,7 @@ function Skeleton({ characterData}: any) {
 
   
 
-  const handleRemoveCyberware = (id, characterData) => {
+  const handleRemoveCyberware = (id: string | number, characterData: { id: string | number }) => {
     const data = {
       cyberwareId: id,
     };
@@ -55,10 +57,10 @@ function Skeleton({ characterData}: any) {
     }
   };
 
-  const handleInstallCyberware = (id, characterData) => {
+  const handleInstallCyberware = (id: string | number, characterData: { id: string | number }) => {
     console.log(id)
     console.log(characterData)
-    setSelectedCyberwareId(id);
+    setSelectedCyberwareId(String(id));
     const data = {
       cyberwareId: id,
     };
@@ -89,12 +91,20 @@ function Skeleton({ characterData}: any) {
       </thead>
       <tbody>
         {[...Array(skeletonMaximumSlots)].map((_, index) => {
-          const installedCyberwaresInSlot = characterCyberwares.filter((cyberware) => cyberware.slots === index + 1);
+          const installedCyberwaresInSlot = characterCyberwares.filter(
+            (cyberware: { slots?: number }) => cyberware.slots === index + 1,
+          );
 
           return (
             <React.Fragment key={index}>
               {installedCyberwaresInSlot.length > 0 ? (
-                installedCyberwaresInSlot.map((installedCyberware, innerIndex) => (
+                installedCyberwaresInSlot.map((installedCyberware: {
+                  id: string | number;
+                  name: string;
+                  description?: string;
+                  benefits?: string;
+                  rarity?: string;
+                }, innerIndex: number) => (
                   <tr key={`${index}-${innerIndex}`}>
                     <td  className={styles2.centerCell}>{installedCyberware.name}</td>
                     <td className={styles2.centerCell}>
@@ -131,7 +141,9 @@ function Skeleton({ characterData}: any) {
                     <select
                       id={`select-${index}`}
                       className={styles2.cp2077Select}
-                      onChange={(e) => handleInstallCyberware(e.target.value)}
+                      onChange={(e) =>
+                        handleInstallCyberware(e.target.value, characterData)
+                      }
                     >
                     <option value="">Select...</option>
                       {cyberwareData &&
