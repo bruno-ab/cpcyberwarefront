@@ -289,17 +289,81 @@
 .listItem {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem 1rem;
   padding: 0.85rem 1rem;
   border: 1px solid color-mix(in srgb, var(--cp-cyan) 28%, transparent);
   background: color-mix(in srgb, var(--cp-bg-panel) 92%, transparent);
+  position: relative;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.listItem::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 40%,
+    color-mix(in srgb, var(--cp-cyan) 12%, transparent) 50%,
+    transparent 60%
+  );
+  transition: opacity 0.2s ease;
+}
+
+.listItem:hover::after,
+.listItem:focus-within::after {
+  opacity: 1;
+}
+
+.listItem[data-role='netrunner'] {
+  border-color: color-mix(in srgb, var(--cp-magenta, #ff2bd6) 40%, var(--cp-cyan));
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cp-magenta, #ff2bd6) 7%, transparent),
+      transparent 55%
+    ),
+    color-mix(in srgb, var(--cp-bg-panel) 92%, transparent);
+}
+
+.listItem[data-role='netrunner'][data-revealed='false'] {
+  border-style: dashed;
+}
+
+.listItem[data-role='netrunner'][data-revealed='true'] {
+  border-style: solid;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--cp-magenta, #ff2bd6) 18%, transparent);
 }
 
 .listMain {
-  flex: 1 1 14rem;
+  flex: 1 1 16rem;
   min-width: 0;
+}
+
+.listTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.35rem;
+}
+
+.fileCue {
+  margin: 0.35rem 0 0;
+  font-family: var(--cp-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cp-cyan) 75%, var(--cp-text-dim));
+}
+
+.listItem[data-role='netrunner'] .fileCue {
+  color: color-mix(in srgb, var(--cp-magenta, #ff2bd6) 70%, var(--cp-cyan));
 }
 
 .idCardRow {

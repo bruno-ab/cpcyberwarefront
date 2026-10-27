@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import { HudButton } from '../../components/ui/HudButton';
-import { IdCardBadge } from '../../components/characters/IdCardBadge';
 import { CharacterIdCardPortrait } from '../../components/characters/CharacterIdCardPortrait';
+import { CharacterFileDossier } from '../../components/characters/CharacterFileDossier';
+import { CharactersPageGags } from '../../components/characters/CharactersPageGags';
 import { apiUrl, authHeaders } from '../../lib/api';
 import { getAccessToken, getPlayerIdFromToken } from '../../lib/authSession';
 import styles from './characters.module.css';
@@ -29,6 +30,7 @@ const CharactersPage = () => {
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
   const [hasToken, setHasToken] = useState(false);
+  const [revealedId, setRevealedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -81,13 +83,15 @@ const CharactersPage = () => {
 
   return (
     <PageFrame>
+      <CharactersPageGags characters={rows} />
       <div className={styles.page}>
         <header className={styles.hero}>
           <div>
             <h1>Personagens</h1>
             <p>
-              Crie fichas sem campanha e compartilhe o ID-card com o narrador
-              para entrar na mesa. Um personagem por campanha.
+              Arquivos de persona no vault Night City. Monte a ficha sem
+              campanha, compartilhe o ID-card com o narrador e entre na mesa.
+              Um personagem por campanha.
             </p>
           </div>
           {hasToken ? (
@@ -111,7 +115,7 @@ const CharactersPage = () => {
         <HudPanel title="Minhas fichas">
           {loading ? (
             <p className={styles.status} aria-busy="true">
-              Carregando…
+              Montando arquivos…
             </p>
           ) : !hasToken ? (
             <p className={styles.empty}>
@@ -120,8 +124,8 @@ const CharactersPage = () => {
           ) : rows.length === 0 ? (
             <>
               <p className={styles.status}>
-                Nenhum personagem ainda. Crie um runner ou use Campanhas → Criar
-                personagem para vincular direto à mesa.
+                Vault vazio. Crie um runner ou use Campanhas → Criar personagem
+                para vincular direto à mesa.
               </p>
               <Link href="/characters/create">
                 <HudButton>Criar personagem</HudButton>
@@ -131,24 +135,47 @@ const CharactersPage = () => {
             <ul className={styles.list}>
               {rows.map((c) => {
                 const campId = c.campaignId ?? c.campaign_id;
+                const roleKey = (c.role || '').toLowerCase();
+                const isNetrunner = roleKey.includes('net');
+                const revealed = revealedId === c.id;
                 return (
-                  <li key={c.id} className={styles.listItem}>
+                  <li
+                    key={c.id}
+                    className={styles.listItem}
+                    data-role={isNetrunner ? 'netrunner' : undefined}
+                    data-revealed={revealed ? 'true' : 'false'}
+                    onMouseEnter={() => setRevealedId(c.id)}
+                    onMouseLeave={() =>
+                      setRevealedId((cur) => (cur === c.id ? null : cur))
+                    }
+                    onFocusCapture={() => setRevealedId(c.id)}
+                    onBlurCapture={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                        setRevealedId((cur) => (cur === c.id ? null : cur));
+                      }
+                    }}
+                  >
                     <CharacterIdCardPortrait character={c} />
                     <div className={styles.listMain}>
-                      <strong>{c.name}</strong>
-                      {c.role ? (
-                        <span className={styles.meta}> · {c.role}</span>
-                      ) : null}
-                      {c.idCard ? (
-                        <div className={styles.idCardRow}>
-                          <IdCardBadge code={c.idCard} />
-                        </div>
-                      ) : null}
-                      <p className={styles.meta}>
-                        {campId
-                          ? `Campanha #${campId}`
-                          : 'Sem campanha — use o ID-card para convite'}
+                      <div className={styles.listTitle}>
+                        <strong>{c.name}</strong>
+                        {c.role ? (
+                          <span className={styles.meta}> · {c.role}</span>
+                        ) : null}
+                      </div>
+                      <p className={styles.fileCue}>
+                        {isNetrunner
+                          ? revealed
+                            ? 'DATASHARD DECRYPTED // ID-card unlocked'
+                            : 'ENCRYPTED SHARD // hover ou foque para decrypt'
+                          : campId
+                            ? `Arquivo vinculado · Campanha #${campId}`
+                            : 'Arquivo solto · use o ID-card no convite do narrador'}
                       </p>
+                      <CharacterFileDossier
+                        character={c}
+                        revealed={!isNetrunner || revealed}
+                      />
                     </div>
                     <Link href={`/sheet?id=${encodeURIComponent(c.id)}`}>
                       <HudButton variant="ghost">Abrir ficha</HudButton>
