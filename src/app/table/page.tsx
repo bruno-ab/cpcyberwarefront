@@ -2376,8 +2376,8 @@ const TablePage = () => {
   const combatCurrent = state?.initiative?.[state?.turnIndex ?? 0];
   const combatMyTurn = useMemo(() => {
     if (!combatCurrent) return false;
-    return isGm || myTokenIds.includes(combatCurrent.tokenId);
-  }, [combatCurrent, isGm, myTokenIds]);
+    return myTokenIds.includes(combatCurrent.tokenId);
+  }, [combatCurrent, myTokenIds]);
 
   const canApplyAttackDamage = useMemo(() => {
     if (
@@ -4077,8 +4077,7 @@ const TablePage = () => {
               }
               onUseItem={() => {}}
               onPassTurn={() => {
-                if (isGm) intent('initiative:next', {});
-                else if (combatMyTurn) intent('initiative:delay', {});
+                if (isGm || combatMyTurn) intent('initiative:next', {});
               }}
             />
           </div>

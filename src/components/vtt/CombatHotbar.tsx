@@ -107,7 +107,7 @@ export const CombatHotbar = ({
           isGm
             ? 'Próximo turno (Space)'
             : myTurn
-              ? 'Pedir avanço ao GM'
+              ? 'Encerrar seu turno e passar para o próximo'
               : 'Aguardando seu turno'
         }
       >

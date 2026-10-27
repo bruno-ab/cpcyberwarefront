@@ -250,8 +250,7 @@ export function useTableEditHotkeys({
       spaceHeldRef.current = false;
       setSpaceHeld(false);
       if (!spacePanUsedRef.current) {
-        if (isGm) intent('initiative:next', {});
-        else if (combatMyTurn) intent('initiative:delay', {});
+        if (isGm || combatMyTurn) intent('initiative:next', {});
       }
       spacePanUsedRef.current = false;
     };
