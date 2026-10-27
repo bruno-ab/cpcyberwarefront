@@ -1,0 +1,25 @@
+.card {
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.55rem;
+  border-left: 2px solid #fcee0a;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.85rem;
+}
+
+.head {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fcee0a;
+  margin-bottom: 0.25rem;
+}
+
+.line {
+  margin: 0.15rem 0;
+}
+
+.meta {
+  margin: 0.2rem 0 0;
+  opacity: 0.75;
+  font-size: 0.75rem;
+}

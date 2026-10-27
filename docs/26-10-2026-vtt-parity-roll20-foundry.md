@@ -46,6 +46,8 @@
 - Auth gate, campaign hub, VTT access gate (PT errors), SceneBar, combat HUD, GM toolbar.
 - Landing deck gadgets (breach, terminal, heat strip) — play routes require login.
 
+**P1 VTT loop (API doc):** `cpcyberware/docs/26-10-2026-p1-vtt-loop.md` — attack card, handout→agent, reconnect, e2e smoke.
+
 ---
 
 ## 2. Gap tables

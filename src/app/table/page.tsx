@@ -127,6 +127,10 @@ import { VttAccessGate } from '../../components/vtt/VttAccessGate';
 import { GmFirstVisitHints } from '../../components/vtt/GmFirstVisitHints';
 import { TokenArHud } from '../../components/vtt/TokenArHud';
 import { isArTargetToken, tokenShowsNameplate } from '../../lib/vttAr';
+import {
+  AttackResultCard,
+  type AttackResultCard as AttackCardPayload,
+} from '../../components/vtt/AttackResultCard';
 import styles from './table.module.css';
 
 type Token = {
@@ -463,6 +467,7 @@ const TablePage = () => {
   const [rightHudCollapsed, setRightHudCollapsed] = useState(false);
   const [handoutBody, setHandoutBody] = useState('');
   const [handoutFrom, setHandoutFrom] = useState('Rogue');
+  const [handoutTargetCharId, setHandoutTargetCharId] = useState('');
   const [uploadingBg, setUploadingBg] = useState(false);
   const [bgLoadError, setBgLoadError] = useState<string | null>(null);
   const [importingUvtt, setImportingUvtt] = useState(false);
@@ -486,7 +491,7 @@ const TablePage = () => {
     label: string;
     fromName: string;
   } | null>(null);
-  const [lastAttack, setLastAttack] = useState<any>(null);
+  const [lastAttack, setLastAttack] = useState<AttackCardPayload | null>(null);
   const [emoteToasts, setEmoteToasts] = useState<EmoteToast[]>([]);
   const [tokenEmoteBubbles, setTokenEmoteBubbles] = useState<
     TokenEmoteBubble[]
@@ -894,6 +899,20 @@ const TablePage = () => {
     });
     socketRef.current = socket;
 
+    const refreshSessionFromHttp = async (sid: string) => {
+      try {
+        const res = await fetch(apiUrl(`/api/vtt/sessions/${sid}`), {
+          headers: authHeaders(),
+        });
+        if (res.ok) {
+          const snap = (await res.json()) as VttState;
+          setState(snap);
+        }
+      } catch {
+        /* WS catch-up on join */
+      }
+    };
+
     const join = () => {
       setJoinPending(true);
       setJoinError('');
@@ -929,6 +948,8 @@ const TablePage = () => {
           }
           if (ack?.sessionId) setSessionId(ack.sessionId);
           if (ack?.sceneId) setSceneId(ack.sceneId);
+          const sid = ack?.sessionId || sessionId;
+          if (sid) void refreshSessionFromHttp(sid);
         },
       );
     };
@@ -1148,7 +1169,7 @@ const TablePage = () => {
         }
       },
     );
-    socket.on('vtt:attack', (card: any) => setLastAttack(card));
+    socket.on('vtt:attack', (card: AttackCardPayload) => setLastAttack(card));
     socket.on(
       'vtt:roll-request',
       (req: {
@@ -2231,6 +2252,39 @@ const TablePage = () => {
     return isGm || myTokenIds.includes(combatCurrent.tokenId);
   }, [combatCurrent, isGm, myTokenIds]);
 
+  const canApplyAttackDamage = useMemo(() => {
+    if (
+      !lastAttack?.damage?.successes ||
+      !lastAttack.targetTokenId ||
+      (lastAttack.hit?.successes ?? 0) <= 0
+    ) {
+      return false;
+    }
+    if (isGm) return true;
+    const attackerId = lastAttack.attackerTokenId;
+    if (!attackerId || !myTokenIds.includes(attackerId)) return false;
+    if (!state?.combat?.active) return true;
+    return combatCurrent?.tokenId === attackerId;
+  }, [lastAttack, isGm, myTokenIds, state?.combat?.active, combatCurrent?.tokenId]);
+
+  const tokenNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of state?.tokens || []) {
+      map.set(t.id, t.name);
+    }
+    return map;
+  }, [state?.tokens]);
+
+  const phoneHandouts = useMemo(() => {
+    const list = state?.handouts || [];
+    if (isGm) return list;
+    return list.filter((h) => {
+      const target = Number((h as Handout & { toPlayerId?: number }).toPlayerId);
+      if (!target) return true;
+      return Number(myPlayerId) === target;
+    });
+  }, [state?.handouts, isGm, myPlayerId]);
+
   const turnMovementForSelected = useMemo(() => {
     if (!selectedTokenId || !state?.combat?.active || !state.turnMovement) {
       return null;
@@ -2703,6 +2757,21 @@ const TablePage = () => {
   const gmHandoutRow =
     isGm && gmTab === 'scene' ? (
       <div className={styles.handoutRow}>
+        <label className={styles.diceLabel}>
+          Runner
+          <select
+            value={handoutTargetCharId}
+            onChange={(e) => setHandoutTargetCharId(e.target.value)}
+            aria-label="Personagem destino"
+          >
+            <option value="">Broadcast mesa</option>
+            {roster.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <input
           value={handoutFrom}
           onChange={(e) => setHandoutFrom(e.target.value)}
@@ -2719,17 +2788,19 @@ const TablePage = () => {
           onClick={() => {
             const body = handoutBody.trim();
             if (!body) return;
+            const target = roster.find((c) => c.id === handoutTargetCharId);
             intent('handout:push', {
               channel: 'sms',
               from: handoutFrom || 'Fixer',
               title: 'SMS',
               body,
-              toPlayerId: myPlayerId || 1,
+              toCharacterId: handoutTargetCharId || undefined,
+              toPlayerId: target?.playerId ?? undefined,
             });
             setHandoutBody('');
           }}
         >
-          Push SMS
+          Enviar ao agente
         </HudButton>
       </div>
     ) : null;
@@ -3997,24 +4068,29 @@ const TablePage = () => {
                         {m.at ? m.at.slice(11, 19) : ''} {m.name}
                       </span>
                       <span className={styles.chatBody}>{m.text}</span>
-                      {m.kind === 'attack' &&
-                        lastAttack?.id === m.id &&
-                        lastAttack?.damage?.successes > 0 &&
-                        lastAttack?.targetTokenId &&
-                        isGm && (
-                          <HudButton
-                            variant="ghost"
-                            onClick={() =>
-                              intent('token:damage', {
-                                tokenId: lastAttack.targetTokenId,
-                                amount: lastAttack.damage.successes,
-                                fromAttack: true,
-                              })
-                            }
-                          >
-                            Aplicar dano
-                          </HudButton>
-                        )}
+                      {m.kind === 'attack' && lastAttack?.id === m.id && (
+                        <AttackResultCard
+                          card={lastAttack}
+                          attackerName={
+                            lastAttack.attackerTokenId
+                              ? tokenNameById.get(lastAttack.attackerTokenId)
+                              : undefined
+                          }
+                          targetName={
+                            lastAttack.targetTokenId
+                              ? tokenNameById.get(lastAttack.targetTokenId)
+                              : undefined
+                          }
+                          canApplyDamage={canApplyAttackDamage}
+                          onApplyDamage={() =>
+                            intent('token:damage', {
+                              tokenId: lastAttack.targetTokenId,
+                              amount: lastAttack.damage?.successes ?? 0,
+                              fromAttack: true,
+                            })
+                          }
+                        />
+                      )}
                     </p>
                   ))
                 )}
@@ -4145,7 +4221,7 @@ const TablePage = () => {
 
           {phoneOpen && (
             <PhoneShell
-              handouts={state?.handouts || []}
+              handouts={phoneHandouts}
               onClose={() => setPhoneOpen(false)}
             />
           )}
