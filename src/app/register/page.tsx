@@ -2,7 +2,7 @@
 
 import { FormEvent, Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { AuthScreen } from '../../components/auth/AuthScreen';
 import { AuthToast } from '../../components/auth/AuthToast';
 import { PasswordField } from '../../components/auth/PasswordField';
@@ -29,7 +29,6 @@ const RegisterForm = () => {
   const [toast, setToast] = useState('');
   const [toastOk, setToastOk] = useState(false);
   const [busy, setBusy] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = useMemo(
     () => sanitizeAuthNext(searchParams.get('next')),
@@ -91,7 +90,7 @@ const RegisterForm = () => {
       setToast('Conta criada. Redirecionando para jack-in…');
       const loginNext = encodeURIComponent(nextPath);
       window.setTimeout(() => {
-        router.push(`/login?next=${loginNext}`);
+        window.location.assign(`/login?next=${loginNext}`);
       }, 900);
     } catch {
       setToast('Falha de rede. Tente de novo em instantes.');

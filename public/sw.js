@@ -1,4 +1,4 @@
-const CACHE = 'cp-storyteller-v2';
+const CACHE = 'cp-storyteller-v3';
 const PRECACHE = [
   '/',
   '/book',
@@ -24,6 +24,18 @@ const API_CACHE_MATCH = [
 
 const isCacheableApi = (url) =>
   API_CACHE_MATCH.some((re) => re.test(url.pathname));
+
+/** Next.js app router + CSS chunks must not be cache-first (breaks soft nav). */
+const bypassServiceWorker = (url, request) => {
+  if (url.pathname.startsWith('/_next/')) return true;
+  if (request.mode === 'navigate') return true;
+  if (request.headers.get('RSC') === '1') return true;
+  if (request.headers.get('Next-Router-Prefetch') === '1') return true;
+  if (request.headers.has('Next-Router-State-Tree')) return true;
+  const dest = request.headers.get('Accept') || '';
+  if (dest.includes('text/x-component')) return true;
+  return false;
+};
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -53,6 +65,11 @@ self.addEventListener('fetch', (event) => {
 
   // Realtime — never cache
   if (url.pathname.includes('socket.io')) return;
+
+  if (bypassServiceWorker(url, event.request)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   // Offline-friendly API subset
   if (url.pathname.startsWith('/api')) {

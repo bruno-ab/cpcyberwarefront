@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { getAccessToken } from '../../lib/authSession';
 import { isAuthPublicPath } from '../../lib/authRoutes';
 import styles from './AuthGate.module.css';
@@ -29,7 +29,6 @@ const initialPhase = (pathname: string): GatePhase => {
 
 export const AuthGate = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname() || '/';
-  const router = useRouter();
   const [phase, setPhase] = useState<GatePhase>(() => initialPhase(pathname));
 
   useEffect(() => {
@@ -42,12 +41,11 @@ export const AuthGate = ({ children }: { children: ReactNode }) => {
     }
 
     setPhase('redirecting');
-    const search =
-      typeof window !== 'undefined' ? window.location.search : '';
+    const search = window.location.search;
     const returnPath = `${pathname}${search}`;
     const next = encodeURIComponent(returnPath);
-    router.replace(`/login?next=${next}`);
-  }, [pathname, router]);
+    window.location.replace(`/login?next=${next}`);
+  }, [pathname]);
 
   if (phase === 'checking' || phase === 'redirecting') {
     return <AuthGateLoading />;
