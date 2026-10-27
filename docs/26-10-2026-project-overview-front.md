@@ -49,7 +49,7 @@ Detalhe: [`26-10-2026-home-landing.md`](./26-10-2026-home-landing.md).
 ## Campanhas, personagens, conta
 
 - **Campanhas:** painéis GM/player, convites, skeleton loading, empty states por seção.
-- **Personagens:** lista filtrada por `player_id`, ID-card, link para ficha; criar via `/characters/create`.
+- **Personagens:** lista filtrada por `player_id`, ID-card, link para ficha; criar via `/characters/create`; **Minhas fichas** exibe mini cartão ID Night City (`CharacterIdCardPortrait`) com retrato (`characterImageSrc`) à esquerda de cada linha.
 - **Conta:** `GET /api/account/me`, troca de senha, prefs locais (notify stub), zona de delete; atalho para personagens.
 
 Docs relacionados: [`26-10-2026-account.md`](./26-10-2026-account.md), [`26-10-2026-ux-mesa-campanhas.md`](./26-10-2026-ux-mesa-campanhas.md).

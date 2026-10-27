@@ -7,6 +7,7 @@ import { PageFrame } from '../../components/layout/PageFrame';
 import { HudPanel } from '../../components/ui/HudPanel';
 import { HudButton } from '../../components/ui/HudButton';
 import { IdCardBadge } from '../../components/characters/IdCardBadge';
+import { CharacterIdCardPortrait } from '../../components/characters/CharacterIdCardPortrait';
 import { apiUrl, authHeaders } from '../../lib/api';
 import { getAccessToken, getPlayerIdFromToken } from '../../lib/authSession';
 import styles from './characters.module.css';
@@ -15,6 +16,7 @@ type CharacterRow = {
   id: string;
   name: string;
   role?: string;
+  image?: string | null;
   idCard?: string | null;
   id_card?: string | null;
   campaign_id?: number | null;
@@ -131,6 +133,7 @@ const CharactersPage = () => {
                 const campId = c.campaignId ?? c.campaign_id;
                 return (
                   <li key={c.id} className={styles.listItem}>
+                    <CharacterIdCardPortrait character={c} />
                     <div className={styles.listMain}>
                       <strong>{c.name}</strong>
                       {c.role ? (
