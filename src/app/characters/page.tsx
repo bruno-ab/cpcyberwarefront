@@ -8,6 +8,7 @@ import { HudPanel } from '../../components/ui/HudPanel';
 import { HudButton } from '../../components/ui/HudButton';
 import { CharacterIdCardPortrait } from '../../components/characters/CharacterIdCardPortrait';
 import { CharacterFileDossier } from '../../components/characters/CharacterFileDossier';
+import { CharacterBoxRain } from '../../components/characters/CharacterBoxRain';
 import { CharactersPageGags } from '../../components/characters/CharactersPageGags';
 import { apiUrl, authHeaders } from '../../lib/api';
 import { getAccessToken, getPlayerIdFromToken } from '../../lib/authSession';
@@ -144,6 +145,7 @@ const CharactersPage = () => {
                     className={styles.listItem}
                     data-role={isNetrunner ? 'netrunner' : undefined}
                     data-revealed={revealed ? 'true' : 'false'}
+                    data-rgb={revealed ? 'true' : 'false'}
                     onMouseEnter={() => setRevealedId(c.id)}
                     onMouseLeave={() =>
                       setRevealedId((cur) => (cur === c.id ? null : cur))
@@ -155,31 +157,34 @@ const CharactersPage = () => {
                       }
                     }}
                   >
-                    <CharacterIdCardPortrait character={c} />
-                    <div className={styles.listMain}>
-                      <div className={styles.listTitle}>
-                        <strong>{c.name}</strong>
-                        {c.role ? (
-                          <span className={styles.meta}> · {c.role}</span>
-                        ) : null}
+                    <CharacterBoxRain active={revealed} />
+                    <div className={styles.listBody}>
+                      <CharacterIdCardPortrait character={c} />
+                      <div className={styles.listMain}>
+                        <div className={styles.listTitle}>
+                          <strong>{c.name}</strong>
+                          {c.role ? (
+                            <span className={styles.meta}> · {c.role}</span>
+                          ) : null}
+                        </div>
+                        <p className={styles.fileCue}>
+                          {isNetrunner
+                            ? revealed
+                              ? 'DATASHARD DECRYPTED // ID-card unlocked'
+                              : 'ENCRYPTED SHARD // hover ou foque para decrypt'
+                            : campId
+                              ? `Arquivo vinculado · Campanha #${campId}`
+                              : 'Arquivo solto · use o ID-card no convite do narrador'}
+                        </p>
+                        <CharacterFileDossier
+                          character={c}
+                          revealed={!isNetrunner || revealed}
+                        />
                       </div>
-                      <p className={styles.fileCue}>
-                        {isNetrunner
-                          ? revealed
-                            ? 'DATASHARD DECRYPTED // ID-card unlocked'
-                            : 'ENCRYPTED SHARD // hover ou foque para decrypt'
-                          : campId
-                            ? `Arquivo vinculado · Campanha #${campId}`
-                            : 'Arquivo solto · use o ID-card no convite do narrador'}
-                      </p>
-                      <CharacterFileDossier
-                        character={c}
-                        revealed={!isNetrunner || revealed}
-                      />
+                      <Link href={`/sheet?id=${encodeURIComponent(c.id)}`}>
+                        <HudButton variant="ghost">Abrir ficha</HudButton>
+                      </Link>
                     </div>
-                    <Link href={`/sheet?id=${encodeURIComponent(c.id)}`}>
-                      <HudButton variant="ghost">Abrir ficha</HudButton>
-                    </Link>
                   </li>
                 );
               })}
