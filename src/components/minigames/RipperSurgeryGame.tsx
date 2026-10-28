@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
 import shell from './MinigameShell.module.css';
 import styles from './RipperSurgeryGame.module.css';
@@ -9,6 +11,8 @@ type Status = 'menu' | 'playing' | 'won' | 'lost';
 
 /** Cirurgia do ripperdoc: mantenha o laser sobre o ponto de implante. */
 export const RipperSurgeryGame = () => {
+  const { campaignId, refresh } = useCampaign();
+  const reported = useRef(false);
   const [status, setStatus] = useState<Status>('menu');
   const [progress, setProgress] = useState(0);
   const [errors, setErrors] = useState(0);
@@ -23,6 +27,7 @@ export const RipperSurgeryGame = () => {
   const errorsRef = useRef(0);
 
   const start = () => {
+    reported.current = false;
     setProgress(0);
     setErrors(0);
     errorsRef.current = 0;
@@ -95,6 +100,16 @@ export const RipperSurgeryGame = () => {
     }, 120);
     return () => clearInterval(id);
   }, [status, holding, target]);
+
+  useEffect(() => {
+    if ((status !== 'won' && status !== 'lost') || reported.current) return;
+    reported.current = true;
+    reportMinigameResult(campaignId, 'surgery', status, {
+      humanityCost,
+      recoveryHours,
+      errors,
+    }).then(() => refresh());
+  }, [status, campaignId, humanityCost, recoveryHours, errors, refresh]);
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     if (status !== 'playing') return;

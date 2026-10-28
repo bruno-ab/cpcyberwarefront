@@ -46,6 +46,7 @@ import {
 } from '../../lib/campaignsApi';
 import { CombatHotbar } from '../../components/vtt/CombatHotbar';
 import { InitiativeTimeline } from '../../components/vtt/InitiativeTimeline';
+import { InitiativeReorderList } from '../../components/vtt/InitiativeReorderList';
 import {
   BoardNavToolbar,
   type BoardNavTool,
@@ -4244,6 +4245,9 @@ const TablePage = () => {
                     .map((n: string) => chromeActivationRamCost(n))
                     .find((c: number | null) => c != null) ?? 2
                 }
+                onReorderInitiative={(order) =>
+                  intent('initiative:reorder', { order })
+                }
               />
             </HudPanel>
           {selectedToken &&
@@ -4361,21 +4365,12 @@ const TablePage = () => {
             </ul>
           </HudPanel>
           <HudPanel title="Iniciativa" sectionKey="initiative">
-            <ol className={styles.plainList}>
-              {(state?.initiative || []).map((ini, i) => (
-                <li
-                  key={ini.tokenId}
-                  style={{
-                    color:
-                      i === state?.turnIndex
-                        ? 'var(--cp-yellow)'
-                        : undefined,
-                  }}
-                >
-                  {ini.name} ({ini.score})
-                </li>
-              ))}
-            </ol>
+            <InitiativeReorderList
+              initiative={state?.initiative || []}
+              turnIndex={state?.turnIndex || 0}
+              draggable={isGm}
+              onReorder={(order) => intent('initiative:reorder', { order })}
+            />
           </HudPanel>
 
           {replay.length > 0 && (

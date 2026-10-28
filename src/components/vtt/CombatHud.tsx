@@ -1,6 +1,7 @@
 'use client';
 
 import { HudButton } from '../ui/HudButton';
+import { InitiativeReorderList } from './InitiativeReorderList';
 import styles from './combatHud.module.css';
 
 export type InitiativeEntry = {
@@ -42,6 +43,7 @@ type CombatHudProps = {
   onAttack: () => void;
   onSandy: () => void;
   sandyRamCost?: number | null;
+  onReorderInitiative?: (order: string[]) => void;
 };
 
 export const CombatHud = ({
@@ -68,6 +70,7 @@ export const CombatHud = ({
   onAttack,
   onSandy,
   sandyRamCost,
+  onReorderInitiative,
 }: CombatHudProps) => {
   const current = initiative[turnIndex];
   const myTurn =
@@ -108,22 +111,12 @@ export const CombatHud = ({
         )}
       </div>
 
-      <ol className={styles.list}>
-        {initiative.map((ini, i) => (
-          <li
-            key={ini.tokenId}
-            data-current={i === turnIndex ? '1' : '0'}
-          >
-            <span>
-              {ini.name}
-              {ini.delayed ? ' (delay)' : ''}
-              {ini.holding ? ' (hold)' : ''}
-              {(ini.extraTurns || 0) > 0 ? ` +${ini.extraTurns}` : ''}
-            </span>
-            <span className={styles.score}>{ini.score}</span>
-          </li>
-        ))}
-      </ol>
+      <InitiativeReorderList
+        initiative={initiative}
+        turnIndex={turnIndex}
+        draggable={isGm && !!onReorderInitiative}
+        onReorder={onReorderInitiative}
+      />
 
       {current && (
         <div className={styles.turnBox}>

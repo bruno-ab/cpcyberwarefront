@@ -2,6 +2,11 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { useCampaign } from '../../lib/campaign';
+import {
+  countN54Unread,
+  markN54FeedSeen,
+} from '../../lib/n54PhoneSeen';
 import styles from './sheetPhone.module.css';
 
 type Contact = { id: string; name: string; role?: string };
@@ -19,14 +24,27 @@ type Message = {
   read: boolean;
 };
 
+type NewsItem = {
+  id: number | string;
+  headline: string;
+  body: string;
+  district?: string;
+  source: string;
+  severity: string;
+  at: string;
+};
+
+type PhoneView = 'threads' | 'chat' | 'add' | 'n54';
+
 type Props = {
   characterId: string;
   characterName: string;
 };
 
 export const SheetPhone = ({ characterId, characterName }: Props) => {
+  const { campaignId } = useCampaign();
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<'threads' | 'chat' | 'add'>('threads');
+  const [view, setView] = useState<PhoneView>('threads');
   const [threads, setThreads] = useState<Thread[]>([]);
   const [peer, setPeer] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -34,6 +52,8 @@ export const SheetPhone = ({ characterId, characterName }: Props) => {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [unreadTotal, setUnreadTotal] = useState(0);
+  const [n54Feed, setN54Feed] = useState<NewsItem[]>([]);
+  const [n54Unread, setN54Unread] = useState(0);
 
   const loadThreads = useCallback(async () => {
     try {
@@ -49,6 +69,28 @@ export const SheetPhone = ({ characterId, characterName }: Props) => {
       /* ignore */
     }
   }, [characterId]);
+
+  const loadN54 = useCallback(async () => {
+    if (!campaignId) return;
+    try {
+      const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/news`), {
+        headers: authHeaders(),
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as NewsItem[];
+      const feed = Array.isArray(data) ? data : [];
+      setN54Feed(feed);
+      setN54Unread(countN54Unread(characterId, feed));
+    } catch {
+      /* ignore */
+    }
+  }, [campaignId, characterId]);
+
+  const openN54 = () => {
+    setView('n54');
+    markN54FeedSeen(characterId, n54Feed);
+    setN54Unread(0);
+  };
 
   const openChat = async (contact: Contact) => {
     setPeer(contact);
@@ -119,9 +161,15 @@ export const SheetPhone = ({ characterId, characterName }: Props) => {
 
   useEffect(() => {
     loadThreads();
-    const t = window.setInterval(loadThreads, 12000);
+    loadN54();
+    const t = window.setInterval(() => {
+      loadThreads();
+      loadN54();
+    }, 12000);
     return () => window.clearInterval(t);
-  }, [loadThreads]);
+  }, [loadThreads, loadN54]);
+
+  const badgeTotal = unreadTotal + n54Unread;
 
   return (
     <>
@@ -132,8 +180,8 @@ export const SheetPhone = ({ characterId, characterName }: Props) => {
         aria-label="Abrir telefone"
       >
         ☎
-        {unreadTotal > 0 && (
-          <span className={styles.fabBadge}>{unreadTotal}</span>
+        {badgeTotal > 0 && (
+          <span className={styles.fabBadge}>{badgeTotal}</span>
         )}
       </button>
 
@@ -160,6 +208,13 @@ export const SheetPhone = ({ characterId, characterName }: Props) => {
               }}
             >
               SMS
+            </button>
+            <button
+              type="button"
+              data-active={view === 'n54'}
+              onClick={openN54}
+            >
+              N54{n54Unread > 0 ? ` (${n54Unread})` : ''}
             </button>
             <button type="button" data-active={view === 'add'} onClick={loadDirectory}>
               Contatos+
@@ -188,6 +243,35 @@ export const SheetPhone = ({ characterId, characterName }: Props) => {
                       <em className={styles.unread}>{t.unread}</em>
                     )}
                   </button>
+                ))}
+              </>
+            )}
+
+            {view === 'n54' && (
+              <>
+                <p className={styles.empty}>
+                  Wire N54 · campanha #{campaignId}
+                </p>
+                {n54Feed.length === 0 && (
+                  <p className={styles.empty}>Sem manchetes no feed ainda.</p>
+                )}
+                {n54Feed.map((item) => (
+                  <article key={String(item.id)} className={styles.n54Item}>
+                    <div className={styles.n54Meta}>
+                      <span>{item.source || 'N54'}</span>
+                      {item.district ? <span>{item.district}</span> : null}
+                      <span>
+                        {new Date(item.at).toLocaleString('pt-BR', {
+                          day: '2-digit',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                    <strong>{item.headline}</strong>
+                    <p>{item.body}</p>
+                  </article>
                 ))}
               </>
             )}

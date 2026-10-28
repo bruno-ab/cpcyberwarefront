@@ -250,3 +250,36 @@
   color: var(--sheet-section-color, var(--cp-yellow));
   cursor: pointer;
 }
+
+.n54Item {
+  border: 1px solid color-mix(in srgb, var(--cp-magenta, #ff2a6d) 35%, transparent);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0.45rem 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.n54Meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-family: var(--cp-font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cp-text-dim);
+  margin-bottom: 0.25rem;
+}
+
+.n54Item strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--cp-yellow, #fed33f);
+  margin-bottom: 0.2rem;
+}
+
+.n54Item p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--cp-text);
+}

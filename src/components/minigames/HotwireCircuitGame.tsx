@@ -1,6 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
 import styles from './HotwireCircuitGame.module.css';
 
@@ -69,6 +71,8 @@ const LEVELS: Level[] = [
 const idx = (x: number, y: number, cols: number) => y * cols + x;
 
 export const HotwireCircuitGame = () => {
+  const { campaignId, refresh } = useCampaign();
+  const reported = useRef(false);
   const [level, setLevel] = useState<Level>(LEVELS[0]);
   const [status, setStatus] = useState<Status>('menu');
   const [path, setPath] = useState<number[]>([]);
@@ -79,6 +83,7 @@ export const HotwireCircuitGame = () => {
   const endPos = useMemo(() => level.cells.findIndex((c) => c === 'end'), [level]);
 
   const start = (lv: Level) => {
+    reported.current = false;
     setLevel(lv);
     setPath([lv.cells.findIndex((c) => c === 'start')]);
     setRemaining(lv.timeSec);
@@ -100,6 +105,15 @@ export const HotwireCircuitGame = () => {
     const t = setTimeout(() => setRemaining((r) => r - 1), 1000);
     return () => clearTimeout(t);
   }, [status, remaining]);
+
+  useEffect(() => {
+    if ((status !== 'won' && status !== 'lost') || reported.current) return;
+    reported.current = true;
+    reportMinigameResult(campaignId, 'hotwire', status, {
+      levelId: level.id,
+      levelName: level.name,
+    }).then(() => refresh());
+  }, [status, campaignId, level.id, level.name, refresh]);
 
   const neighbors = useCallback(
     (i: number) => {

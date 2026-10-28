@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
 import shell from './MinigameShell.module.css';
 import styles from './ElectronicLockGame.module.css';
@@ -11,6 +13,8 @@ const RINGS = 3;
 
 /** Arrombamento: alinhe os anéis da fechadura. Tecnologia reduz a tolerância necessária. */
 export const ElectronicLockGame = () => {
+  const { campaignId, refresh } = useCampaign();
+  const reported = useRef(false);
   const [status, setStatus] = useState<Status>('menu');
   const [tech, setTech] = useState(2);
   const [angles, setAngles] = useState([0, 0, 0]);
@@ -23,6 +27,7 @@ export const ElectronicLockGame = () => {
   const maxAttempts = useMemo(() => 4 + Math.floor(tech / 2), [tech]);
 
   const start = () => {
+    reported.current = false;
     setTargets(
       Array.from({ length: RINGS }, () => Math.floor(Math.random() * 360)),
     );
@@ -48,6 +53,15 @@ export const ElectronicLockGame = () => {
       setMsg('Fechadura aberta — maglock liberado.');
     }
   }, [aligned, status]);
+
+  useEffect(() => {
+    if ((status !== 'won' && status !== 'lost') || reported.current) return;
+    reported.current = true;
+    reportMinigameResult(campaignId, 'lock', status, {
+      tech,
+      attempts,
+    }).then(() => refresh());
+  }, [status, campaignId, tech, attempts, refresh]);
 
   const rotate = (i: number, delta: number) => {
     if (status !== 'playing') return;

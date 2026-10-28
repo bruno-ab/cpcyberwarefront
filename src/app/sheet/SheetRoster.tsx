@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { useCampaign } from '../../lib/campaign';
+import { fetchMineCampaigns } from '../../lib/campaignsApi';
 import styles from './sheetRoster.module.css';
 
 type CharBrief = { id: string; name: string; role?: string; credits?: number };
@@ -22,8 +24,8 @@ type Roster = {
 
 export const SheetRoster = () => {
   const router = useRouter();
+  const { campaignId, setCampaignId } = useCampaign();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [campaignId, setCampaignId] = useState<string>('');
   const [roster, setRoster] = useState<Roster | null>(null);
   const [missionId, setMissionId] = useState<string>('all');
   const [loading, setLoading] = useState(true);
@@ -35,15 +37,27 @@ export const SheetRoster = () => {
       router.push('/login');
       return;
     }
-    fetch(apiUrl('/api/campaigns'), { headers: authHeaders() })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((list) => {
-        const rows = Array.isArray(list) ? list : [];
-        setCampaigns(rows);
-        if (rows[0]) setCampaignId(String(rows[0].id));
+    const applyRows = (rows: Campaign[]) => {
+      setCampaigns(rows);
+      if (rows.length && !rows.some((c) => Number(c.id) === campaignId)) {
+        setCampaignId(Number(rows[0].id));
+      }
+    };
+    fetchMineCampaigns()
+      .then((mine) => {
+        applyRows([
+          ...(mine?.asGm || []),
+          ...(mine?.asPlayer || []),
+        ].map((c) => ({ id: c.id, name: c.name })));
       })
-      .catch(() => setError('Falha ao carregar campanhas.'))
+      .catch(() =>
+        fetch(apiUrl('/api/campaigns'), { headers: authHeaders() })
+          .then((r) => (r.ok ? r.json() : []))
+          .then((list) => applyRows(Array.isArray(list) ? list : []))
+          .catch(() => setError('Falha ao carregar campanhas.')),
+      )
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- bootstrap campaign list once
   }, [router]);
 
   useEffect(() => {
@@ -89,8 +103,11 @@ export const SheetRoster = () => {
         <label>
           Campanha
           <select
-            value={campaignId}
-            onChange={(e) => setCampaignId(e.target.value)}
+            value={String(campaignId)}
+            onChange={(e) => {
+              const next = Number(e.target.value);
+              if (Number.isFinite(next) && next > 0) setCampaignId(next);
+            }}
           >
             {campaigns.map((c) => (
               <option key={String(c.id)} value={String(c.id)}>

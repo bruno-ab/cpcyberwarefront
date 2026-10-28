@@ -1,6 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 import shell from './MinigameShell.module.css';
 import styles from './ImplantCalibrationGame.module.css';
 
@@ -10,6 +12,8 @@ const CHANNELS = ['signal', 'power', 'sync', 'bleed'] as const;
 
 /** Calibragem de implante: alinhe sliders e fique abaixo do limiar de cyberpsicose. */
 export const ImplantCalibrationGame = () => {
+  const { campaignId, refresh } = useCampaign();
+  const reported = useRef(false);
   const [status, setStatus] = useState<Status>('menu');
   const [humanity, setHumanity] = useState(7);
   const [values, setValues] = useState([50, 50, 50, 50]);
@@ -28,6 +32,7 @@ export const ImplantCalibrationGame = () => {
   }, [values, targets, humanity]);
 
   const start = () => {
+    reported.current = false;
     setTargets(CHANNELS.map(() => 20 + Math.floor(Math.random() * 60)));
     setValues(CHANNELS.map(() => 50));
     setTries(0);
@@ -45,6 +50,16 @@ export const ImplantCalibrationGame = () => {
     }
     if (next >= 5 || stress > 90) setStatus('lost');
   };
+
+  useEffect(() => {
+    if ((status !== 'won' && status !== 'lost') || reported.current) return;
+    reported.current = true;
+    reportMinigameResult(campaignId, 'calibrate', status, {
+      humanity,
+      stress,
+      tries,
+    }).then(() => refresh());
+  }, [status, campaignId, humanity, stress, tries, refresh]);
 
   return (
     <div className={shell.wrap} data-accent="magenta">

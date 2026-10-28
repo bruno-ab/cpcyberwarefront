@@ -1,0 +1,61 @@
+.hint {
+  margin: 0 0 0.35rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cp-cyan, #02d7f2) 75%, transparent);
+}
+
+.list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 0.78rem;
+  max-height: 9rem;
+  overflow: auto;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: default;
+}
+
+.list li[data-current='1'] {
+  color: var(--cp-yellow, #fed33f);
+  font-weight: 600;
+  border-color: color-mix(in srgb, var(--cp-yellow, #fed33f) 35%, transparent);
+  background: rgba(254, 211, 63, 0.06);
+}
+
+.list li[data-dragging='1'] {
+  opacity: 0.65;
+  border-color: var(--cp-magenta, #ff2a6d);
+}
+
+.list li[draggable='true'] {
+  cursor: grab;
+}
+
+.grip {
+  width: 1rem;
+  font-family: var(--cp-font-mono, monospace);
+  font-size: 0.55rem;
+  color: var(--cp-cyan, #02d7f2);
+  user-select: none;
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+}
+
+.score {
+  font-family: var(--cp-font-mono, monospace);
+  color: var(--cp-cyan, #02d7f2);
+}

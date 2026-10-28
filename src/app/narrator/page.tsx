@@ -9,15 +9,20 @@ import { HudButton } from '../../components/ui/HudButton';
 import { useIsCampaignGm } from '../../hooks/useIsCampaignGm';
 import { getAccessToken } from '../../lib/authSession';
 import { apiUrl, authHeaders } from '../../lib/api';
+import { useCampaign } from '../../lib/campaign';
+import type { HeatEffects } from '../../lib/heat';
+import { buildHeatEncounterText } from '../../lib/narratorEncounter';
 
 const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
 const NarratorPage = () => {
   const router = useRouter();
   const { isGm, loading: gmLoading } = useIsCampaignGm();
+  const { campaignId, effects, heat, refresh } = useCampaign();
   const [out, setOut] = useState('');
   const [assist, setAssist] = useState<any>(null);
   const [assistErr, setAssistErr] = useState('');
+  const [encounterBusy, setEncounterBusy] = useState(false);
 
   useEffect(() => {
     if (!getAccessToken()) {
@@ -41,10 +46,26 @@ const NarratorPage = () => {
     setOut(`NPC: ${pick(names)} — ${pick(roles)}. Quer ¤${1000 + Math.floor(Math.random() * 4000)} ou um favor.`);
   };
 
-  const encounter = () => {
-    setOut(
-      `Encontro: ${pick(['emboscada de gangue', 'checkpoint NCPD', 'corrido de BD pirata', 'ICE em terminal público'])}.`,
-    );
+  const encounter = async () => {
+    setEncounterBusy(true);
+    let liveEffects: HeatEffects | null = effects;
+    try {
+      if (!liveEffects) {
+        const res = await fetch(apiUrl(`/api/campaigns/${campaignId}/heat`), {
+          headers: authHeaders(),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          liveEffects = data?.effects ?? null;
+        }
+        await refresh();
+      }
+    } catch {
+      /* fallback below */
+    } finally {
+      setEncounterBusy(false);
+    }
+    setOut(buildHeatEncounterText(liveEffects ?? effects, heat));
   };
 
   const askClaude = async (type: 'npc' | 'gig' | 'rumor' | 'scene') => {
@@ -53,7 +74,7 @@ const NarratorPage = () => {
     const res = await fetch(apiUrl('/api/gm/assist'), {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ type, prompt: out || undefined, campaignId: 1 }),
+      body: JSON.stringify({ type, prompt: out || undefined, campaignId }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -82,7 +103,9 @@ const NarratorPage = () => {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           <HudButton onClick={rumor}>Gerar rumor</HudButton>
           <HudButton onClick={npc}>Gerar NPC</HudButton>
-          <HudButton onClick={encounter}>Gerar encontro</HudButton>
+          <HudButton onClick={() => void encounter()} disabled={encounterBusy}>
+            {encounterBusy ? 'Consultando heat…' : 'Gerar encontro'}
+          </HudButton>
           <HudButton variant="ghost" onClick={() => askClaude('gig')}>
             Assist IA (gig)
           </HudButton>

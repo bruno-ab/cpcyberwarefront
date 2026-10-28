@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run",
     "test:dice": "vitest run src/components/vtt/diceDecodeUtils.test.ts"
   },
   "dependencies": {

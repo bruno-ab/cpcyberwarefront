@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useCampaign } from '../../lib/campaign';
+import { reportMinigameResult } from '../../lib/minigameResult';
 import { playCyberSound } from '../../lib/sound/cyberSounds';
 import shell from './MinigameShell.module.css';
 import styles from './CyberpsychosisSurgeGame.module.css';
@@ -10,6 +12,8 @@ type Target = { id: number; x: number; y: number };
 
 /** Surto de cyberpsicose: acompanhe alvos enquanto a HUD glitcha. */
 export const CyberpsychosisSurgeGame = () => {
+  const { campaignId, refresh } = useCampaign();
+  const reported = useRef(false);
   const [status, setStatus] = useState<Status>('menu');
   const [humanity, setHumanity] = useState(6);
   const [score, setScore] = useState(0);
@@ -24,6 +28,7 @@ export const CyberpsychosisSurgeGame = () => {
   const maxMiss = Math.max(2, 5 - Math.floor((10 - humanity) / 3));
 
   const start = () => {
+    reported.current = false;
     setScore(0);
     setMisses(0);
     setTargets([]);
@@ -79,6 +84,17 @@ export const CyberpsychosisSurgeGame = () => {
       playCyberSound('win');
     }
   }, [misses, score, status, maxMiss, goal]);
+
+  useEffect(() => {
+    if ((status !== 'won' && status !== 'lost') || reported.current) return;
+    reported.current = true;
+    reportMinigameResult(campaignId, 'psycho', status, {
+      score,
+      goal,
+      misses,
+      humanity,
+    }).then(() => refresh());
+  }, [status, campaignId, score, goal, misses, humanity, refresh]);
 
   const hit = (id: number) => {
     setTargets((prev) => prev.filter((t) => t.id !== id));
